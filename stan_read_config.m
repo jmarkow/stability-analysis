@@ -1,4 +1,4 @@
-function [BIRD_MAP]=stan_read_config(FILENAME,varargin)
+function [LOG_MAP MAP]=stan_read_config(FILENAME,varargin)
 % script for reading config files/sorting for processing/chopping
 % 
 % takes logfile as input 
@@ -30,24 +30,37 @@ for i=1:length(bird_tokens)
 end
 
 for i=1:length(bird_tokens)
-	BIRD_MAP(i).name=bird_tokens{i}{1};
+	LOG_MAP(i).name=bird_tokens{i}{1};
 	tmp=regexp(bird_tokens{i}{2},'.*(\d+)','tokens');
 
 	if isempty(tmp)
-		BIRD_MAP(i).idx=1;
+		LOG_MAP(i).idx=1;
 	else
 		tmp=str2num(tmp{1}{1});
-		BIRD_MAP(i).idx=tmp;
+		LOG_MAP(i).idx=tmp;
 	end
 
 	% check for date number
 	
-	tmp=regexp(bird_tokens{i}{1},'(\d+\/\d+\/\d+)','tokens');
+	tmp=regexp(bird_tokens{i}{1},'^(\d+\/\d+\/\d+)\s','tokens');
 
 	if length(tmp)>0 
-		BIRD_MAP(i).date_num=datenum(tmp{1}{1});
+		LOG_MAP(i).date_num=datenum(tmp{1}{1});
 	else
-		BIRD_MAP(i).date_num=[];
+		LOG_MAP(i).date_num=[];
+	end
+
+	tmp=regexp(bird_tokens{i}{1},'^(\d+\/\d+)\s','tokens');
+
+
+	[pathname,~,~,]=fileparts(FILENAME);
+
+	path_tokens=regexp(pathname,filesep,'split');
+
+	if length(tmp)>0
+		LOG_MAP(i).date_num=datenum([ tmp{1}{1} '/' path_tokens{end-3 }]);
+	else
+
 	end
 
 end
@@ -56,19 +69,20 @@ end
 
 ch_idx=strcmpi(readdata{1},'column');
 
-if ~all(ch_idx)
+if ~any(ch_idx)
 	ch_idx=strcmpi(readdata{1},'nidaq');
 end
 
+
 ch_tokens=readdata{2}(ch_idx);
-cat_idx=cat(1,BIRD_MAP(:).idx);
+cat_idx=cat(1,LOG_MAP(:).idx);
 
 map_idx=ones(1,length(ch_tokens));
 ch_to_bird=ones(1,length(ch_tokens));
 ismic=zeros(1,length(ch_tokens));
 ch_names=cell(1,length(ch_tokens));
 
-if length(BIRD_MAP)>1
+if length(LOG_MAP)>1
 	ch_flag=1;
 else
 	ch_flag=0;
@@ -90,11 +104,13 @@ for i=1:length(ch_tokens)
 
 end
 
-for i=1:length(BIRD_MAP)
+MAP.names=ch_names;
+
+for i=1:length(LOG_MAP)
 	if sum(ch_to_bird==i)>0
-		BIRD_MAP(i).ch.idx=find(ch_to_bird==i);
-		BIRD_MAP(i).ch.name=ch_names(BIRD_MAP(i).ch.idx);
-		BIRD_MAP(i).ch.ismic=ismic(BIRD_MAP(i).ch.idx);
+		LOG_MAP(i).ch.idx=find(ch_to_bird==i);
+		LOG_MAP(i).ch.name=ch_names(LOG_MAP(i).ch.idx);
+		LOG_MAP(i).ch.ismic=ismic(LOG_MAP(i).ch.idx)==1; % typecast to log
 	end
 end
 
