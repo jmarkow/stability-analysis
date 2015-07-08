@@ -1,0 +1,11 @@
+# birdid=alias
+# dates are automatically read in as datenums
+y273=unipolar stim
+y273=unipolar
+y273=inbred
+y273=7/1/2010
+lpur17=stereotrode
+lpur17=7/9/2010
+lpur72=9/16/2010
+lw29=9/22/2010
+

@@ -22,9 +22,10 @@ bird_str=readdata{2}{bird_idx};
 
 % parse bird_string, oh boy regex 
 
-[bird_tokens]=regexpi(bird_str,'((?:\w*\s*|[0-9\/]*)+)(?:\[|\(|\s)(bird\w*.(?:\d|\#\d))(?:\]|\)|\s*)','tokens');
+[bird_tokens]=regexpi(bird_str,'((?:\w*\s*|[0-9\/]*)+)(?:\[|\(|\s)((?:bird|\s*)\s*(?:\d|\#\d))(?:\]|\)|\s*)','tokens');
 
 for i=1:length(bird_tokens)
+	bird_tokens{i}{1}=regexprep(bird_tokens{i}{1},'(b|B)ird','');
 	bird_tokens{i}=strtrim(bird_tokens{i});
 end
 
@@ -38,6 +39,17 @@ for i=1:length(bird_tokens)
 		tmp=str2num(tmp{1}{1});
 		BIRD_MAP(i).idx=tmp;
 	end
+
+	% check for date number
+	
+	tmp=regexp(bird_tokens{i}{1},'(\d+\/\d+\/\d+)','tokens');
+
+	if length(tmp)>0 
+		BIRD_MAP(i).date_num=datenum(tmp{1}{1});
+	else
+		BIRD_MAP(i).date_num=[];
+	end
+
 end
 
 % get the channel mapping first word is either column or nidaq
