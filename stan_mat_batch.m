@@ -15,21 +15,22 @@ log_file(1).field='logfile';
 log_file(1).filename='log.txt';
 log_file(1).multi=0;
 
-
 % returns filenames to process and their associated log file
 
-filenames=robofinch_dir_recurse(pwd,'*.mat',[],[],log_file);
+filenames=robofinch_dir_recurse(pwd,'data_*.mat',[],[],log_file);
 [log_names,~,log_id]=unique({filenames(:).logfile});
 
 % get aliases
 
-cur_file=mfilename('fullpath')
-[cur_path,~,~]=fileparts(cur_file)
+cur_file=mfilename('fullpath');
+[cur_path,~,~]=fileparts(cur_file);
 
 [aliases.targets,aliases.sources,aliases.date_targets,aliases.date_sources]=stan_read_aliases(fullfile(cur_path,alias_name));
 options=stan_read_options(fullfile(cur_path,options_name));
 
 for i=1:length(log_names)	
+
+	disp([log_names{i}]);
 
 	[log_map,map]=stan_read_config(log_names{i});
 
@@ -98,7 +99,15 @@ for i=1:length(log_names)
 
 	% scan for aliases, convert dates to datenums
 
+	reverse_string='';
+	
 	for j=1:length(files_to_proc)
+
+		percent_complete=100 * (j/length(files_to_proc));
+		msg=sprintf('Percent done: %3.1f',percent_complete);
+		fprintf([reverse_string,msg]);
+
+		reverse_string=repmat(sprintf('\b'),1,length(msg));
 
 		% process files with the same log id
 
@@ -106,7 +115,7 @@ for i=1:length(log_names)
 
 		[nsamples,nchannels]=size(data.voltage);
 
-		data2.voltage=data.voltage/gain_factor;	% correct amplifier gain, resample at sensible frequency (~20 kHz)
+		data2.voltage=data.voltage;	% resample at sensible frequency 
 	
 		data2.time=data.time-min(data.time);
 		data2.start_time=data.start_time;
@@ -123,6 +132,15 @@ for i=1:length(log_names)
 		data2.voltage=downsample(filtfilt(b,a,data2.voltage),decimate_f);
 		data2.time=downsample(data2.time,decimate_f);
 		data2.fs=newfs;
+		
+		% store all relevant info 
+
+		data2.parameters.units=repmat({'Volts'},[1 nchannels]);
+		data2.parameters.sensor_range=[-10 10];
+		data2.parameters.input_range=[-10 10];
+		data2.parameters.units_range=[-10 10];
+		data2.parameters.amp_gain=gain_factor;
+		data2.parameters.gain_correct=false; % we did not yet adjust the ephys data by amp gain
 
 		new_filename=[ base_filename delim datestr(datenum(data2.start_time),datefmt) '.mat' ];
 
@@ -131,7 +149,11 @@ for i=1:length(log_names)
 		data=data2;
 		clear data2;
 		save(fullfile(options.convert_destination,new_filename),'data');
+		clear data;
 		
 	end
+
+	fprintf('\n');
+
 end
 
