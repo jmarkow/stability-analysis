@@ -39,6 +39,12 @@ for i=1:length(log_names)
 	proc_idx=find(log_id==i);
 	files_to_proc=filenames(proc_idx);
 
+	[log_path,~,~]=fileparts(log_names{i});
+
+	if exist(fullfile(log_path,'.convert_complete'),'file');
+		continue;
+	end
+
 	for j=1:length(log_map)
 
 		% first check for datenumbers
@@ -111,7 +117,12 @@ for i=1:length(log_names)
 
 		% process files with the same log id
 
-		load(files_to_proc(j).name,'data');
+		try
+			load(files_to_proc(j).name,'data');
+		catch err
+			warning('Could not read file %s',files_to_proc(j).name);
+			continue;
+		end
 
 		[nsamples,nchannels]=size(data.voltage);
 
@@ -154,6 +165,9 @@ for i=1:length(log_names)
 	end
 
 	fprintf('\n');
+
+	fid=fopen(fullfile(log_path,'.convert_complete'),'w');
+	fclose(fid);
 
 end
 
