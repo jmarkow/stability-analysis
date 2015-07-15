@@ -30,7 +30,7 @@ for i=1:length(bird_tokens)
 end
 
 for i=1:length(bird_tokens)
-	LOG_MAP(i).name=bird_tokens{i}{1};
+	LOG_MAP(i).name=lower(bird_tokens{i}{1});
 	tmp=regexp(bird_tokens{i}{2},'.*(\d+)','tokens');
 
 	if isempty(tmp)
@@ -42,7 +42,7 @@ for i=1:length(bird_tokens)
 
 	% check for date number
 	
-	tmp=regexp(bird_tokens{i}{1},'^(\d+\/\d+\/\d+)\s','tokens');
+	tmp=regexp(bird_tokens{i}{1},'(\d+\/\d+\/\d+)','tokens');
 
 	if length(tmp)>0 
 		LOG_MAP(i).date_num=datenum(tmp{1}{1});
@@ -50,8 +50,7 @@ for i=1:length(bird_tokens)
 		LOG_MAP(i).date_num=[];
 	end
 
-	tmp=regexp(bird_tokens{i}{1},'^(\d+\/\d+)\s','tokens');
-
+	tmp=regexp(LOG_MAP(i).name,'^(\d+\/\d+) ','tokens');
 
 	[pathname,~,~,]=fileparts(FILENAME);
 
@@ -59,8 +58,14 @@ for i=1:length(bird_tokens)
 
 	if length(tmp)>0
 		LOG_MAP(i).date_num=datenum([ tmp{1}{1} '/' path_tokens{end-3 }]);
-	else
+		LOG_MAP(i).name=strtrim(regexprep(LOG_MAP(i).name,'(\d+\/)+\d+','')); % remove date from name
+	end
 
+	tmp=regexp(LOG_MAP(i).name,' (\d+\/\d+)$','tokens');
+
+	if length(tmp)>0
+		LOG_MAP(i).date_num=datenum([ tmp{1}{1} '/' path_tokens{end-3 }]);
+		LOG_MAP(i).name=strtrim(regexprep(LOG_MAP(i).name,'(\d+\/)+\d+','')); % remove date from name
 	end
 
 end

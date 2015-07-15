@@ -14,7 +14,9 @@ bird_delim='&';
 log_file(1).field='logfile';
 log_file(1).filename='log.txt';
 log_file(1).multi=0;
+dry_run=0;
 
+par_save = @(FILE,data) save(FILE,'data');
 % returns filenames to process and their associated log file
 
 filenames=robofinch_dir_recurse(pwd,'data_*.mat',[],[],log_file);
@@ -53,7 +55,7 @@ for i=1:length(log_names)
 
 			alias_date_idx=(log_map(j).date_num==aliases.date_sources);
 
-			if any(alias_date_idx)
+			if any(alias_date_idx) & ~strcmpi(log_map(j).name,'lhp54')
 				log_map(j).name=aliases.date_targets{alias_date_idx};
 				continue;
 			end
@@ -65,6 +67,15 @@ for i=1:length(log_names)
 			log_map(j).name=aliases.targets{alias_idx};
 		end
 
+
+	end
+
+	for j=1:length(log_map)
+		disp([log_map(j).name]);
+	end
+
+	if dry_run
+		continue;
 	end
 
 	% construct new filename using new format
@@ -105,24 +116,30 @@ for i=1:length(log_names)
 
 	% scan for aliases, convert dates to datenums
 
-	reverse_string='';
-	
-	for j=1:length(files_to_proc)
+	parfor j=1:length(files_to_proc)
 
-		percent_complete=100 * (j/length(files_to_proc));
-		msg=sprintf('Percent done: %3.1f',percent_complete);
-		fprintf([reverse_string,msg]);
+		tmp=[];
+		data=[];
+		data2=[];
 
-		reverse_string=repmat(sprintf('\b'),1,length(msg));
+		fprintf('Processing %s\n',files_to_proc(j).name);
 
 		% process files with the same log id
 
 		try
-			load(files_to_proc(j).name,'data');
+			tmp=load(files_to_proc(j).name,'data');
 		catch err
 			warning('Could not read file %s',files_to_proc(j).name);
 			continue;
 		end
+
+		if ~isfield(tmp,'data')
+			warning('Could not read data from file %s',files_to_proc(j).name);
+			continue;
+		end
+
+		data=tmp.data;
+		tmp=[];
 
 		[nsamples,nchannels]=size(data.voltage);
 
@@ -158,13 +175,11 @@ for i=1:length(log_names)
 		% get names for each channel
 		
 		data=data2;
-		clear data2;
-		save(fullfile(options.convert_destination,new_filename),'data');
-		clear data;
-		
-	end
+		data2=[];
 
-	fprintf('\n');
+		stan_par_save(fullfile(options.convert_destination,new_filename),data);
+
+	end
 
 	fid=fopen(fullfile(log_path,'.convert_complete'),'w');
 	fclose(fid);
