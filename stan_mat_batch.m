@@ -177,7 +177,7 @@ for i=1:length(log_names)
 		data=data2;
 		data2=[];
 
-		stan_par_save(fullfile(options.convert_destination,new_filename),data);
+		stan_par_save(fullfile(options.convert_dir,new_filename),data);
 
 	end
 

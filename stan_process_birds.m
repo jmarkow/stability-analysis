@@ -7,6 +7,7 @@ function stan_process_birds(DIR,varargin)
 proc_name='robomulab.mat';
 stan_dir='stan';
 save_filename='stan_withinbird';
+newfs=500;
 
 % load in MU calculation, compare across days
 
@@ -38,6 +39,8 @@ end
 
 for i=1:length(bird_listing)
 
+	disp([bird_listing{i}]);
+	
 	% get rec_id
 	
 	tmp=dir(fullfile(DIR,bird_listing{i}));
@@ -49,23 +52,29 @@ for i=1:length(bird_listing)
 		end
 	end
 
+
 	for j=1:length(rec_listing)
+
+		disp([rec_listing{j}]);	
 
 		cur_bird=bird_listing{i};
 		cur_recid=rec_listing{j};
 		cur_dir=fullfile(DIR,cur_bird,cur_recid);
 
-		proc_files=robofinch_dir_recurse(cur_dir,proc_name);
-
 		storage_dir=fullfile(cur_dir,stan_dir);
+		cur_savefile=[ cur_bird '_' cur_recid '_' save_filename '.mat' ];
+		
+		%if exist(fullfile(storage_dir,cur_savefile),'file'), continue; end
 
-		if ~exist(storage_dir,'dir'), mkdir(storage_dir), end;
-
+		proc_files=robofinch_dir_recurse(cur_dir,proc_name);
+	
 		store=struct();
 		motif_list={};
 		counter=1;
 
 		for k=1:length(proc_files)
+
+			disp([proc_files(k).name]);
 
 			% extract date/template name from the directory name
 
@@ -79,7 +88,7 @@ for i=1:length(bird_listing)
 			%
 			% initialize structure if we have a new motif
 		
-			motif_idx=strcmp(motif_list,motif_name)
+			motif_idx=strcmp(motif_list,motif_name);
 			new_motif=isempty(motif_idx)|~any(motif_idx);
 
 			if new_motif
@@ -92,8 +101,12 @@ for i=1:length(bird_listing)
 				store(motif_idx).datenums=[];
 				store(motif_idx).rms.data={};
 				store(motif_idx).rms.parameters={};
-				store(motif_idx).spikes.data={};
+				store(motif_idx).spikes.smooth_rate={};	
+				store(motif_idx).spikes.times={};
+				store(motif_idx).spikes.trial={};
+				store(motif_idx).spikes.threshold={};
 				store(motif_idx).spikes.parameters={};
+
 			end
 
 			% map to appropriate motif element, now grab channel list from this motif
@@ -102,36 +115,50 @@ for i=1:length(bird_listing)
 			
 			load(proc_files(k).name,'rms','spikes','parameters');
 
-			ch_names=parameters.ch_names;
+			tmp=parameters.ch_names;
+			tmp=strtrim(regexprep(tmp,'\[.*\]',''));
+			ch_names=tmp;
 
 			% map to channel
 
 			for l=1:length(ch_names)
 				
 				ch_idx=strcmp(ch_list,ch_names{l});
-				new_ch=isempty(ch_idx);
+				new_ch=isempty(ch_idx)|~any(ch_idx);
 				
 				if new_ch
 					store(motif_idx).ch_list{end+1}=ch_names{l};
 					ch_idx=length(store(motif_idx).ch_list);
 					col_idx=1;
 				else
-					col_idx=length(store(motif_idx).spikes.data{ch_idx})+1;
+					col_idx=length(store(motif_idx).spikes.smooth_rate{ch_idx})+1;
 				end
 
+				% downsample, assume we've already done the necessary smoothing
+
+				down_fact_spikes=round(spikes{l}.fs/newfs);
+				down_fact_rms=round(rms{l}.fs/newfs);
 
 				store(motif_idx).datenums(ch_idx,col_idx)=date_number;	
 				store(motif_idx).parameters(ch_idx,col_idx)=parameters;
-				store(motif_idx).spikes.data{ch_idx}{col_idx}=spikes{l}.smooth_rate;
+				store(motif_idx).spikes.smooth_rate{ch_idx}{col_idx}=downsample(spikes{l}.smooth_rate,down_fact_spikes);
+				store(motif_idx).spikes.times{ch_idx}{col_idx}=spikes{l}.times;
+				store(motif_idx).spikes.trial{ch_idx}{col_idx}=spikes{l}.trial;
+				store(motif_idx).spikes.threshold{ch_idx}{col_idx}=spikes{l}.threshold;
 				store(motif_idx).spikes.parameters{ch_idx}{col_idx}=spikes{l}.smooth_params;
-				store(motif_idx).rms.data{ch_idx}{col_idx}=rms{l}.data;
+				store(motif_idx).spikes.parameters{ch_idx}{col_idx}.smooth_fs=newfs;
+				store(motif_idx).spikes.parameters{ch_idx}{col_idx}.spike_fs=spikes{l}.fs;
+				store(motif_idx).rms.data{ch_idx}{col_idx}=downsample(rms{l}.data,down_fact_rms);
 				store(motif_idx).rms.parameters{ch_idx}{col_idx}=rms{l}.params;
+				store(motif_idx).rms.parameters{ch_idx}{col_idx}.newfs=newfs;
 
 			end
-
 		end
 
-		save(fullfile(storage_dir,[ cur_bird '_' cur_recid '_' save_filename '.mat' ]),'store','-v7.3');
+		if length(proc_files)>0
+			if ~exist(storage_dir,'dir'), mkdir(storage_dir), end;
+			save(fullfile(storage_dir,cur_savefile),'store','-v7.3');
+		end
 
 	end
 end
