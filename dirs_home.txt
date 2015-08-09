@@ -6,3 +6,6 @@ convert_dir=/Volumes/industrial_age/workspace/staging_barecarbon/unprocessed
 agg_dir=~/Desktop/Dropbox/Backup/stability_analysis_data/stan/mu_agg
 data_dir=/Volumes/industrial_age/workspace/ephys_barecarbon
 template_dir=/templates
+control_dir=/controls
+nervecut_dir=/nervecut
+user_dir=/userdata

@@ -13,15 +13,31 @@ control_raster2_motif_name=motif1_fs20e3_normamp0
 control_raster2_trials=[1000 1199;1 200]
 control_raster2_xlim=[.12 .95]
 
+# padding for all extractions
+
+padding=[.3 .3]
+
 # nervecut rasters
 
 nervecut_raster1_channel=E3-Gnd
-nervecut_raster1_precut_path=/nervecut/lb6_barecarbon_nervecut_1pre_stan_withinbird.mat
-nervecut_raster1_precut_days=
+nervecut_raster1_precut_path=/nervecut/lpi5_barecarbon_nervecut_1pre_stan_withinbird.mat
+nervecut_raster1_precut_days=2
 nervecut_raster1_precut_motif_name=motif1_fs20e3_normamp0
-nervecut_raster1_precut_trials
+nervecut_raster1_precut_trials=[1 150]
 
-nervecut_raster1_postcut_path=/nervecut/lb6_barecarbon_nervecut_2post_stan_withinbird.mat
-nervecut_raster1_postcut_days=
-nervecut_raster1_postcut_motif_name=motif2_postcut_fs20e3_normamp0
-nervecut_raster1_postcut_trials=
+nervecut_raster1_postcut_path=/nervecut/lpi5_barecarbon_nervecut_2post_stan_withinbird.mat
+nervecut_raster1_postcut_days=6
+nervecut_raster1_postcut_motif_name=motif1_postcut_fs20e3_normamp0
+nervecut_raster1_postcut_trials=[1 150]
+
+
+nervecut_raster2_channel=E3-Gnd
+nervecut_raster2_precut_path=/nervecut/lpi20_barecarbon_nervecut_1pre_stan_withinbird.mat
+nervecut_raster2_precut_days=18
+nervecut_raster2_precut_motif_name=motif1_fs20e3_normamp0
+nervecut_raster2_precut_trials=[1 150]
+
+nervecut_raster2_postcut_path=/nervecut/lpi20_barecarbon_nervecut_2post_stan_withinbird.mat
+nervecut_raster2_postcut_days=1
+nervecut_raster2_postcut_motif_name=motif1_postcut_fs20e3_normamp0
+nervecut_raster2_postcut_trials=[1 150]

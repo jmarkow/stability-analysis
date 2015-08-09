@@ -52,7 +52,7 @@ for i=1:length(ctrl)
 
 	% pad out the template
 	
-	pad_smps=round(template.fs*parameters.padding);
+	pad_smps=round(template.fs*options.padding);
 
 	template.data=[repmat(template.data(1),[pad_smps(1) 1]);template.data(:);repmat(template.data(end),[pad_smps(2) 1])]
 

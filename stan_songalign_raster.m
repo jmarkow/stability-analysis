@@ -26,10 +26,10 @@ for i=1:2:nparams
 			name=varargin{i+1};
 		case 'fs'
 			fs=varargin{i+1};
-        case 'spike_width'
-            spike_width=varargin{i+1};
-        case 'spike_height'
-            spike_height=varargin{i+1};
+        	case 'spike_width'
+            		spike_width=varargin{i+1};
+        	case 'spike_height'
+            		spike_height=varargin{i+1};
 		case 'plot_trials'
 			plot_trials=varargin{i+1};
 	end
