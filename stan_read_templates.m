@@ -4,7 +4,7 @@ function KEY=stan_template_key()
 %
 %
 
-options_name='options.txt';
+options_name='dirs.txt';
 
 
 cur_file=mfilename('fullpath');

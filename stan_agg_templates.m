@@ -4,16 +4,16 @@ function stan_agg_templates()
 %
 
 template_file='template_data.mat';
-options_name='options.txt';
+dirs_name='dirs.txt';
 
 disp('Collecting files...');
 
 cur_file=mfilename('fullpath');
 [cur_path,~,~]=fileparts(cur_file);
-options=stan_read_options(fullfile(cur_path,options_name));
+dirs=stan_read_options(fullfile(cur_path,dirs_name));
 
-temp_files=robofinch_dir_recurse(options.data_dir,template_file,4);
-save_dir=fullfile(options.agg_dir,options.template_dir);
+temp_files=robofinch_dir_recurse(dirs.data_dir,template_file,4);
+save_dir=fullfile(dirs.agg_dir,dirs.template_dir);
 
 % now split and get the first directory for all files
 

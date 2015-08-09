@@ -3,12 +3,15 @@ function stan_control_raster()
 %
 
 options_name='options.txt';
+dirs_name='dirs.txt';
+
 time_order=1e-2;
 % get options
 
 cur_file=mfilename('fullpath');
 [cur_path,~,~]=fileparts(cur_file);
 options=stan_read_options(fullfile(cur_path,options_name));
+dirs=stan_read_options(fullfile(cur_path,dirs_name));
 
 % all proc data goes into the same directory
 
@@ -33,17 +36,16 @@ template_key=stan_read_templates();
 
 for i=1:length(ctrl)
 	
-	ctrl(i).path=fullfile(options.agg_dir,ctrl(i).path);
+	ctrl(i).path=fullfile(dirs.agg_dir,ctrl(i).path);
 	
 	load(ctrl(i).path,'store');
 
 	% get template
-
 	
 	motif_list={store(:).motif_name};
 	idx=find(strcmp(ctrl(i).motif_name,motif_list));
 
-	load(fullfile(options.agg_dir,options.template_dir,...
+	load(fullfile(dirs.agg_dir,dirs.template_dir,...
 		[ store(idx).bird_id '_' store(idx).motif_name ]),'template','parameters');
 
 	% parse bird and motif_name from 

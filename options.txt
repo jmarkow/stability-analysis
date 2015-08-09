@@ -1,0 +1,27 @@
+# control rasters
+
+control_raster1_path=/controls/lpur72_barecarbon_stan_withinbird.mat
+control_raster1_channel=E3-E1
+control_raster1_days=[1 10]
+control_raster1_motif_name=motif1_fs20e3_normamp0
+control_raster1_trials=[1 200;1 200]
+
+control_raster2_path=/controls/y273_barecarbon_stan_withinbird.mat
+control_raster2_channel=E2-E1
+control_raster2_days=[7 19]
+control_raster2_motif_name=motif1_fs20e3_normamp0
+control_raster2_trials=[1000 1199;1 200]
+control_raster2_xlim=[.12 .95]
+
+# nervecut rasters
+
+nervecut_raster1_channel=E3-Gnd
+nervecut_raster1_precut_path=/nervecut/lb6_barecarbon_nervecut_1pre_stan_withinbird.mat
+nervecut_raster1_precut_days=
+nervecut_raster1_precut_motif_name=motif1_fs20e3_normamp0
+nervecut_raster1_precut_trials
+
+nervecut_raster1_postcut_path=/nervecut/lb6_barecarbon_nervecut_2post_stan_withinbird.mat
+nervecut_raster1_postcut_days=
+nervecut_raster1_postcut_motif_name=motif2_postcut_fs20e3_normamp0
+nervecut_raster1_postcut_trials=
