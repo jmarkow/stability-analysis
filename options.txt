@@ -17,7 +17,7 @@ control_raster2_xlim=[.12 .95]
 
 padding=[.3 .3]
 audio_trial_limit=50
-audio_amp_thresh=1
+audio_amp_thresh=0
 
 # nervecut rasters
 
