@@ -9,3 +9,4 @@ template_dir=/templates
 control_dir=/controls
 nervecut_dir=/nervecut
 user_dir=/userdata
+nervecut_audio_dir=/nervecut_audio
