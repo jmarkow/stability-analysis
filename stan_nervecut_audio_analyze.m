@@ -1,0 +1,56 @@
+function post_z=stan_analyze_nervecut_audio()
+%
+%
+%
+
+% get SAP features, compare pre/post for best match motif
+%
+
+
+dirs_name='dirs.txt';
+options_name='options.txt';
+save_dir='features';
+
+% get options
+
+cur_file=mfilename('fullpath');
+[cur_path,~,~]=fileparts(cur_file);
+dirs=stan_read_options(fullfile(cur_path,dirs_name));
+options=stan_read_options(fullfile(cur_path,options_name));
+
+key=stan_read_nervecut_audio;
+
+feature_dir=fullfile(dirs.agg_dir,dirs.nervecut_audio_dir,save_dir);
+listing=dir(fullfile(feature_dir,'*.mat'));
+listing={listing(:).name};
+post_z=struct();
+
+for i=1:length(listing)	
+	
+	load(fullfile(feature_dir,listing{i}),'pre_features','post_features');
+
+	feature_names=fieldnames(pre_features);
+	feature_names(strcmp(feature_names,'spec_deriv'))=[];
+
+	pre_amp=mean(zscore(pre_features.amp)');
+	post_amp=mean(zscore(post_features.amp)');
+
+	pre_amp_idx=pre_amp>=options.audio_amp_thresh;
+	post_amp_idx=post_amp>=options.audio_amp_thresh;
+
+	for j=1:length(feature_names)
+
+		mu1=mean(pre_features.(feature_names{j})(pre_amp_idx,:));
+		var1=var(pre_features.(feature_names{j})(pre_amp_idx,:));
+
+		% convert post to z
+
+		mu2=mean(post_features.(feature_names{j})(post_amp_idx,:));
+		var2=var(post_features.(feature_names{j})(post_amp_idx,:));		
+
+		post_z.mu(i).(feature_names{j})=(mu2(1:50)-mean(mu1))/std(mu1);
+		post_z.var(i).(feature_names{j})=(var2(1:50)-mean(var1))/std(var1);
+
+	end
+
+end

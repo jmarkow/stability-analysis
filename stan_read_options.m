@@ -17,7 +17,7 @@ for i=1:length(readdata{1})
 
 	% convert nums and vectors
 
-	tmp=regexp(OPTIONS.(readdata{1}{i}),'^\d+$','match');
+	tmp=regexp(OPTIONS.(readdata{1}{i}),'^[0-9;.:]+$','match');
 	tmp2=regexp(OPTIONS.(readdata{1}{i}),'^\[(\[0-9;.:]+|([0-9;.:]+ )+[0-9;.:]+)\]$','match');
 
 	if ~isempty(tmp) | ~isempty(tmp2)
