@@ -64,7 +64,7 @@ for i=1:length(bird_listing)
 		storage_dir=fullfile(cur_dir,stan_dir);
 		cur_savefile=[ cur_bird '_' cur_recid '_' save_filename '.mat' ];
 		
-		%if exist(fullfile(storage_dir,cur_savefile),'file'), continue; end
+		if exist(fullfile(storage_dir,cur_savefile),'file'), continue; end
 
 		proc_files=robofinch_dir_recurse(cur_dir,proc_name);
 	

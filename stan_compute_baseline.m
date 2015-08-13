@@ -36,15 +36,15 @@ for i=1:length(all_files)
 		continue;
 	end
 
+	bird_name=store(1).bird_id
 
-	bird_name=store(1).bird_id;
-	def_options=stan_read_options(fullfile(dirs.agg_dir,dirs.user_dir,['defaults.txt']));
-	user_options=stan_read_options(fullfile(dirs.agg_dir,dirs.user_dir,[bird_name '.txt']));
+	def_options=stan_read_options(fullfile(dirs.agg_dir,dirs.user_dir,['defaults.txt']))
+	user_options=stan_read_options(fullfile(dirs.agg_dir,dirs.user_dir,[bird_name '.txt']))
 
-	user_names=fieldnames(user_options);
+	user_names=fieldnames(user_options)
 
-	for i=1:length(user_names)
-		def_options.(user_names{i})=user_options.(user_names{i});
+	for j=1:length(user_names)
+		def_options.(user_names{j})=user_options.(user_names{j});
 	end
 
 	user_options=def_options;
@@ -52,12 +52,14 @@ for i=1:length(all_files)
 	% match motif, channel, compute stats
 
 	motif_list={store(:).motif_name};
+	
 	if file_idx(i)
 		motif_idx=strcmp(motif_list,user_options.motif_select)
 	else
-		motif_idx=strcmp(motif_list,user_options.motif1_select);
+		motif_idx=strcmp(motif_list,user_options.motif_select1);
 	end
 
+	user_options
 	ch_idx=strcmp(lower(store(motif_idx).ch_list),lower(user_options.channel));
 
 	% only use days with a sufficient number of trials
@@ -68,8 +70,9 @@ for i=1:length(all_files)
 
 	dates=store(motif_idx).datenums(ch_idx,:);
 	dates(dates==0)=[];
-	
+
 	if isfield(user_options,'exclude')
+		user_options.exclude(user_options.exclude>length(sz))=[];
 		sz(user_options.exclude)=[];
 		mu(:,user_options.exclude)=[];
 		dates(user_options.exclude)=[];
@@ -79,19 +82,21 @@ for i=1:length(all_files)
 	
 	if ~any(sz_include)
 		continue;
-	end
+    end
+    
+	% take an extra 100 ms 
+    
+	params=store(motif_idx).spikes.parameters{ch_idx}{1}; 
+	padding_smps=round((options.padding-[.1 .1])*params.smooth_fs)
 
 	mu=mu(:,sz_include);
-	corrmat=corr(zscore(mu(100:end-100,:)));
-	dates=dates(:,sz_include);
+	dates=dates(sz_include);
+	corrmat=corr(zscore(mu(padding_smps(1):end-padding_smps(2),:)));
 
 	dates_diff=dates-dates(1);
-	store_data=[store_data;[ dates_diff(:) corrmat(1,:)' ]];
+	store_data=[store_data;[ dates_diff(:) corrmat(1,:)' ones(size(dates_diff(:)))*i ]];
 
 end
 
-
 tmp=dir(fullfile(dirs.agg_dir,dirs.nervecut_dir,'*.mat'));
 nervecut_files={tmp(:).name};
-
-figure();plot(store_data(:,1),store_data(:,2),'k.');

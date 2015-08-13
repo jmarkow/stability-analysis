@@ -62,8 +62,10 @@ for i=1:length(birds)
 	load(post_key.filename,'audio');
 	[nsamples,ntrials]=size(audio.data)
 
+	pad_smps=round(options.padding*audio.fs);
+
 	for j=1:ntrials
-		[post_tmp(j)]=zftftb_sap_score(audio.data(:,j),audio.fs);
+		[post_tmp(j)]=zftftb_sap_score(audio.data(pad_smps(1):end-pad_smps(2),j),audio.fs);
 	end
 
 	for j=1:length(feature_names)
