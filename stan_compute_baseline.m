@@ -78,7 +78,7 @@ for i=1:length(all_files)
 		dates(user_options.exclude)=[];
 	end
 
-	sz_include=sz>=user_options.trial_limit;
+	sz_include=sz>=options.ephys_trial_limit;
 	
 	if ~any(sz_include)
 		continue;

@@ -5,7 +5,7 @@ function store_data=stan_compute_baseline()
 
 options_name='options.txt';
 dirs_name='dirs.txt';
-
+nbootstraps=100;
 cur_file=mfilename('fullpath');
 [cur_path,~,~]=fileparts(cur_file);
 options=stan_read_options(fullfile(cur_path,options_name));
@@ -58,6 +58,8 @@ for i=1:length(nervecut_files_pre)
 	dates=store(motif_idx).datenums(ch_idx,:);
 	dates(dates==0)=[];
 
+	datestr(dates)
+
 	if isfield(user_options,'exclude')
 		user_options.exclude(user_options.exclude>length(sz))=[];
 		sz(user_options.exclude)=[];
@@ -65,7 +67,7 @@ for i=1:length(nervecut_files_pre)
 		dates(user_options.exclude)=[];
 	end
 
-	sz_include=sz>=user_options.trial_limit;
+	sz_include=sz>=options.ephys_trial_limit;
 	
 	if ~any(sz_include)
 		continue;
@@ -101,11 +103,11 @@ for i=1:length(nervecut_files_pre)
 
 	% get final day from the pre-data, use to compare with the post-cut
 
+	idx=1:length(store(motif_idx).spikes.smooth_rate{ch_idx});
 	dates=store(motif_idx).datenums(ch_idx,:);
 	dates(dates==0)=[];
 
 	datestr(dates)
-	pause();
 
 	if isfield(user_options,'exclude2')
 		user_options.exclude2(user_options.exclude2>length(sz))=[];
@@ -113,9 +115,10 @@ for i=1:length(nervecut_files_pre)
 		sz(user_options.exclude2)=[];
 		mu(:,user_options.exclude2)=[];
 		dates(user_options.exclude2)=[];
+		idx(user_options.exclude2)=[];
 	end
 
-	sz_include=sz>=user_options.trial_limit;
+	sz_include=sz>=options.ephys_trial_limit;
 	
 	if ~any(sz_include)
 		continue;
@@ -123,23 +126,47 @@ for i=1:length(nervecut_files_pre)
 
 	% compare mu to template mu
 
-
 	mu=mu(:,sz_include);
 	dates=dates(sz_include);
+	idx=idx(sz_include);
 
 	corr=zeros(size(mu,2),1);
+	ci=zeros(size(mu,2),2);
 	
 	for j=1:size(mu,2)
 		x1=zscore(mu(padding_smps(1):end-padding_smps(2),j));
 		x2=zscore(template_data(padding_smps(1):end-padding_smps(2)));
 		norm_fact=sqrt(sum(x1.^2)*sum(x2.^2));
 		corr(j)=max(xcorr(x1,x2))./norm_fact; % convert to corr coefficient
+
+		% bootstrap the correlation
+		bootval=zeros(1,nbootstraps);
+		bootdata=store(motif_idx).spikes.smooth_rate{ch_idx}{idx(j)};
+		ntrials=size(bootdata,2);
+		trial_pool=1:ntrials;
+
+		for k=1:nbootstraps
+			new_trials=randsample(trial_pool,ntrials,true);
+			tmp=median(bootdata(:,new_trials)');
+			tmp=zscore(tmp(padding_smps(1):end-padding_smps(2)));
+			norm_fact=sqrt(sum(tmp.^2)*sum(x2.^2));
+			bootval(k)=max(xcorr(tmp,x2))./norm_fact;
+		end
+
+		ci(j,:)=prctile(bootval,[.5 99.5]);
+
 	end
 
-	dates=dates-dates(1);
-	store_data=[store_data;[dates(:) corr ones(size(corr))*i]];
+	ci
+	datestr(dates)
 
-	figure();plot(dates,corr,'k.-')
-	pause();
+	%figure();plot(dates,corr,'k.--');
+	%datetick('x');
+	%pause();
+	
+	dates=dates-dates(1);
+	store_data=[store_data;[dates(:) corr ci ones(size(corr))*i]];
+
+
 
 end
