@@ -7,16 +7,11 @@ function post_z=stan_analyze_nervecut_audio()
 %
 
 
-dirs_name='dirs.txt';
-options_name='options.txt';
 save_dir='features';
 
 % get options
 
-cur_file=mfilename('fullpath');
-[cur_path,~,~]=fileparts(cur_file);
-dirs=stan_read_options(fullfile(cur_path,dirs_name));
-options=stan_read_options(fullfile(cur_path,options_name));
+[options,dirs]=stan_preflight;
 
 key=stan_read_nervecut_audio;
 
@@ -48,8 +43,8 @@ for i=1:length(listing)
 		mu2=mean(post_features.(feature_names{j})(post_amp_idx,:));
 		var2=var(post_features.(feature_names{j})(post_amp_idx,:));		
 
-		post_z.mu(i).(feature_names{j})=(mu2(1:50)-mean(mu1))/std(mu1);
-		post_z.var(i).(feature_names{j})=(var2(1:50)-mean(var1))/std(var1);
+		post_z.mu(i).(feature_names{j})=(mu2(1:100)-mean(mu1))/std(mu1);
+		post_z.var(i).(feature_names{j})=(var2(1:100)-mean(var1))/std(var1);
 
 	end
 

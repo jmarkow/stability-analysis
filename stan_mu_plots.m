@@ -84,11 +84,11 @@ for i=1:length(SPIKES)
 
 	fig_name=['songalign_raster_ch' sprintf('%i',i) ];
 	MUFIGS.(fig_name)=figure('paperpositionmode','auto','visible',visible);
-	stan_songalign_raster(spect,SPIKES{i},'name',name,'colors',spect_colors);
+	stan_plot_raster(spect,SPIKES{i},'name',name,'colors',spect_colors);
 
 	fig_name=['songalign_spikerate_ch' sprintf('%i',i) ];
 	MUFIGS.(fig_name)=figure('paperpositionmode','auto','visible',visible);
-	stan_songalign_rms(spect,SPIKES{i}.smooth_rate,SPIKES{i}.fs,'name',name,'spect_colors',spect_colors,'rms_colors',rms_colors,'clim_order',10,...
+	stan_plot_rms(spect,SPIKES{i}.smooth_rate,SPIKES{i}.fs,'name',name,'spect_colors',spect_colors,'rms_colors',rms_colors,'clim_order',10,...
 		'cbar_label','Firing Rate (Hz)','offset',length(SPIKES{i}.smooth_params.filt)/SPIKES{i}.fs);
 
 end
@@ -108,7 +108,7 @@ for i=1:length(RMS)
 
 	fig_name=['songalign_rms_ch' sprintf('%i',i) ];
 	MUFIGS.(fig_name)=figure('paperpositionmode','auto','visible',visible);	
-	stan_songalign_rms(spect,RMS{i}.data,RMS{i}.fs,'name',name,'spect_colors',spect_colors,'rms_colors',rms_colors,...
+	stan_plot_rms(spect,RMS{i}.data,RMS{i}.fs,'name',name,'spect_colors',spect_colors,'rms_colors',rms_colors,...
 		'clim_order',.01,'cbar_label','RMS (uV)','offset',RMS{i}.params.tau_smps/RMS{i}.fs);
 
 end
@@ -127,5 +127,5 @@ tau_smps=round(rms_tau*AUDIO.fs);
 rms_filter=ones(1,tau_smps)/tau_smps;
 
 AUDIO.data=sqrt(filter(rms_filter,1,AUDIO.data.^2));
-stan_songalign_rms(spect,AUDIO.data,AUDIO.fs,'name','Song RMS','spect_colors',spect_colors,'rms_colors',rms_colors,'clim_order',.01,...
+stan_plot_rms(spect,AUDIO.data,AUDIO.fs,'name','Song RMS','spect_colors',spect_colors,'rms_colors',rms_colors,'clim_order',.01,...
 	'cbar_label','RMS (V)','offset',rms_tau);

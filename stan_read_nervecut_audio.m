@@ -4,13 +4,8 @@ function KEY=stan_template_key()
 %
 %
 
-options_name='dirs.txt';
-
-
-cur_file=mfilename('fullpath');
-[cur_path,~,~]=fileparts(cur_file);
-options=stan_read_options(fullfile(cur_path,options_name));
-temp_dir=fullfile(options.agg_dir,options.nervecut_audio_dir);
+[options,dirs]=stan_preflight;
+temp_dir=fullfile(dirs.agg_dir,dirs.nervecut_audio_dir);
 
 % spits out a key with filenames, birdnames and motif names for template files in the template directory
 

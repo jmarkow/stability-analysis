@@ -2,16 +2,10 @@ function stan_control_raster()
 % searches for mat files and associated log files, processes and copies to target directory
 %
 
-options_name='options.txt';
-dirs_name='dirs.txt';
-
 time_order=1e-2;
 % get options
 
-cur_file=mfilename('fullpath');
-[cur_path,~,~]=fileparts(cur_file);
-options=stan_read_options(fullfile(cur_path,options_name));
-dirs=stan_read_options(fullfile(cur_path,dirs_name));
+[options,dirs]=stan_preflight;
 
 % all proc data goes into the same directory
 

@@ -3,7 +3,6 @@ function stan_mat_batch()
 %
 
 alias_name='aliases.txt';
-options_name='options.txt';
 datefmt='yymmdd_HHMMSS';
 recid='barecarbon';
 gain_factor=1e3;
@@ -28,7 +27,7 @@ cur_file=mfilename('fullpath');
 [cur_path,~,~]=fileparts(cur_file);
 
 [aliases.targets,aliases.sources,aliases.date_targets,aliases.date_sources]=stan_read_aliases(fullfile(cur_path,alias_name));
-options=stan_read_options(fullfile(cur_path,options_name));
+options=stan_preflight;
 
 for i=1:length(log_names)	
 

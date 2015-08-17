@@ -2,17 +2,12 @@ function stan_agg_birds()
 % searches for mat files and associated log files, processes and copies to target directory
 %
 
-dirs_name='dirs.txt';
-dry_run=0;
 save_dir='mu_agg';
 max_depth=4;
 
 % get options
 
-cur_file=mfilename('fullpath');
-[cur_path,~,~]=fileparts(cur_file);
-dirs=stan_read_options(fullfile(cur_path,dirs_name));
-
+[options,dirs]=stan_preflight;
 filenames=robofinch_dir_recurse(pwd,'*stan_withinbird.mat',max_depth);
 
 % all proc data goes into the same directory

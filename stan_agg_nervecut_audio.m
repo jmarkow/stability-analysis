@@ -11,10 +11,7 @@ max_depth=4;
 
 % get options
 
-cur_file=mfilename('fullpath');
-[cur_path,~,~]=fileparts(cur_file);
-dirs=stan_read_options(fullfile(cur_path,dirs_name));
-options=stan_read_options(fullfile(cur_path,options_name));
+[options,dirs]=stan_preflight;
 
 % all proc data goes into the same directory
 

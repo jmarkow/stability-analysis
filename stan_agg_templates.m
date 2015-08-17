@@ -4,13 +4,10 @@ function stan_agg_templates()
 %
 
 template_file='template_data.mat';
-dirs_name='dirs.txt';
 
 disp('Collecting files...');
 
-cur_file=mfilename('fullpath');
-[cur_path,~,~]=fileparts(cur_file);
-dirs=stan_read_options(fullfile(cur_path,dirs_name));
+[options,dirs]=stan_preflight;
 
 temp_files=robofinch_dir_recurse(dirs.data_dir,template_file,4);
 save_dir=fullfile(dirs.agg_dir,dirs.template_dir);

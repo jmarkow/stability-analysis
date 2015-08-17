@@ -7,16 +7,11 @@ function stan_analyze_nervecut_audio()
 %
 
 
-dirs_name='dirs.txt';
-options_name='options.txt';
 save_dir='features';
 
 % get options
 
-cur_file=mfilename('fullpath');
-[cur_path,~,~]=fileparts(cur_file);
-dirs=stan_read_options(fullfile(cur_path,dirs_name));
-options=stan_read_options(fullfile(cur_path,options_name));
+[options,dirs]=stan_preflight;
 
 key=stan_read_nervecut_audio;
 

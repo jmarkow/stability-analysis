@@ -6,15 +6,11 @@ function stan_nervecut_baseline_plot(BASELINE,NERVECUT)
 
 
 
-dirs_name='dirs.txt';
 save_name='nervecut_acoustic_features';
 r_cutoff=.4;
 % get options
 
-cur_file=mfilename('fullpath');
-[cur_path,~,~]=fileparts(cur_file);
-dirs=stan_read_options(fullfile(cur_path,dirs_name));
-
+[options,dirs]=stan_preflight;
 
 % bin the baseline data, form 95% confidence interval to compare with nervecut data
 

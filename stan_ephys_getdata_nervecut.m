@@ -10,10 +10,12 @@ nervecut_files_pre={tmp(1:2:end).name};
 nervecut_files_post={tmp(2:2:end).name};
 template_key=stan_read_templates;
 
-template_key
-pause();
-
-store_data=[];
+store_data.rms_corr_mu=[];
+store_data.rms_corr_ci=[];
+store_data.spikes_corr_mu=[];
+store_data.spikes_corr_ci=[];
+store_data.days_since=[];
+store_data.birdid=[];
 
 for i=1:length(nervecut_files_pre)
 
@@ -137,7 +139,7 @@ for i=1:length(nervecut_files_pre)
 		corr(j)=max(xcorr(x1,x2))./norm_fact; % convert to corr coefficient
 
 		% bootstrap the correlation
-		bootval=zeros(1,nbootstraps);
+		bootval=zeros(1,options.nbootstraps);
 		bootdata=store(motif_idx).spikes.smooth_rate{ch_idx}{idx(j)};
 		ntrials=size(bootdata,2);
 		trial_pool=1:ntrials;
@@ -150,7 +152,7 @@ for i=1:length(nervecut_files_pre)
 			bootval(k)=max(xcorr(tmp,x2))./norm_fact;
 		end
 
-		ci(j,:)=prctile(bootval,[.5 99.5]);
+		ci(j,:)=prctile(bootval,[99.5 .5]);
 
 	end
 
@@ -159,8 +161,14 @@ for i=1:length(nervecut_files_pre)
 	%pause();
 	
 	dates=dates-dates(1);
-	store_data=[store_data;[dates(:) corr ci ones(size(corr))*i]];
 
+	corr=corr';
+	ci=ci'
 
+	store_data.corr_mu=[store_data.corr_mu corr];
+	store_data.corr_ci=[store_data.corr_ci ci];
+	store_data.days_since=[store_data.days_since dates];
+	store_data.birdid=[store_data.birdid ones(size(corr))*i];
 
 end
+
