@@ -58,6 +58,6 @@ ylim([.5 1]);
 linkaxes(ax,'xy');
 
 set(fig,'position',[200 200 240 480],'paperpositionmode','auto');
-markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[save_name],'eps,fig,png');
+markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[save_name],'eps,fig,png,pdf');
 save(fullfile(dirs.agg_dir,dirs.fig_dir,[ save_name '.mat']),'plot_data');
 

@@ -143,4 +143,4 @@ linkaxes(ax,'x');
 xlim([-1 47]);
 
 set(fig,'position',[200 200 560 420],'paperpositionmode','auto');
-markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[ 'signal_timecourse' ],'eps,fig,png');
+markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[ 'signal_timecourse' ],'eps,fig,png,pdf');

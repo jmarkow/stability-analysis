@@ -114,5 +114,5 @@ end
 set(gca,'XTick',new_pos,'XTickLabel',plot_labels,'TickDir','out','TickLength',[0 0]);
 ylabel('Post-cut change in feature (Z)');
 set(fig,'position',[200 200 180 180],'paperpositionmode','auto');
-markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),save_name,'eps,png,fig');
+markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),save_name,'eps,png,fig,pdf');
 save(fullfile(dirs.agg_dir,dirs.fig_dir,[save_name '.mat']),'p');
