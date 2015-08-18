@@ -77,11 +77,11 @@ end
 
 scatter(X,Y,markersize,C,'markerfacecolor','flat');
 hold on;
-plot(pred_x,pred_y,'r-','linewidth',1.5);
+plot(pred_x,pred_y,'r-','linewidth',1);
 
 if ~shaded_conf
-	plot(pred_x,pred_y+conf,'r--','linewidth',1.5);
-	plot(pred_x,pred_y-conf,'r--','linewidth',1.5);
+	plot(pred_x,pred_y+conf,'r--','linewidth',1);
+	plot(pred_x,pred_y-conf,'r--','linewidth',1);
 end
 
 ylimits=ylim()

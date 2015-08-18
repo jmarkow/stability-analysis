@@ -45,19 +45,19 @@ plot_data.rms(to_del)=[];
 fig=figure();
 
 ax(1)=subplot(2,1,1);
-stan_plot_regress(plot_data.days_since(:),plot_data.spikes(:),plot_data.birdid(:));
+stan_plot_regress(plot_data.days_since(:),plot_data.spikes(:),plot_data.birdid(:),'markersize',20);
 ylabel('FR correlation (R)');
 set(gca,'XTick',[],'TickLength',[0 0],'YTick',[.5:.25:1]);
 
 ax(2)=subplot(2,1,2);
-stan_plot_regress(plot_data.days_since(:),plot_data.rms(:),plot_data.birdid(:));
+stan_plot_regress(plot_data.days_since(:),plot_data.rms(:),plot_data.birdid(:),'markersize',20);
 ylabel('RMS correlation (R)');
 xlabel('Days');
 set(gca,'TickLength',[0 0],'YTick',[.5:.25:1]);
 ylim([.5 1]);
 linkaxes(ax,'xy');
 
-set(fig,'position',[200 200 240 480],'paperpositionmode','auto');
-markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[save_name],'eps,fig,png,pdf');
+set(fig,'position',[200 200 150 300],'paperpositionmode','auto');
+markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[save_name],'eps,fig,png,pdf','renderer','painters');
 save(fullfile(dirs.agg_dir,dirs.fig_dir,[ save_name '.mat']),'plot_data');
 

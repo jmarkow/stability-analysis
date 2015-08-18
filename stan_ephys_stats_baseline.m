@@ -34,17 +34,59 @@ for i=1:length(EPHYS_DATA.dates)
 
 	% get corr
 
+	disp([num2str(i)]);
+
 	rms_mu_corr=cellfun(mufun_corr,EPHYS_DATA.rms{i},'uniformoutput',0);
 	spikerate_mu_corr=cellfun(mufun_corr,EPHYS_DATA.spike_rate{i},'uniformoutput',0);
 
 	rms_mu_corr=cat(2,rms_mu_corr{:});
 	spikerate_mu_corr=cat(2,spikerate_mu_corr{:});
 
+	bootval_spikes=zeros(options.nbootstraps,size(spikerate_mu_corr,2));
+
+	for j=1:size(spikerate_mu_corr,2)
+		
+		x2=zscore(spikerate_mu_corr(:,1));
+
+		bootdata=EPHYS_DATA.spike_rate{i}{j};	
+		ntrials=size(bootdata,2);
+		trial_pool=1:ntrials;
+
+		for k=1:options.nbootstraps
+
+			new_trials=randsample(trial_pool,ntrials,true);
+			tmp=corrcoef(zscore(mufun_corr(bootdata(:,new_trials))),x2);
+			bootval_spikes(k,j)=tmp(2,1);
+
+		end
+	end
+
+	bootval_rms=zeros(options.nbootstraps,size(rms_mu_corr,2));
+
+	for j=1:size(rms_mu_corr,2)
+		
+		x2=zscore(rms_mu_corr(:,1));
+		bootdata=EPHYS_DATA.rms{i}{j};	
+		ntrials=size(bootdata,2);
+		trial_pool=1:ntrials;
+
+		for k=1:options.nbootstraps
+
+			new_trials=randsample(trial_pool,ntrials,true);
+			tmp=corrcoef(zscore(mufun_corr(bootdata(:,new_trials))),x2);
+			bootval_rms(k,j)=tmp(2,1);
+
+		end
+	end
+
 	rms_mu_corr=zscore(rms_mu_corr);
 	spikerate_mu_corr=zscore(spikerate_mu_corr);
 
 	BASELINE_STATS.rms_corr{i}=corr(rms_mu_corr);
 	BASELINE_STATS.spikes_corr{i}=corr(spikerate_mu_corr);
+	
+	BASELINE_STATS.spikes_corr_boot{i}=bootval_spikes;
+	BASELINE_STATS.rms_corr_boot{i}=bootval_rms;
 
 	% average rms, rate, rms and rate modulation
 

@@ -14,6 +14,7 @@ markersize=20;
 symbols={'o','x','s','d','*','+','p','h'};
 nparams=length(varargin);
 line_alpha=.5;
+linewidth=1;
 
 if mod(nparams,2)>0
 	error('ephysPipeline:argChk','Parameters must be specified as parameter/value pairs!');
@@ -29,6 +30,8 @@ for i=1:2:nparams
 			smooth_line=varargin{i+1};
 		case 'line_alpha'
 			line_alpha=varargin{i+1};
+		case 'linewidth'
+			linewidth=varargin{i+1};
 	end
 end
 
@@ -40,7 +43,7 @@ for i=1:length(X)
 
 	% plot confidence intervals
 	
-	h2=plot([X(i) X(i)],[CI(1,i) CI(2,i)],'k-','color',cmap(C(i),:),'linewidth',1);
+	h2=plot([X(i) X(i)],[CI(1,i) CI(2,i)],'k-','color',cmap(C(i),:),'linewidth',linewidth);
 	col=h2.Color;
 	h2.Color=[ col line_alpha ];
 	hold on;
