@@ -1,4 +1,4 @@
-function store_data=stan_compute_baseline()
+function NERVECUT_STATS=stan_compute_baseline()
 %
 % stability analysis--baseline data
 % first take all of the data from control
@@ -10,12 +10,14 @@ nervecut_files_pre={tmp(1:2:end).name};
 nervecut_files_post={tmp(2:2:end).name};
 template_key=stan_read_templates;
 
-store_data.rms_corr_mu=[];
-store_data.rms_corr_ci=[];
-store_data.spikes_corr_mu=[];
-store_data.spikes_corr_ci=[];
-store_data.days_since=[];
-store_data.birdid=[];
+NERVECUT_STATS.rms=[];
+NERVECUT_STATS.rms_ci=[];
+NERVECUT_STATS.spikes=[];
+NERVECUT_STATS.spikes_ci=[];
+NERVECUT_STATS.days_since=[];
+NERVECUT_STATS.birdid=[];
+
+bootstrap_ci=[ 1-options.bootstrap_alpha/2 options.bootstrap_alpha/2  ]
 
 for i=1:length(nervecut_files_pre)
 
@@ -53,8 +55,11 @@ for i=1:length(nervecut_files_pre)
 	% only use days with a sufficient number of trials
 
 	sz=cellfun(@(x) size(x,2),store(motif_idx).spikes.smooth_rate{ch_idx});
-	mu=cellfun(@(x) median(x,2),store(motif_idx).spikes.smooth_rate{ch_idx},'uniformoutput',false);
-	mu=cat(2,mu{:});
+	template_spikes_mu=cellfun(@(x) median(x,2),store(motif_idx).spikes.smooth_rate{ch_idx},'uniformoutput',false);
+	template_rms_mu=cellfun(@(x) median(x,2),store(motif_idx).rms.data{ch_idx},'uniformoutput',false);
+	
+	template_spikes_mu=cat(2,template_spikes_mu{:});
+	template_rms_mu=cat(2,template_rms_mu{:});
 
 	% get final day from the pre-data, use to compare with the post-cut
 
@@ -64,7 +69,8 @@ for i=1:length(nervecut_files_pre)
 	if isfield(user_options,'exclude')
 		user_options.exclude(user_options.exclude>length(sz))=[];
 		sz(user_options.exclude)=[];
-		mu(:,user_options.exclude)=[];
+		template_spikes_mu(:,user_options.exclude)=[];
+		template_rms_mu(:,user_options.exclude)=[];
 		dates(user_options.exclude)=[];
 	end
 
@@ -80,27 +86,34 @@ for i=1:length(nervecut_files_pre)
 	params=store(motif_idx).spikes.parameters{ch_idx}{1}; 
 	padding_smps=round((options.padding-[.1 .1])*params.smooth_fs)
 
-	mu=mu(:,sz_include);
+	template_spikes_mu=template_spikes_mu(:,sz_include);
+	template_rms_mu=template_rms_mu(:,sz_include);
+
 	dates=dates(sz_include);
-	template_data=mu(:,end);
+	
+	template_spikes=template_spikes_mu(:,end);
+	template_rms=template_rms_mu(:,end);
 	template_date=dates(end);
 
 	% now get post-cut data, compare with template
 
-	clearvars store;
+	clearvars store template_spikes_mu template_rms_mu sz dates;
 
-	nervecut_files_post{i}
 	load(fullfile(dirs.agg_dir,dirs.nervecut_dir,nervecut_files_post{i}),'store');
 
-	motif_list={store(:).motif_name}
-	motif_idx=strcmp(motif_list,user_options.motif_select2)
-	ch_idx=strcmp(lower(store(motif_idx).ch_list),lower(user_options.channel))
+	motif_list={store(:).motif_name};
+	motif_idx=strcmp(motif_list,user_options.motif_select2);
+	ch_idx=strcmp(lower(store(motif_idx).ch_list),lower(user_options.channel));
 
 	% only use days with a sufficient number of trials
 
 	sz=cellfun(@(x) size(x,2),store(motif_idx).spikes.smooth_rate{ch_idx});
-	mu=cellfun(@(x) median(x,2),store(motif_idx).spikes.smooth_rate{ch_idx},'uniformoutput',false);
-	mu=cat(2,mu{:});
+	
+	spikes_mu=cellfun(@(x) median(x,2),store(motif_idx).spikes.smooth_rate{ch_idx},'uniformoutput',false);
+	rms_mu=cellfun(@(x) median(x,2),store(motif_idx).rms.data{ch_idx},'uniformoutput',false);
+	
+	spikes_mu=cat(2,spikes_mu{:});
+	rms_mu=cat(2,rms_mu{:});
 
 	% get final day from the pre-data, use to compare with the post-cut
 
@@ -112,7 +125,8 @@ for i=1:length(nervecut_files_pre)
 		user_options.exclude2(user_options.exclude2>length(sz))=[];
 		user_options.exclude2
 		sz(user_options.exclude2)=[];
-		mu(:,user_options.exclude2)=[];
+		spikes_mu(:,user_options.exclude2)=[];
+		rms_mu(:,user_options.exclude2)=[];
 		dates(user_options.exclude2)=[];
 		idx(user_options.exclude2)=[];
 	end
@@ -125,18 +139,22 @@ for i=1:length(nervecut_files_pre)
 
 	% compare mu to template mu
 
-	mu=mu(:,sz_include);
+	spikes_mu=spikes_mu(:,sz_include);
+	rms_mu=rms_mu(:,sz_include);
+
 	dates=dates(sz_include);
 	idx=idx(sz_include);
 
-	corr=zeros(size(mu,2),1);
-	ci=zeros(size(mu,2),2);
+	spikes_corr=zeros(size(spikes_mu,2),1);
+	spikes_ci=zeros(size(spikes_mu,2),2);
 	
-	for j=1:size(mu,2)
-		x1=zscore(mu(padding_smps(1):end-padding_smps(2),j));
-		x2=zscore(template_data(padding_smps(1):end-padding_smps(2)));
+	for j=1:size(spikes_mu,2)
+
+		x1=zscore(spikes_mu(padding_smps(1):end-padding_smps(2),j));
+		x2=zscore(template_spikes(padding_smps(1):end-padding_smps(2)));
+
 		norm_fact=sqrt(sum(x1.^2)*sum(x2.^2));
-		corr(j)=max(xcorr(x1,x2))./norm_fact; % convert to corr coefficient
+		spikes_corr(j)=max(xcorr(x1,x2))./norm_fact; % convert to corr coefficient
 
 		% bootstrap the correlation
 		bootval=zeros(1,options.nbootstraps);
@@ -152,23 +170,50 @@ for i=1:length(nervecut_files_pre)
 			bootval(k)=max(xcorr(tmp,x2))./norm_fact;
 		end
 
-		ci(j,:)=prctile(bootval,[99.5 .5]);
+		spikes_ci(j,:)=quantile(bootval,bootstrap_ci);
 
 	end
 
-	%figure();plot(dates,corr,'k.--');
-	%datetick('x');
-	%pause();
-	
+	rms_corr=zeros(size(rms_mu,2),1);
+	rms_ci=zeros(size(rms_mu,2),2);
+
+	for j=1:size(rms_mu,2)
+
+		x1=zscore(rms_mu(padding_smps(1):end-padding_smps(2),j));
+		x2=zscore(template_rms(padding_smps(1):end-padding_smps(2)));
+
+		norm_fact=sqrt(sum(x1.^2)*sum(x2.^2));
+		rms_corr(j)=max(xcorr(x1,x2))./norm_fact; % convert to corr coefficient
+
+		% bootstrap the correlation
+		bootval=zeros(1,options.nbootstraps);
+		bootdata=store(motif_idx).rms.data{ch_idx}{idx(j)};
+		ntrials=size(bootdata,2);
+		trial_pool=1:ntrials;
+
+		for k=1:options.nbootstraps
+			new_trials=randsample(trial_pool,ntrials,true);
+			tmp=median(bootdata(:,new_trials)');
+			tmp=zscore(tmp(padding_smps(1):end-padding_smps(2)));
+			norm_fact=sqrt(sum(tmp.^2)*sum(x2.^2));
+			bootval(k)=max(xcorr(tmp,x2))./norm_fact;
+		end
+
+		rms_ci(j,:)=quantile(bootval,bootstrap_ci);
+
+	end
+
 	dates=dates-dates(1);
 
-	corr=corr';
-	ci=ci'
-
-	store_data.corr_mu=[store_data.corr_mu corr];
-	store_data.corr_ci=[store_data.corr_ci ci];
-	store_data.days_since=[store_data.days_since dates];
-	store_data.birdid=[store_data.birdid ones(size(corr))*i];
+	NERVECUT_STATS.spikes=[NERVECUT_STATS.spikes spikes_corr'];
+	NERVECUT_STATS.spikes_ci=[NERVECUT_STATS.spikes_ci spikes_ci'];
+	
+	NERVECUT_STATS.rms=[NERVECUT_STATS.rms rms_corr'];
+	NERVECUT_STATS.rms_ci=[NERVECUT_STATS.rms_ci rms_ci'];
+	
+	NERVECUT_STATS.days_since=[NERVECUT_STATS.days_since dates];
+	NERVECUT_STATS.birdid=[NERVECUT_STATS.birdid ones(size(spikes_corr'))*i];
 
 end
 
+save(fullfile(dirs.agg_dir,dirs.fig_dir,['ephys_nervecut_stats.mat']),'NERVECUT_STATS')

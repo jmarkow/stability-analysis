@@ -1,4 +1,4 @@
-function STATS=stan_ephys_stats(EPHYS_DATA)
+function BASELINE_STATS=stan_ephys_stats(EPHYS_DATA)
 %
 % stability analysis--baseline data
 % first take all of the data from control
@@ -7,14 +7,14 @@ function STATS=stan_ephys_stats(EPHYS_DATA)
 
 % collapse data into plot-able vectors
 
-STATS.rms_corr={};
-STATS.rms_mu={};
-STATS.rms_var={};
-STATS.spikes_corr={};
-STATS.spikes_mu={};
-STATS.spikes_var={};
-STATS.threshold={};
-STATS.days_since={};
+BASELINE_STATS.rms_corr={};
+BASELINE_STATS.rms_mu={};
+BASELINE_STATS.rms_var={};
+BASELINE_STATS.spikes_corr={};
+BASELINE_STATS.spikes_mu={};
+BASELINE_STATS.spikes_var={};
+BASELINE_STATS.threshold={};
+BASELINE_STATS.days_since={};
 
 padding_smps=round([options.padding-.1]*options.spike_fs);
 
@@ -43,20 +43,22 @@ for i=1:length(EPHYS_DATA.dates)
 	rms_mu_corr=zscore(rms_mu_corr);
 	spikerate_mu_corr=zscore(spikerate_mu_corr);
 
-	STATS.rms_corr{i}=corr(rms_mu_corr);
-	STATS.spikes_corr{i}=corr(spikerate_mu_corr);
+	BASELINE_STATS.rms_corr{i}=corr(rms_mu_corr);
+	BASELINE_STATS.spikes_corr{i}=corr(spikerate_mu_corr);
 
 	% average rms, rate, rms and rate modulation
 
-	STATS.rms_mu{i}=cellfun(mufun,EPHYS_DATA.rms{i},'uniformoutput',0);
-	STATS.spikes_mu{i}=cellfun(mufun,EPHYS_DATA.spike_rate{i},'uniformoutput',0);
+	BASELINE_STATS.rms_mu{i}=cellfun(mufun,EPHYS_DATA.rms{i},'uniformoutput',0);
+	BASELINE_STATS.spikes_mu{i}=cellfun(mufun,EPHYS_DATA.spike_rate{i},'uniformoutput',0);
 
-	STATS.rms_var{i}=cellfun(varfun,EPHYS_DATA.rms{i},'uniformoutput',0);
-	STATS.spikes_var{i}=cellfun(varfun,EPHYS_DATA.spike_rate{i},'uniformoutput',0);
+	BASELINE_STATS.rms_var{i}=cellfun(varfun,EPHYS_DATA.rms{i},'uniformoutput',0);
+	BASELINE_STATS.spikes_var{i}=cellfun(varfun,EPHYS_DATA.spike_rate{i},'uniformoutput',0);
 
 	% get threshold
 
-	STATS.threshold{i}=EPHYS_DATA.spike_threshold{i};
-	STATS.days_since{i}=EPHYS_DATA.days_since{i};
+	BASELINE_STATS.threshold{i}=EPHYS_DATA.spike_threshold{i};
+	BASELINE_STATS.days_since{i}=EPHYS_DATA.days_since{i};
 
 end
+
+save(fullfile(dirs.agg_dir,dirs.fig_dir,['ephys_baseline_stats.mat']),'BASELINE_STATS')

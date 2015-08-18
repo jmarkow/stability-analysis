@@ -1,4 +1,4 @@
-function store_data=stan_compute_baseline()
+function BASELINE_DATA=stan_ephys_getdata_baseline()
 %
 % stability analysis--baseline data
 % first take all of the data from control
@@ -13,13 +13,13 @@ all_files=[control_files nervecut_files];
 file_idx=[ones(length(control_files),1);ones(length(nervecut_files),1)*2];
 file_idx=file_idx==1;
 
-store_data.dates={};
-store_data.days_since={};
-store_data.ntrials={};
-store_data.spike_rate={};
-store_data.spike_threshold={};
+BASELINE_DATA.dates={};
+BASELINE_DATA.days_since={};
+BASELINE_DATA.ntrials={};
+BASELINE_DATA.spike_rate={};
+BASELINE_DATA.spike_threshold={};
 
-store_data.rms={};
+BASELINE_DATA.rms={};
 
 padding_smps=round([options.padding-.1]*options.spike_fs);
 rem_bird=[];
@@ -134,9 +134,9 @@ for i=1:length(all_files)
 	% store data
 
 	for j=1:length(data_types)
-		store_data.(data_types{j}){i}=data.(data_types{j});
+		BASELINE_DATA.(data_types{j}){i}=data.(data_types{j});
 	end
 
 end
 
-save(fullfile(dirs.agg_dir,dirs.fig_dir,['ephys_baseline_data.mat']),'store_data')
+save(fullfile(dirs.agg_dir,dirs.fig_dir,['ephys_baseline_data.mat']),'BASELINE_DATA')
