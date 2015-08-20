@@ -1,4 +1,4 @@
-function stan_sonograms_nervecut(COLORS)
+function fig=stan_sonograms_nervecut(COLORS)
 %
 %
 %
@@ -60,7 +60,7 @@ for i=1:length(nervecut_listing)
 	[postcut.s,postcut.f,postcut.t]=zftftb_pretty_sonogram(shift_template,postcut_template.fs,'filtering',300,...
 		'clipping',[-3 2],'len',70,'overlap',69.5,'zeropad',0);
 
-	fig=figure();
+	fig.(birdid)=figure();
 	ax(1)=subplot(2,1,1);
 	imagesc(precut.t,precut.f/1e3,precut.s)
 	%ylabel('FS (kHz)');
@@ -68,6 +68,8 @@ for i=1:length(nervecut_listing)
 	set(gca,'YTick',[],'XTick',[],'TickLength',[0 0]);
 	axis xy;
 	ax(2)=subplot(2,1,2);
+	pos=get(ax(2),'position');
+	%set(ax(2),'position',[ pos(1) pos(2)+.1 pos(3:4)]);
 	imagesc(postcut.t,postcut.f/1e3,postcut.s);
 	box off;
 	set(gca,'XTick',[],'YTick',[]);
@@ -77,7 +79,8 @@ for i=1:length(nervecut_listing)
 	colormap(COLORS);
 	h=line([0 .2],[-1.5 -1.5],'linewidth',1.5,'color','k');
 	set(h,'clipping','off');
-	set(fig,'position',[300 300 500*(diff(xlim())/2) 200],'paperpositionmode','auto');
-	markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[ birdid '_nervecut_sonograms'],'eps,png,fig,pdf');
+	
+	%set(fig,'position',[300 300 500*(diff(xlim())/2) 200],'paperpositionmode','auto');
+	%markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[ birdid '_nervecut_sonograms'],'eps,png,fig,pdf');
 
 end

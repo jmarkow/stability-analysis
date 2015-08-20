@@ -132,7 +132,8 @@ for i=1:length(to_plot)
 	end
 
 	ylimits=ylim();
-	offset=1;
+	yrange=range(ylimits);
+	offset=.05*yrange; % 5 % of yrange
 
 	% boxes
 

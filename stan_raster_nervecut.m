@@ -1,4 +1,4 @@
-function stan_control_raster(COLORS)
+function fig=stan_control_raster(COLORS)
 % searches for mat files and associated log files, processes and copies to target directory
 %
 
@@ -193,7 +193,7 @@ for i=1:length(ctrl)
 	plot_spect=[plot_spect;repmat(spect,[length(ctrl(i).postcut_days) 1])];
 	plot_trials=[plot_trials;repmat(ctrl(i).postcut_trials,[length(ctrl(i).postcut_days) 1])];
 	
-	fig=figure();
+	fig.(precut_store(precut_idx).bird_id)=figure();
 	ax=stan_plot_raster_horizontal(plot_spect,plot_spikes,'plot_trials',plot_trials,'colors',COLORS,'spike_width',.01,'spike_height',.5);
 	
 	set(gca,'xtick',[]);
@@ -202,13 +202,8 @@ for i=1:length(ctrl)
 	set(h,'clipping','off');
 	xlimits=xlim();;
 	xlim([xlimits(1)+.25 xlimits(end)-.25]);
-	
-	time_range=range(xlim());
 
-	set(fig,'units','centimeters','position',[2 2 (time_range/1.5)*18 8],'paperpositionmode','auto');
 	% rms, raster
-
-	markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),['nervecut_raster_' precut_store(precut_idx).bird_id ],'eps,png,fig,pdf','renderer','painters');
-
+	%markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),['nervecut_raster_' precut_store(precut_idx).bird_id ],'eps,png,fig,pdf','renderer','painters');
 
 end

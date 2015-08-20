@@ -120,8 +120,6 @@ for i=1:length(ctrl)
 		xlim([ctrl(i).xlim]);
 	end
 
-
-
 	xlimits=get(ax(end),'xlim');
 	new_xlimits=[ round(xlimits/time_order)*time_order ];
 	span=range(new_xlimits);
@@ -132,10 +130,16 @@ for i=1:length(ctrl)
 	h=line([new_xlimits(1) new_xlimits(1)+.2],[170 170],'linewidth',1.5,'color','k');
 	set(h,'clipping','off');
 	
-	for i=1:length(ax)
-		pos=get(ax(i),'position');
-		set(ax(i),'position',[ .025 pos(2) .95 pos(4)]);
+	for j=1:length(ax)
+		pos=get(ax(j),'position');
+		set(ax(j),'position',[ .025 pos(2) .95 pos(4)]);
 	end	
+
+	% days between rasters
+	
+	days_diff=(store(idx).datenums(ch_idx,ctrl(i).days(end))-store(idx).datenums(ch_idx,ctrl(i).days(1)));
+	ylabel(['+' num2str(days_diff) ' days'])
+
 	%set(ax(end),'xtick',new_xlimits','xticklabel',new_xlimits-new_xlimits(1));
 	%set(fig,'units','inches','position',[2 2 (span/2)*4.5 4],'paperpositionmode','auto')
 	%markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),['control_raster_' store(idx).bird_id ],'eps,png,fig,pdf','renderer','painters');
