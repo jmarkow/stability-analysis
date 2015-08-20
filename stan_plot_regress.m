@@ -15,7 +15,8 @@ ylimit_rounding=1e-1;
 save_name='baseline_regression';
 [options,dirs]=stan_preflight;
 ci_inv=.01;
-shaded_conf=0;
+shaded_conf=1;
+linewidth=.5;
 markersize=30;
 
 nparams=length(varargin);
@@ -71,23 +72,27 @@ conf=t_stat*sqrt(((1/(npoints-2))*sse)*...
 
 %fig=figure();
 
+ngrps=length(unique(C))
+
 if shaded_conf
-	markolab_shadeplot(pred_x(:)',[pred_y(:)'+conf;pred_y(:)'-conf],[.8 .8 .8],'none');
+	markolab_shadeplot(pred_x(:)',[pred_y(:)'+conf;pred_y(:)'-conf],[.85 .85 .85],'none');
+	hold on;
 end
 
 scatter(X,Y,markersize,C,'markerfacecolor','flat');
 hold on;
-plot(pred_x,pred_y,'r-','linewidth',1);
+plot(pred_x,pred_y,'r-','linewidth',linewidth);
+colormap(paruly(ngrps));
 
 if ~shaded_conf
-	plot(pred_x,pred_y+conf,'r--','linewidth',1);
-	plot(pred_x,pred_y-conf,'r--','linewidth',1);
+	plot(pred_x,pred_y+conf,'r--','linewidth',linewidth);
+	plot(pred_x,pred_y-conf,'r--','linewidth',linewidth);
 end
 
 ylimits=ylim()
 ylimits=round(ylimits/ylimit_rounding)*ylimit_rounding;
 ylim(ylimits);
-
+set(gca,'layer','top');
 %set(gca,'TickDir','out','TickLength',[0 0],'ytick',[ylimits(1):.1:ylimits(2)]);
 %xlim([min(pred_x)-5 max(pred_x)+5]);
 %set(gca,'xtick',[0:20:max(pred_x)]);

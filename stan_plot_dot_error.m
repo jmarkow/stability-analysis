@@ -14,8 +14,8 @@ markersize=20;
 symbols={'o','x','s','d','*','+','p','h'};
 nparams=length(varargin);
 line_alpha=.5;
-linewidth=1;
-
+squarewidth=1;
+squareheight=.2;
 if mod(nparams,2)>0
 	error('ephysPipeline:argChk','Parameters must be specified as parameter/value pairs!');
 end
@@ -37,21 +37,21 @@ end
 
 grps=unique(C);
 ngrps=length(grps);
-cmap=parula(ngrps);
+cmap=paruly(ngrps);
 
 for i=1:length(X)
 
 	% plot confidence intervals
 	
-	h2=plot([X(i) X(i)],[CI(1,i) CI(2,i)],'k-','color',cmap(C(i),:),'linewidth',linewidth);
-	col=h2.Color;
-	h2.Color=[ col line_alpha ];
+	h2=line([X(i) X(i)],[CI(1,i) CI(2,i)],'color',cmap(C(i),:),'linewidth',.5);
 	hold on;
+	%col=h2.Color;
+	%h2.Color=[ col line_alpha ];
 
 end
 
-h=scatter(X,Y,markersize,C,'markerfacecolor','flat');
-
+h=scatter(X,Y,markersize,C,'o','markerfacecolor','flat','markeredgecolor','none');
+colormap(cmap);
 box on;
 set(gca,'TickDir','out','TickLength',[0 0]);
 

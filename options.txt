@@ -47,3 +47,16 @@ nervecut_raster2_postcut_path=/nervecut/lpi20_barecarbon_nervecut_2post_stan_wit
 nervecut_raster2_postcut_days=1
 nervecut_raster2_postcut_motif_name=motif1_postcut_fs20e3_normamp0
 nervecut_raster2_postcut_trials=[1 150]
+
+
+nervecut_raster3_channel=E1-Gnd
+nervecut_raster3_precut_path=/nervecut/lpi36_barecarbon_nervecut_1pre_stan_withinbird.mat
+nervecut_raster3_precut_days=7
+nervecut_raster3_precut_motif_name=syllableA_fs20e3_normamp0
+nervecut_raster3_precut_trials=[1 150]
+
+nervecut_raster3_postcut_path=/nervecut/lpi36_barecarbon_nervecut_2post_stan_withinbird.mat
+nervecut_raster3_postcut_days=7
+nervecut_raster3_postcut_motif_name=syllableA_postcut_fs20e3_normamp0
+nervecut_raster3_postcut_trials=[1 150]
+

@@ -1,4 +1,4 @@
-function plot_data=stan_ephys_plot(STATS)
+function fig=stan_ephys_plot(STATS)
 % ephys stats plots
 % stability analysis--baseline data
 % first take all of the data from control
@@ -11,6 +11,7 @@ ci_inv=.01; % alpha level (/2 to get two-tailed)
 ylimit_rounding=1e-1;
 r_cutoff=.4; % below this value typically due to equipment failure
 save_name='baseline_regression';
+markersize=5;
 
 % first column is days since 1, second is regression value, third is bird ID
 % remove points where x=0 (by definition == 1, artifacts appear to have r<.4)
@@ -40,24 +41,56 @@ plot_data.days_since(to_del)=[];
 plot_data.birdid(to_del)=[];
 plot_data.rms(to_del)=[];
 
+
+fontsize=7;
+
 % spike and rms plot
 
 fig=figure();
 
 ax(1)=subplot(2,1,1);
-stan_plot_regress(plot_data.days_since(:),plot_data.spikes(:),plot_data.birdid(:),'markersize',20);
-ylabel('FR correlation (R)');
-set(gca,'XTick',[],'TickLength',[0 0],'YTick',[.5:.25:1]);
+stan_plot_regress(plot_data.days_since(:),plot_data.spikes(:),plot_data.birdid(:),'markersize',markersize);
+yh=ylabel('FR corr.(R)');
+xlim([-.5 120])
+set(yh,'position',get(yh,'position')+[.2 0 0])
+set(gca,'XTick',[],'TickLength',[0 0],'YTick',[.5 1],'fontsize',fontsize);
+
+pos=get(ax(1),'position')
+asp_ratio=pos(3)/pos(4);
+width=.33;
+new_width=width/asp_ratio;
+h_offset=.28;
+v_offset=.1;
+
+new_axis(1)=axes('position',[ pos(1)+pos(3)-h_offset pos(2)+pos(4)-v_offset width new_width ]);
+stan_plot_regress(plot_data.days_since(:),plot_data.spikes(:),plot_data.birdid(:),'markersize',markersize);
+xlim([-.2 20.2]);
+ylim([.5 1]);
+set(gca,'XTick',[0 20],'YTick',[],'TickDir','out','TickLength',[ 0 0 ],'fontsize',fontsize);
 
 ax(2)=subplot(2,1,2);
-stan_plot_regress(plot_data.days_since(:),plot_data.rms(:),plot_data.birdid(:),'markersize',20);
-ylabel('RMS correlation (R)');
+stan_plot_regress(plot_data.days_since(:),plot_data.rms(:),plot_data.birdid(:),'markersize',markersize);
+yh=ylabel('RMS corr.(R)');
+xlim([-.5 120]);
+set(yh,'position',get(yh,'position')+[.2 .05 0])
 xlabel('Days');
-set(gca,'TickLength',[0 0],'YTick',[.5:.25:1]);
+set(gca,'TickLength',[0 0],'YTick',[.5 1],'fontsize',fontsize);
 ylim([.5 1]);
-linkaxes(ax,'xy');
 
-set(fig,'position',[200 200 150 300],'paperpositionmode','auto');
-markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[save_name],'eps,fig,png,pdf','renderer','painters');
-save(fullfile(dirs.agg_dir,dirs.fig_dir,[ save_name '.mat']),'plot_data');
+pos=get(ax(2),'position')
+
+new_axis(2)=axes('position',[ pos(1)+pos(3)-h_offset pos(2)+pos(4)-v_offset width new_width ]);
+stan_plot_regress(plot_data.days_since(:),plot_data.rms(:),plot_data.birdid(:),'markersize',markersize);
+xlim([-.2 20.2]);
+ylim([.5 1]);
+set(gca,'XTick',[0 20],'YTick',[],'TickDir','out','TickLength',[ 0 0 ],'fontsize',fontsize);
+
+linkaxes(ax,'xy');
+linkaxes(new_axis,'xy');
+linkaxes([ax(:);new_axis(:)],'y');
+
+
+%set(fig,'units','centimeters','position',[3 3 8 13],'paperpositionmode','auto');
+%markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[save_name],'eps,fig,png,pdf','renderer','painters');
+%save(fullfile(dirs.agg_dir,dirs.fig_dir,[ save_name '.mat']),'plot_data');
 

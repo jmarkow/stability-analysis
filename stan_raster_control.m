@@ -1,7 +1,10 @@
-function stan_control_raster()
+function fig=stan_control_raster(COLORS)
 % searches for mat files and associated log files, processes and copies to target directory
 %
 
+if nargin<1
+	COLORS='jet';
+end
 time_order=1e-2;
 % get options
 
@@ -59,44 +62,82 @@ for i=1:length(ctrl)
 	ch_idx=find(strcmp(lower(ctrl(i).channel),lower(ch_list)));
 
 	plot_spikes=struct();
-
+	plot_trials=ctrl(i).trials;
+	
 	for j=1:length(ctrl(i).days)
 
 		plot_spikes(j).trial=store(idx).spikes.trial{ch_idx}{ctrl(i).days(j)};
 		plot_spikes(j).times=store(idx).spikes.times{ch_idx}{ctrl(i).days(j)};
 		plot_spikes(j).threshold=store(idx).spikes.threshold{ch_idx}{ctrl(i).days(j)};
 		plot_spikes(j).fs=store(idx).spikes.parameters{ch_idx}{ctrl(i).days(j)}.spike_fs;
+		plot_spikes(j).smooth_rate=store(idx).spikes.smooth_rate{ch_idx}{ctrl(i).days(j)};
+
+		r=corr(zscore(plot_spikes(j).smooth_rate(100:end-100,:)));
+
+		% find good case, mean r > .4
+	
+		r_vec=mean(r,2);
+		[~,good_trial]=max(r_vec);
+		r_check=r(good_trial,:);
+		outliers=find(r_check<(mean(r_check)-.3*(std(r_check))));
+		fr_check=mean(plot_spikes(j).smooth_rate);
+		outliers2=find(fr_check>(mean(fr_check)+1*(std(fr_check))));
+		outliers3=find(fr_check<(mean(fr_check)-1*(std(fr_check))));
+		outliers=unique([outliers(:);outliers2(:);outliers3(:)]);
+
+		outlier_idx=[];
+
+		for k=1:length(outliers)
+			outlier_idx=[outlier_idx find(plot_spikes(j).trial==outliers(k))];
+		end
+
+		plot_spikes(j).trial(outlier_idx)=[];
+		plot_spikes(j).times(outlier_idx)=[];
+
+		uniq_trials=unique(plot_spikes(j).trial);
+
+		for k=1:length(uniq_trials)
+			% correct trials 
+
+			correction=sum(outliers<uniq_trials(k));
+			new_idx=(plot_spikes(j).trial==uniq_trials(k));
+			plot_spikes(j).trial(new_idx)=plot_spikes(j).trial(new_idx)-correction;
+
+		end
 
 	end
 
 	% spike raster
 
-	plot_trials=ctrl(i).trials;
 
-
-	fig=figure('units','inches','paperpositionmode','auto','position',[2 2 3 4]);
-	ax=stan_songalign_raster(spect,plot_spikes,'spike_height',.5,'spike_width',1,'plot_trials',plot_trials);
+	% remove outliers
+	
+	fig.(store(idx).bird_id)=figure();
+	ax=stan_plot_raster(spect,plot_spikes,'spike_height',.5,'spike_width',.01,'plot_trials',plot_trials,'colors',COLORS);
 	
 	if isfield(ctrl(i),'xlim') & ~isempty(ctrl(i).xlim)
 		xlimits=ctrl(i).xlim;
 		xlim([ctrl(i).xlim]);
 	end
 
-	xlimits=get(ax(end),'xlim')
-	new_xlimits=[ round(xlimits/time_order)*time_order ]
+
+
+	xlimits=get(ax(end),'xlim');
+	new_xlimits=[ round(xlimits/time_order)*time_order ];
+	span=range(new_xlimits);
 	xlim([new_xlimits]);
-
-	set(ax(end),'xtick',new_xlimits','xticklabel',new_xlimits-new_xlimits(1));
-
-
-	% set ticks for pub
-
-	% smooth rate, raster
-
-
-
-
-	% rms, raster
-
+	set(ax(3),'xtick',[]);
+	set(ax(2),'ylim',[1 150]);
+	set(ax(3),'ylim',[1 150]);
+	h=line([new_xlimits(1) new_xlimits(1)+.2],[170 170],'linewidth',1.5,'color','k');
+	set(h,'clipping','off');
+	
+	for i=1:length(ax)
+		pos=get(ax(i),'position');
+		set(ax(i),'position',[ .025 pos(2) .95 pos(4)]);
+	end	
+	%set(ax(end),'xtick',new_xlimits','xticklabel',new_xlimits-new_xlimits(1));
+	%set(fig,'units','inches','position',[2 2 (span/2)*4.5 4],'paperpositionmode','auto')
+	%markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),['control_raster_' store(idx).bird_id ],'eps,png,fig,pdf','renderer','painters');
 
 end

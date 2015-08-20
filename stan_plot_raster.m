@@ -13,6 +13,7 @@ fs=[];
 spike_width=1;
 spike_height=.3;
 plot_trials=[];
+time_bar=.2;
 
 if mod(nparams,2)>0
 	error('ephysPipeline:argChk','Parameters must be specified as parameter/value pairs!');
@@ -26,12 +27,14 @@ for i=1:2:nparams
 			name=varargin{i+1};
 		case 'fs'
 			fs=varargin{i+1};
-        	case 'spike_width'
-            		spike_width=varargin{i+1};
-        	case 'spike_height'
-            		spike_height=varargin{i+1};
+		case 'spike_width'
+			spike_width=varargin{i+1};
+		case 'spike_height'
+			spike_height=varargin{i+1};
 		case 'plot_trials'
 			plot_trials=varargin{i+1};
+		case 'time_bar'
+			time_bar=varargin{i+1};
 	end
 end
 
@@ -48,10 +51,10 @@ colormap(colors);
 axis xy;
 box off;
 set(gca,'TickDir','out','TickLength',[0 0]);
-ylim([0 9]);
-set(gca,'YTick',[0 9],'XTick',[]);
+ylim([0 10]);
+set(gca,'YTick',[],'XTick',[]);
 title([name]);
-ylabel('Fs (kHz)');
+%ylabel('Fs (kHz)');
 
 if length(SPIKES)>1
 	for i=1:length(SPIKES)
@@ -83,16 +86,11 @@ if length(SPIKES)>1
 			ylimits=ylim();
 		end
 		box off;
-		set(gca,'ydir','rev','ytick',ylimits,'yticklabel',ylimits-(ylimits(1)-1),'tickdir','out','ticklength',[0 0]);
+		set(gca,'ydir','rev','ytick',[],'yticklabel',ylimits-(ylimits(1)-1),'tickdir','out','ticklength',[0 0]);
 
-
-
-		if i==length(SPIKES)
-			xlabel('Time (s)');
-		else
+		if i<length(SPIKES)
 			set(gca,'xtick',[]);
 		end
-
 	end
 else
 
@@ -118,15 +116,14 @@ else
 			ylimits=ylim();
 		end
 		box off;
-		set(gca,'ydir','rev','ytick',ylimits,'tickdir','out','ticklength',[0 0]);
-
-		xlabel('Time (s)');
+		set(gca,'ydir','rev','ytick',[],'tickdir','out','ticklength',[0 0]);
+		%xlabel('Time (s)');
 		linkaxes(ax,'x');
 
 end
 
+ylimits=ylim();
+ylim_range=range(ylimits);
+ylimits(2)+ylim_range*.01;
 linkaxes(ax,'x');
 xlim([SPECT.t(1) SPECT.t(end)]);
-
-%pos=get(gcf,'position')
-%set(gcf,'position',[ pos(1) pos(2) pos(3) pos(4) ]); % scale height

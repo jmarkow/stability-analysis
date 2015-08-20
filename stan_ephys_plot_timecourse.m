@@ -1,7 +1,17 @@
-function stan_ephys_plot(STATS)
+function fig=stan_ephys_plot(STATS)
 % ephys stats plots
 % stability analysis--baseline data
 % first take all of the data from control
+
+fontsize=7;
+
+offset1=14;
+offset2=72;
+
+break1=32;
+break2=41;
+
+markersize=10;
 
 [options,dirs]=stan_preflight;
 
@@ -78,7 +88,7 @@ end
 
 birdid=tmp;
 birds=unique(tmp);
-cmap=parula(length(birds));
+cmap=paruly(length(birds));
 
 breaks=[];
 
@@ -89,11 +99,7 @@ idx2=find(days_since>100);
 
 % translocate 49 to 35
 
-offset1=14;
-offset2=72;
 
-break1=32;
-break2=41;
 
 days_since(idx1)=days_since(idx1)-offset1;
 days_since(idx2)=days_since(idx2)-offset2;
@@ -116,8 +122,9 @@ for i=1:length(to_plot)
 		hold on;
 	end
 
-	stan_plot_dot_error(days_since,plot_stats.(to_plot{i}).mu,plot_stats.(to_plot{i}).mu_ci,birdid);
-	ylabel(y_labels{i});
+	stan_plot_dot_error(days_since,plot_stats.(to_plot{i}).mu,plot_stats.(to_plot{i}).mu_ci,birdid,'markersize',markersize);
+	yh=ylabel(y_labels{i});
+	%set(yh,'position',get(yh,'position')+[ 0 0]);
 	if i==length(to_plot)
 		xlabel('Days');
 	else
@@ -125,22 +132,64 @@ for i=1:length(to_plot)
 	end
 
 	ylimits=ylim();
-	offset=eps;
+	offset=1;
 
-	h=patch([ break1 break1+1 break1+1 break1 ],...
-		[ ylimits(2)+offset ylimits(2)+offset ylimits(1)-offset ylimits(1)-offset ],1,'facecolor',[1 1 1],'edgecolor','k');
-	h=patch([ break2 break2+1 break2+1 break2 ],...
-		[ ylimits(2)+offset ylimits(2)+offset ylimits(1)-offset ylimits(1)-offset ],1,'facecolor',[1 1 1],'edgecolor','k');
+	% boxes
+
+	%h=patch([ break1 break1+1 break1+1 break1 ],...
+	%	[ ylimits(2)+offset ylimits(2)+offset ylimits(1)-offset ylimits(1)-offset ],1,'facecolor',[1 1 1],'edgecolor','none');
+	%h2=patch([ break2 break2+1 break2+1 break2 ],...
+	%	[ ylimits(2)+offset ylimits(2)+offset ylimits(1)-offset ylimits(1)-offset ],1,'facecolor',[1 1 1],'edgecolor','none');
+	%set(h2,'clipping','off');
+	%set(h,'clipping','off');
+	
+	
+	%plot([break1 break1],ylimits,'k-');
+	%plot([break1+1 break1+1],ylimits,'k-');
+
+	%plot([break2 break2],ylimits,'k-');
+	%plot([break2+1 break2+1],ylimits,'k-');
+	
 	ylim([ylimits]);
 
+	% plot lines on top of white patches to indicate breaks
+
+	% wavy lines
+
+	splitwidth=1;
+	theta = linspace(0,2*pi,100);
+	amp = splitwidth/2 * 0.9;
+    x1= amp * sin(theta) + break1;
+	x2= amp * sin(theta) + break1+1;
+	ypoints=linspace(ylimits(1)-offset,ylimits(2)+offset,100);
+
+	h=patch([x1 fliplr(x2)],[ypoints fliplr(ypoints)],1,'facecolor',[1 1 1],'edgecolor','none');
+
+	plot(x1,ypoints,'k-');
+	plot(x2,ypoints,'k-');
+
+	x1= amp * sin(theta) + break2;
+	x2= amp * sin(theta) + break2+1;
+
+	h2=patch([x1 fliplr(x2)],[ypoints fliplr(ypoints)],1,'facecolor',[1 1 1],'edgecolor','none');
+
+	set(h,'clipping','off');
+	set(h2,'clipping','off');
+	set(gca,'clipping','off');
+	plot(x1,ypoints,'k-');
+	plot(x2,ypoints,'k-');
+
+
 	if i==length(to_plot)
-		set(gca,'XTick',[0 5 10 15 20 25 30 33 38 42],'XTickLabel',[0:5:30 [33 38]+offset1 42+offset2]);
+		set(gca,'XTick',[0 5 10 15 20 25 33 42],'XTickLabel',[0:5:30 33+offset1 42+offset2]);
 	end
 
+	set(gca,'fontsize',fontsize,'ytick',[ylimits(1) range(ylimits)/2+ylimits(1) ylimits(2)],'layer','bottom');
 end
 
 linkaxes(ax,'x');
 xlim([-1 47]);
 
-set(fig,'position',[200 200 560 420],'paperpositionmode','auto');
-markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[ 'signal_timecourse' ],'eps,fig,png,pdf','renderer','painters');
+
+%set(fig,'units','centimeters','position',[3 3 8 12],'paperpositionmode','auto');
+%markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[ 'signal_timecourse' ],'eps,fig,png,pdf','renderer','painters');

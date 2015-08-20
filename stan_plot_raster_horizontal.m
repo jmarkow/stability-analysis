@@ -43,23 +43,18 @@ ax=[];
 
 for i=1:length(SPECT)
 
-	idx=((i-1)*2)+1;
+	idx=((i-1)*2)+1
 	ax(idx)=subplot(nrows,2,idx);
 	imagesc(SPECT(i).t,SPECT(i).f/1e3,SPECT(i).s);
 	colormap(colors);
 	axis xy;
 	box off;
 	set(gca,'TickDir','out','TickLength',[0 0]);
-	ylim([0 9]);
-	set(gca,'YTick',[0 9],'XTick',[]);
+	ylim([0 10]);
+	set(gca,'YTick',[0 10],'XTick',[]);
 	title([name]);
+	set(gca,'YTick',[]);
 	
-	if y_label
-		ylabel('kHz');
-	else
-		set(gca,'YTick',[]);
-	end
-
 	if isempty(fs)
 		spike_fs=SPIKES(i).fs;
 	else
@@ -84,7 +79,7 @@ for i=1:length(SPECT)
 
 	box off;
 
-	set(gca,'ydir','rev','ytick',ylimits,'tickdir','out','ticklength',[0 0]);
+	set(gca,'ydir','rev','ytick',[],'tickdir','out','ticklength',[0 0]);
 	linkaxes(ax,'x');
 
 	if ~y_label
