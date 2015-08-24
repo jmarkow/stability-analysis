@@ -100,7 +100,7 @@ xlimits=xlim();
 hold on;
 h=plot([xlimits],[0 0],'k-');
 uistack(h,'bottom');
-ylim([-6 8]);
+ylim([-10 10]);
 ylimits=ylim();
 set(gca,'YTick',[ylimits(1) 0 ylimits(2)]);
 ylabel('\langleFeature\rangle (Z)')
@@ -113,6 +113,7 @@ hold on;
 h=plot([xlimits],[0 0],'k-');
 uistack(h,'bottom');
 ylabel('\sigma(Feature) (Z)');
+ylim([-13 8]);
 ylimits=ylim();
 set(gca,'YTick',[ylimits(1) 0 ylimits(2)]);
 % rectify
@@ -189,7 +190,7 @@ for i=length(h.whisk)-1:-2:(length(h.whisk)/2+1)
 end
 
 
-ylim([-.1 8]);
+ylim([-.1 9]);
 set(gca,'XTick',new_pos,'XTickLabel',plot_labels,'TickDir','out','TickLength',[0 0]);
 ylabel('Abs. change (Z)');
 %set(fig,'position',[200 200 180 180],'paperpositionmode','auto');

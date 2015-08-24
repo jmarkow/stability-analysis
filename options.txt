@@ -16,10 +16,13 @@ control_raster2_xlim=[.12 .95]
 # padding for all extractions
 
 spike_fs=500
+lfp_fs=250
 padding=[.3 .3]
+padding_lfp=[.2 .2]
 audio_trial_limit=100
 audio_amp_thresh=0
 ephys_trial_limit=60
+lfp_trial_limit=200
 nbootstraps=1000
 bootstrap_alpha=.01
 

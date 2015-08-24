@@ -4,7 +4,6 @@ function NERVECUT_STATS=stan_compute_baseline()
 % first take all of the data from control
 
 [options,dirs]=stan_preflight;
-
 tmp=dir(fullfile(dirs.agg_dir,dirs.nervecut_dir,'*.mat'));
 nervecut_files_pre={tmp(1:2:end).name};
 nervecut_files_post={tmp(2:2:end).name};
@@ -43,6 +42,27 @@ for i=1:length(nervecut_files_pre)
 	end
 
 	user_options=def_options;
+
+
+	% align audio
+
+	load(fullfile(dirs.agg_dir,dirs.template_dir,[ bird_name '_' user_options.motif_select1 '.mat']),'template');
+	precut_template=template;
+
+	load(fullfile(dirs.agg_dir,dirs.template_dir,[ bird_name '_' user_options.motif_select2 '.mat']),'template');
+	postcut_template=template;
+
+	[shift,shift_id]=stan_get_offset(precut_template.data,postcut_template.data,'fs',precut_template.fs,'audio_proc',1,'rms_tau',.05);
+	shift_template=postcut_template.data;
+
+	precut_len=length(precut_template.data);
+	postcut_len=length(postcut_template.data);
+
+	% round shift to spike_fs
+	
+	shift_t=shift/precut_template.fs;
+	shift=round(shift_t*options.spike_fs);
+	
 
 	% match motif, channel, compute stats
 
@@ -84,7 +104,7 @@ for i=1:length(nervecut_files_pre)
 	% take an extra 100 ms 
     
 	params=store(motif_idx).spikes.parameters{ch_idx}{1}; 
-	padding_smps=round((options.padding-[.1 .1])*params.smooth_fs)
+	padding_smps=round((options.padding*params.smooth_fs))
 
 	template_spikes_mu=template_spikes_mu(:,sz_include);
 	template_rms_mu=template_rms_mu(:,sz_include);
@@ -93,7 +113,7 @@ for i=1:length(nervecut_files_pre)
 	
 	template_spikes=template_spikes_mu(:,end);
 	template_rms=template_rms_mu(:,end);
-	template_date=dates(end);
+	template_date=dates(end);	
 
 	% now get post-cut data, compare with template
 
@@ -147,11 +167,30 @@ for i=1:length(nervecut_files_pre)
 
 	spikes_corr=zeros(size(spikes_mu,2),1);
 	spikes_ci=zeros(size(spikes_mu,2),2);
-	
+
+	template_spikes=template_spikes(padding_smps(1):end-padding_smps(2));
+	spikes_mu=spikes_mu(padding_smps(1):end-padding_smps(2),:);
+	template_rms=template_rms(padding_smps(1):end-padding_smps(2));
+	rms_mu=rms_mu(padding_smps(1):end-padding_smps(2),:);
+
+	% shift
+
+	if shift==0
+		shift=1;
+	end
+
+	if shift_id==1 
+		template_spikes=template_spikes(shift:shift+size(spikes_mu,1)-1);
+		template_rms=template_rms(shift:shift+size(rms_mu,1)-1);
+	else
+		spikes_mu=spikes_mu(shift:shift+length(template_spikes)-1,:);
+		rms_mu=rms_mu(shift:shift+length(template_rms)-1,:);
+	end
+
 	for j=1:size(spikes_mu,2)
 
-		x1=zscore(spikes_mu(padding_smps(1):end-padding_smps(2),j));
-		x2=zscore(template_spikes(padding_smps(1):end-padding_smps(2)));
+		x1=zscore(spikes_mu(:,j));
+		x2=zscore(template_spikes);
 
 		norm_fact=sqrt(sum(x1.^2)*sum(x2.^2));
 		spikes_corr(j)=max(xcorr(x1,x2))./norm_fact; % convert to corr coefficient
@@ -159,13 +198,19 @@ for i=1:length(nervecut_files_pre)
 		% bootstrap the correlation
 		bootval=zeros(1,options.nbootstraps);
 		bootdata=store(motif_idx).spikes.smooth_rate{ch_idx}{idx(j)};
+
+		bootdata=bootdata(padding_smps(1):end-padding_smps(2),:);
+		
+		if shift_id==2
+			bootdata=bootdata(shift:shift+length(template_spikes-1),:);
+		end
+
 		ntrials=size(bootdata,2);
 		trial_pool=1:ntrials;
 
 		for k=1:options.nbootstraps
 			new_trials=randsample(trial_pool,ntrials,true);
-			tmp=median(bootdata(:,new_trials)');
-			tmp=zscore(tmp(padding_smps(1):end-padding_smps(2)));
+			tmp=zscore(median(bootdata(:,new_trials)'));
 			norm_fact=sqrt(sum(tmp.^2)*sum(x2.^2));
 			bootval(k)=max(xcorr(tmp,x2))./norm_fact;
 		end
@@ -179,8 +224,8 @@ for i=1:length(nervecut_files_pre)
 
 	for j=1:size(rms_mu,2)
 
-		x1=zscore(rms_mu(padding_smps(1):end-padding_smps(2),j));
-		x2=zscore(template_rms(padding_smps(1):end-padding_smps(2)));
+		x1=zscore(rms_mu(:,j));
+		x2=zscore(template_rms);
 
 		norm_fact=sqrt(sum(x1.^2)*sum(x2.^2));
 		rms_corr(j)=max(xcorr(x1,x2))./norm_fact; % convert to corr coefficient
@@ -188,13 +233,20 @@ for i=1:length(nervecut_files_pre)
 		% bootstrap the correlation
 		bootval=zeros(1,options.nbootstraps);
 		bootdata=store(motif_idx).rms.data{ch_idx}{idx(j)};
+
+		bootdata=bootdata(padding_smps(1):end-padding_smps(2),:);
+		
+		if shift_id==2
+			bootdata=bootdata(shift:shift+length(template_rms-1),:);
+		end
+
+
 		ntrials=size(bootdata,2);
 		trial_pool=1:ntrials;
 
 		for k=1:options.nbootstraps
 			new_trials=randsample(trial_pool,ntrials,true);
-			tmp=median(bootdata(:,new_trials)');
-			tmp=zscore(tmp(padding_smps(1):end-padding_smps(2)));
+			tmp=zscore(median(bootdata(:,new_trials)'));
 			norm_fact=sqrt(sum(tmp.^2)*sum(x2.^2));
 			bootval(k)=max(xcorr(tmp,x2))./norm_fact;
 		end

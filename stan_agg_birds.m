@@ -1,8 +1,11 @@
-function stan_agg_birds()
+function stan_agg_birds(SAVE_DIR)
 % searches for mat files and associated log files, processes and copies to target directory
 %
 
-save_dir='mu_agg';
+if nargin<1 | isempty(SAVE_DIR)
+	SAVE_DIR='mu_agg';
+end
+
 max_depth=4;
 
 % get options
@@ -12,12 +15,12 @@ filenames=robofinch_dir_recurse(pwd,'*stan_withinbird.mat',max_depth);
 
 % all proc data goes into the same directory
 
-save_dir=fullfile(dirs.agg_dir,save_dir);
-if ~exist(save_dir,'dir'), mkdir(save_dir); end
+SAVE_DIR=fullfile(dirs.agg_dir,SAVE_DIR);
+if ~exist(SAVE_DIR,'dir'), mkdir(SAVE_DIR); end
 
 for i=1:length(filenames)
 
 	disp([filenames(i).name]);
-	copyfile(filenames(i).name,save_dir);
+	copyfile(filenames(i).name,SAVE_DIR);
 
 end

@@ -15,8 +15,8 @@ t_bins=[]; % bins for the baseline data to compute prctile, etc.
 h_offset=.28;
 v_offset=.095;
 width=.35;
-shade_color=[.7 .7 .85];
-
+shade_color=[.85 .65 .65];
+save_name=['baseline_comparison_stats'];
 % first column is days since 1, second is regression value, third is bird ID
 % remove points where x=0 (by definition == 1, artifacts appear to have r<.4)
 
@@ -150,7 +150,7 @@ for ii=1:2
 
 	% plot everything
 
-	area(xdata,ydata(2,:),1,'facecolor',shade_color,'edgecolor','none');
+	area(xdata,ydata(2,:),0,'facecolor',shade_color,'edgecolor','none');
 	%markolab_shadeplot(xdata,ydata,shade_color,'none');
 	hold on;
 	plot(xdata,ydata_line,'k-','linewidth',1)
@@ -159,7 +159,7 @@ for ii=1:2
 	stan_plot_dot_error(NERVECUT.days_since,NERVECUT.(condition{ii}),NERVECUT.([condition{ii} '_ci']),NERVECUT.birdid,...
 		'markersize',10);
 	ylim([0 1]);
-	ylabel([ condition{ii} ' correlation (R) ']);
+	ylabel([ condition{ii} ' (R)']);
 
 	if ii==2
 		xlabel('Days');
@@ -175,13 +175,13 @@ for ii=1:2
 
 	new_axis(ii)=axes('position',[ pos(1)+pos(3)-h_offset pos(2)+pos(4)-v_offset width new_width ]);
 	%markolab_shadeplot(xdata,ydata,shade_color,'none');
-	area(xdata,ydata(2,:),1,'facecolor',shade_color,'edgecolor','none');
+	area(xdata,ydata(2,:),0,'facecolor',shade_color,'edgecolor','none');
 	hold on;
 	plot(xdata,ydata_line,'k-','linewidth',1)
 	plot(xdata_boundary,ydata_boundary,'k-','linewidth',1);
 	stan_plot_dot_error(NERVECUT.days_since,NERVECUT.(condition{ii}),NERVECUT.([condition{ii} '_ci']),NERVECUT.birdid,...
 		'markersize',10);
-	set(gca,'layer','top')
+	set(gca,'layer','top','ytick',[])
 	ylim([0 1]);
 	xlim([-1 40]);
 
@@ -200,6 +200,6 @@ set(new_axis(1),'xlim',[-2 40]);
 
 % do we want to highlight p<.01 with Bonferonni?
 
-markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),'baseline_nervecut_comparison','eps,fig,png,pdf','renderer','painters');
-%save(fullfile(dirs.agg_dir,dirs.fig_dir,[ save_name '.mat']),'baseline_data');
+%markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),'baseline_nervecut_comparison','eps,fig,png,pdf','renderer','painters');
+save(fullfile(dirs.agg_dir,dirs.fig_dir,[ save_name '.mat']),'baseline_data','p');
 

@@ -45,19 +45,22 @@ for i=1:length(nervecut_listing)
 	postcut_template=template;
 	clearvars template;
 
-	shift=stan_get_offset(precut_template.data,postcut_template.data,'fs',precut_template.fs,'audio_proc',1,'rms_tau',.05);
+	[shift,id]=stan_get_offset(precut_template.data,postcut_template.data,'fs',precut_template.fs,'audio_proc',1,'rms_tau',.05);
 	shift_template=postcut_template.data;
 
-	if shift<0
-		shift_template(1:-shift)=[];
-	elseif shift>0
-		shift_template(end-shift:end)=[];
+	precut_len=length(precut_template.data);
+	postcut_len=length(postcut_template.data);
+
+	if id==1
+		precut_template.data=precut_template.data(shift:shift+length(postcut_template.data)-1);
+	else
+		postcut_template.data=postcut_template.data(shift:shift+length(precut_template.data)-1);
 	end
 
 	[precut.s,precut.f,precut.t]=zftftb_pretty_sonogram(precut_template.data,precut_template.fs,'filtering',300,...
 		'clipping',[-3 2],'len',70,'overlap',69.5,'zeropad',0);
 
-	[postcut.s,postcut.f,postcut.t]=zftftb_pretty_sonogram(shift_template,postcut_template.fs,'filtering',300,...
+	[postcut.s,postcut.f,postcut.t]=zftftb_pretty_sonogram(postcut_template.data,postcut_template.fs,'filtering',300,...
 		'clipping',[-3 2],'len',70,'overlap',69.5,'zeropad',0);
 
 	fig.(birdid)=figure();
@@ -79,7 +82,7 @@ for i=1:length(nervecut_listing)
 	colormap(COLORS);
 	h=line([0 .2],[-1.5 -1.5],'linewidth',1.5,'color','k');
 	set(h,'clipping','off');
-	
+
 	%set(fig,'position',[300 300 500*(diff(xlim())/2) 200],'paperpositionmode','auto');
 	%markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),[ birdid '_nervecut_sonograms'],'eps,png,fig,pdf');
 

@@ -1,4 +1,4 @@
-function [SIG2_SHIFT]=stan_get_offset(SIG1,SIG2,varargin)
+function [SHIFT,ID]=stan_get_offset(SIG1,SIG2,varargin)
 %
 %
 %
@@ -34,17 +34,49 @@ rms_filt=ones(rms_smps,1)/rms_smps;
 [b,a]=ellip(3,.2,40,[song_band]/(fs/2),'bandpass');
 
 if audio_proc
-	pow1=filtfilt(b,a,SIG1).^2;
-	pow2=filtfilt(b,a,SIG2).^2;
-	rms1=sqrt(filter(rms_filt,1,pow1));
-	rms2=sqrt(filter(rms_filt,1,pow2));
+	pow{1}=filtfilt(b,a,SIG1).^2;
+	pow{2}=filtfilt(b,a,SIG2).^2;
+	rms{1}=sqrt(filter(rms_filt,1,pow{1}));
+	rms{2}=sqrt(filter(rms_filt,1,pow{2}));
 else
-	rms1=SIG1;
-	rms2=SIG2;
+	rms{1}=SIG{1};
+	rms{2}=SIG{2};
 end
 
-[c,lags]=xcorr(zscore(rms1),zscore(rms2));
+[c,lags]=xcorr(zscore(rms{1}),zscore(rms{2}));
 [~,loc]=max(c);
 lag2=lags(loc);
 
-SIG2_SHIFT=lag2;
+% which signal is smaller
+
+len(1)=length(SIG1);
+len(2)=length(SIG2);
+
+[~,template]=min(len)
+[~,compare]=max(len);
+
+% slide template over other signal
+
+step_size=1;
+
+len1=len(template);
+len2=len(compare);
+
+template_rms=rms{template};
+compare_rms=rms{compare};
+
+steps=1:len2-len1;
+dist=zeros(1,length(steps));
+
+for i=1:length(steps)
+	% euclidean distance match
+
+	dist(i)=sum(abs(template_rms-compare_rms(i:i+len1-1)));
+	
+end
+
+ID=compare;
+[~,SHIFT]=min(dist)
+
+
+
