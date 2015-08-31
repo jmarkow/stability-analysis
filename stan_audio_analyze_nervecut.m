@@ -21,7 +21,8 @@ listing={listing(:).name};
 post_z=struct();
 
 for i=1:length(listing)	
-	
+
+	listing{i}	
 	load(fullfile(feature_dir,listing{i}),'pre_features','post_features');
 
 	feature_names=fieldnames(pre_features);

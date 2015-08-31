@@ -50,10 +50,10 @@ fig=figure();
 
 ax(1)=subplot(2,1,1);
 stan_plot_regress(plot_data.days_since(:),plot_data.spikes(:),plot_data.birdid(:),'markersize',markersize);
-yh=ylabel('FR corr.(R)');
+yh=ylabel('FR');
 xlim([-.5 120])
-set(yh,'position',get(yh,'position')+[.2 0 0])
-set(gca,'XTick',[],'TickLength',[0 0],'YTick',[.5 1],'fontsize',fontsize);
+set(yh,'position',get(yh,'position')+[.2 -.2 0])
+set(gca,'XTick',[],'TickLength',[0 0],'YTick',[0 1],'fontsize',fontsize);
 
 pos=get(ax(1),'position')
 asp_ratio=pos(3)/pos(4);
@@ -65,29 +65,30 @@ v_offset=.1;
 new_axis(1)=axes('position',[ pos(1)+pos(3)-h_offset pos(2)+pos(4)-v_offset width new_width ]);
 stan_plot_regress(plot_data.days_since(:),plot_data.spikes(:),plot_data.birdid(:),'markersize',markersize);
 xlim([-.2 20.2]);
-ylim([.5 1]);
+ylim([0 1]);
 set(gca,'XTick',[0 20],'YTick',[],'TickDir','out','TickLength',[ 0 0 ],'fontsize',fontsize);
 
 ax(2)=subplot(2,1,2);
 stan_plot_regress(plot_data.days_since(:),plot_data.rms(:),plot_data.birdid(:),'markersize',markersize);
-yh=ylabel('RMS corr.(R)');
+yh=ylabel('RMS');
 xlim([-.5 120]);
-set(yh,'position',get(yh,'position')+[.2 .05 0])
+set(yh,'position',get(yh,'position')+[.2 -.2 0])
 xlabel('Days');
-set(gca,'TickLength',[0 0],'YTick',[.5 1],'fontsize',fontsize);
-ylim([.5 1]);
+set(gca,'TickLength',[0 0],'YTick',[0 1],'fontsize',fontsize);
+ylim([0 1]);
 
 pos=get(ax(2),'position')
 
 new_axis(2)=axes('position',[ pos(1)+pos(3)-h_offset pos(2)+pos(4)-v_offset width new_width ]);
 stan_plot_regress(plot_data.days_since(:),plot_data.rms(:),plot_data.birdid(:),'markersize',markersize);
 xlim([-.2 20.2]);
-ylim([.5 1]);
+ylim([0 1]);
 set(gca,'XTick',[0 20],'YTick',[],'TickDir','out','TickLength',[ 0 0 ],'fontsize',fontsize);
 
 linkaxes(ax,'xy');
 linkaxes(new_axis,'xy');
 linkaxes([ax(:);new_axis(:)],'y');
+ylim([0 1]);
 
 
 %set(fig,'units','centimeters','position',[3 3 8 13],'paperpositionmode','auto');

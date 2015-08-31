@@ -19,10 +19,11 @@ spike_fs=500
 lfp_fs=250
 padding=[.3 .3]
 padding_lfp=[.2 .2]
+padding_su=[.2 .2]
 audio_trial_limit=100
 audio_amp_thresh=0
 ephys_trial_limit=60
-lfp_trial_limit=200
+lfp_trial_limit=100
 nbootstraps=1000
 bootstrap_alpha=.01
 
@@ -62,4 +63,24 @@ nervecut_raster3_postcut_path=/nervecut/lpi36_barecarbon_nervecut_2post_stan_wit
 nervecut_raster3_postcut_days=7
 nervecut_raster3_postcut_motif_name=syllableA_postcut_fs20e3_normamp0
 nervecut_raster3_postcut_trials=[1 150]
+
+lfp_example1_path=/lfp_data/lhp33_hvc_stan_withinbird.mat
+lfp_example1_channel=6
+#lfp_example1_days=[11 146 198 284]
+lfp_example1_days=[11 89 198 284]
+lfp_example1_motif_name=motif1_padding
+lfp_example1_xlim=[.2 .8]
+
+lfp_example2_path=/lfp_data/rm7_hvc_stan_withinbird.mat
+lfp_example2_channel=14
+lfp_example2_days=[1 6 13 22]
+lfp_example2_motif_name=motif1_padding
+lfp_example2_xlim=[.4 1.25]
+
+#lfp_example3_path=/lfp_data/rm80_LeftHVC_stan_withinbird.mat
+#lfp_example3_channel=6
+#lfp_example3_days=[4 10 18]
+#lfp_example3_motif_name=motif1_padding
+
+
 

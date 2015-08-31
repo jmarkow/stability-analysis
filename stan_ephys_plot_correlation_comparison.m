@@ -1,4 +1,4 @@
-function [baseline_data,p]=stan_ephys_plot(BASELINE,NERVECUT)
+function fig=stan_ephys_plot(BASELINE,NERVECUT)
 % ephys stats plots
 % stability analysis--baseline data
 % first take all of the data from control
@@ -58,7 +58,7 @@ win_steps=[-inf 20 40 60 inf ];
 %win_steps(end)=inf;
 [~,bins]=histc(baseline_data.days_since,win_steps);
 [~,bins_nervecut]=histc(NERVECUT.days_since,win_steps);
-condition={'rms','spikes'};
+condition={'spikes','rms'};
 
 % collect p-value for each point
 
@@ -159,7 +159,7 @@ for ii=1:2
 	stan_plot_dot_error(NERVECUT.days_since,NERVECUT.(condition{ii}),NERVECUT.([condition{ii} '_ci']),NERVECUT.birdid,...
 		'markersize',10);
 	ylim([0 1]);
-	ylabel([ condition{ii} ' (R)']);
+	yh=ylabel([ condition{ii} ]);
 
 	if ii==2
 		xlabel('Days');
@@ -167,7 +167,9 @@ for ii=1:2
 		set(gca,'XTick',[]);
 	end
 
-	set(gca,'YTick',[0:.2:1],'layer','top');
+	set(gca,'YTick',[0 1],'layer','top');
+
+	set(yh,'position',get(yh,'position')+[.2 0 0])
 
 	pos=get(ax(ii),'position');
 	asp_ratio=pos(3)/pos(4);

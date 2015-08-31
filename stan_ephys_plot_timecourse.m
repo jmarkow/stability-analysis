@@ -182,7 +182,7 @@ for i=1:length(to_plot)
 
 
 	if i==length(to_plot)
-		set(gca,'XTick',[0 5 10 15 20 25 33 42],'XTickLabel',[0:5:30 33+offset1 42+offset2]);
+		set(gca,'XTick',[0 5 10 15 20 25 33 42],'XTickLabel',[0:5:25 33+offset1 42+offset2]);
 	end
 
 	set(gca,'fontsize',fontsize,'ytick',[ylimits(1) range(ylimits)/2+ylimits(1) ylimits(2)],'layer','bottom');

@@ -14,6 +14,7 @@ spike_width=1;
 spike_height=.3;
 plot_trials=[];
 time_bar=.2;
+columns=1;
 
 if mod(nparams,2)>0
 	error('ephysPipeline:argChk','Parameters must be specified as parameter/value pairs!');
@@ -35,6 +36,8 @@ for i=1:2:nparams
 			plot_trials=varargin{i+1};
 		case 'time_bar'
 			time_bar=varargin{i+1};
+		case 'columns'
+			columns=varargin{i+1};
 	end
 end
 
@@ -45,7 +48,7 @@ else
 	nplots=4;
 end
 
-ax(1)=subplot(nplots,1,1);
+ax(1)=subplot(nplots,columns,1);
 imagesc(SPECT.t,SPECT.f/1e3,SPECT.s);
 colormap(colors);
 axis xy;
@@ -56,21 +59,25 @@ set(gca,'YTick',[],'XTick',[]);
 title([name]);
 %ylabel('Fs (kHz)');
 
+
+nplots
+columns
+
+plotcounter=columns+1;
+
 if length(SPIKES)>1
 	for i=1:length(SPIKES)
 
-		idx=2+(i-1)*2;
-		idx=[idx idx+1];
+		idx=[plotcounter plotcounter+columns];
+		plotcounter=plotcounter+columns*2;
 
 		if isempty(fs)
 			spike_fs=SPIKES(i).fs;
 		else
 			spike_fs=fs;
 		end
-	
-		idx
-		nplots
-		ax(i+1)=subplot(nplots,1,idx);
+
+		ax(i+1)=subplot(nplots,columns,idx);
 		spikoclust_raster(SPIKES(i).times/spike_fs,SPIKES(i).trial,...
             'spike_width',spike_width,'spike_height',spike_height);
 		

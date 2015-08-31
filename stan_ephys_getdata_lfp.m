@@ -8,10 +8,11 @@ function LFP_DATA=stan_ephys_getdata_baseline()
 tmp=dir(fullfile(dirs.agg_dir,dirs.lfp_dir,'*.mat'));
 lfp_files={tmp(:).name};
 
-LFP_DATA.dates={};
-LFP_DATA.days_since={};
-LFP_DATA.ntrials={};
-LFP_DATA.data={};
+LFP_DATA.dates=[];
+LFP_DATA.days_since=[];
+LFP_DATA.ang_diff=[];
+LFP_DATA.channel_id=[];
+LFP_DATA.bird_id=[];
 
 padding_smps=round([options.padding_lfp-.1]*options.lfp_fs);
 rem_bird=[];
@@ -75,8 +76,10 @@ for i=1:length(lfp_files)
 			continue;
 		end
 
-		t0=min(find(sz_include))
-	
+		t0=min(find(sz_include));
+
+		data.dates=data.dates(sz_include);
+		days_since=data.dates-min(data.dates);
 
 		filt_data=cellfun(@(x) filtfilt(b,a,x),data.lfp(sz_include),'uniformoutput',0);
 		ang_data=cellfun(@(x) angle(hilbert(x)),filt_data,'uniformoutput',0);
@@ -84,7 +87,7 @@ for i=1:length(lfp_files)
 
 		pli_data=cat(2,pli_data{:});	
 		[nsamples,ntrials]=size(pli_data);
-		
+	
 		thresh=.001/nsamples;
 
 		% cat the pli data
@@ -94,9 +97,28 @@ for i=1:length(lfp_files)
 		z=(r.^2)./n;
 		pval=exp(sqrt(1+4*n+4.*(n^2-r.^2))-(1+2*n));
 
-		pli_t0=pval(:,1);
-		pli_mask=pli_t0<=thresh;
-		%pli_mask=pli_data(:,1)>.75;
+		% get bootstrap distribution
+	
+		%[nsamples,ntrials]=size(filt_data{1});
+
+		%fft_base=fft(filt_data{1},nsamples);
+		%fft_mag=abs(fft_base);
+		%fft_ang=angle(fft_base);
+
+		%pli_boot=zeros(nsamples,100);
+
+		%for	k=1:100
+		%	fft_rand=fft(randn(size(filt_data{1})));
+		%	fft_ang_rand=angle(fft_rand);
+		%	synth_sig=real(ifft(fft_mag.*exp(1j.*fft_ang_rand)));
+		%	pli_boot(:,k)=abs(mean(exp(1j.*angle(hilbert(synth_sig))),2));
+		%end
+
+		%pli_t0=pval(:,1);
+		
+		%pli_mask=pli_t0<=thresh;
+		
+		pli_mask=pli_data(:,1)>=.7;
 		pli_idx=find(pli_mask);
 		pli_idx(pli_idx<padding_smps(1))=[];
 		pli_idx(pli_idx>nsamples-padding_smps(2))=[];
@@ -107,25 +129,33 @@ for i=1:length(lfp_files)
 			continue;
 		end
 
+		%figure(1);plot(pli_data(:,1));
+		%figure(2);plot(mean(filt_data{1},2));
+		%pause();
+		%
 		ang_diff=zeros(1,ntrials);
-		template=angle(mean(exp(1j.*ang_data{1}),2));
+	
+		%template=angle(mean(exp(1j.*ang_data{1}),2));
+
+		template=angle(hilbert(mean(filt_data{1},2)));
 		template=template(pli_idx);
 
 		for k=1:ntrials
-			compare=angle(mean(exp(1j.*ang_data{k}),2));
+			compare=mean(filt_data{k},2);
+			compare=angle(hilbert(compare));
+			
+			%compare=angle(mean(exp(1j.*ang_data{k}),2));
 			compare=compare(pli_idx);
-			ang_diff(k)=median(abs(angle(exp(1j.*(template-compare)))));
+
+			ang_diff(k)=mean(abs(angle(exp(1j.*(template-compare)))));
 		end
 	
-		figure(1);
-		plot(ang_diff);	
-		pause();
-
 		%ang_diff
 
-		
-
-
+		LFP_DATA.ang_diff=[LFP_DATA.ang_diff ang_diff(2:end)];
+		LFP_DATA.days_since=[LFP_DATA.days_since days_since(2:end)];
+		LFP_DATA.bird_id=[LFP_DATA.bird_id ones(size(ang_diff(2:end)))*i];
+		LFP_DATA.channel_id=[LFP_DATA.channel_id ones(size(ang_diff(2:end)))*ch_list(j)];	
 
 	end
 
