@@ -1,5 +1,5 @@
 function FORM_DATA=stan_format_cadata(DATA,varargin)
-%
+% takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
 %
@@ -7,18 +7,18 @@ function FORM_DATA=stan_format_cadata(DATA,varargin)
 %
 %
 
-movie_fs=22;
-upsample=10;
-thresh=2;
-sort_day=3;
-peak_check=0;
-dff_check=.5;
-scaling='r';
-smoothing=0;
-fig_row=1;
-fig_nrows=1;
-padding=.8;
-chk_day=1;
+movie_fs=22; % sampling rate of camera
+upsample=10; % upsample factor (set to 1 for no upsampling)
+upsample_method='spline'; % upsample method (spline and linear work fine)
+sort_day=3; % day to use for sorting
+peak_check=0; % check for peak consistency (not working yet)
+dff_check=.5; % check for dff peak 
+chk_day=1; % check for dff peak day
+scaling='r'; % scaling ('r' for within roi across days, 's' for within roi sort day, 'l' for within roi and day)
+smoothing=0; % smooth ca trace (not working yet)
+fig_row=1; % subplot row 
+fig_nrows=1; % total number of subplot rows
+padding=.8; % padding before and after song
 
 nparams=length(varargin);
 
@@ -32,8 +32,6 @@ for i=1:2:nparams
 			movie_fs=varargin{i+1};
 		case 'upsample'
 			upsample=varargin{i+1};
-		case 'thresh'
-			thresh=varargin{i+1};
 		case 'sort_day'
 			sort_day=varargin{i+1};
 		case 'peak_check'
@@ -130,6 +128,8 @@ elseif strcmp(lower(scaling(1)),'s')
 
 	disp('ROI sort day');
 
+	% use sort day min/max for normalization
+
 	tmp=ave_mat{sort_day};
 
 	minca=min(tmp);
@@ -138,8 +138,13 @@ elseif strcmp(lower(scaling(1)),'s')
 	mincamat=repmat(minca,[nsamples 1]);
 	maxcamat=repmat(maxca,[nsamples 1]);
 
+	% requires clipping in case other days exceed limits
+
 	for i=1:ndays
 		for j=1:nrois
+
+			% set <min to 0
+			% set >max to max
 
 			minidx=(ave_mat{i}(:,j)-minca(j))<0;
 			maxidx=(ave_mat{i}(:,j))>maxca(j);
@@ -159,18 +164,21 @@ end
 
 % get the sort indices
 
-
 movie_x=[0:nsamples-1]/movie_fs;
 pad_smps=padding*movie_fs;
 
 if upsample>1
+
 	for i=1:ndays
 		interp_x=[0:1/upsample:nsamples-1]/movie_fs;
-		ave_mat{i}=interp1(1:nsamples,ave_mat{i},[1:1/upsample:nsamples]);
+		ave_mat{i}=interp1(1:nsamples,ave_mat{i},[1:1/upsample:nsamples],'spline');
 	end
+
 	pad_smps=padding*(movie_fs*upsample);
 	nsamples=size(ave_mat{1},1);
 end
+
+% get peak locations, anything in the pads is removed
 
 [~,peakloc]=max(ave_mat{sort_day});
 del=(peakloc<pad_smps|peakloc>nsamples-pad_smps);
@@ -179,8 +187,12 @@ for i=1:ndays
 	ave_mat{i}(:,del)=[];
 end
 
+% get peak locations again
+
 [~,peakloc]=max(ave_mat{sort_day});
 [~,idx]=sort(peakloc)
+
+% plot
 
 for i=1:ndays
 	ax(i)=subplot(fig_nrows,ndays,(fig_row-1)*ndays+i);
