@@ -10,7 +10,7 @@ function FORM_DATA=stan_format_cadata(DATA,varargin)
 movie_fs=22; % sampling rate of camera
 upsample=10; % upsample factor (set to 1 for no upsampling)
 upsample_method='spline'; % upsample method (spline and linear work fine)
-sort_day=3; % day to use for sorting
+sort_day=1; % day to use for sorting
 peak_check=0; % check for peak consistency 
 peak_thresh=.05; % if closest peak is >peak_thresh, exclude roi
 dff_check=.5; % check for dff peak 
@@ -267,6 +267,8 @@ end
 
 if smoothing
 	phase_shift=round(length(kernel)/2);
+else
+	phase_shift=0;
 end
 
 [~,peakloc]=max(ave_mat{sort_day});
