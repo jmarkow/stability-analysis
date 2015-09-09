@@ -58,8 +58,8 @@ for i=1:2:nparams
 			bin_fluo=varargin{i+1};
 		case 'nbins'
 			nbins=varargin{i+1};
-        case 'padding'
-            padding=varargin{i+1};
+        	case 'padding'
+            		padding=varargin{i+1};
 	end
 end
 
@@ -72,102 +72,10 @@ end
 ndays=length(DATA);
 [nsamples,nrois,ntrials]=size(DATA{1});
 
-if peak_check
-	exclude=[];
-	sortca.peaks=cell(1,ntrials);
-	sortca.mergevals=cell(1,ntrials);
-
-	% requires that the fb toolbox is in your PATH
-
-	for i=1:ntrials
-		[sortca.peaks{i},sortca.vals{i}]=fb_compute_peak_simple(DATA{chk_day}(:,:,i),...
-			'thresh_t',.2,'debug',0,'onset_only',0,'thresh_hi',1,'thresh_int',8,'thresh_dist',.2); % thresh_int previously 5
-	end
-
-	% now flip through criteria to include
-	% get timing distance relative to first trial, exclude inconsistent rois
-
-	for i=1:nrois
-
-		% concatenate times, exclude double peaks
-	
-		template=sortca.peaks{1}{i};
-
-		if	isempty(template)
-			exclude(end+1)=i;
-			continue;
-		end
-
-		% otherwise, check other times
-	
-		for j=1:ntrials
-			mindist=inf;
-			for k=1:length(template)
-				tmp=min(abs(template(k)-sortca.peaks{j}{i}))/movie_fs;
-				if tmp<mindist
-					mindist=tmp;
-				end			
-			end
-		end
-
-		if mindist>peak_thresh
-			exclude(end+1)=i;
-		end
-
-	end
-
-	exclude
-	inc_rois=setdiff(1:nrois,exclude);
-
-else
-
-	inc_rois=1:nrois;
-
-end
-
-ave_mat=cell(1,ndays);
-
-if smoothing>0
-
-	ts=round(smoothing*movie_fs);
-	
-	if strcmp(smooth_kernel,'b')	
-		kernel=ones(ts,1)/ts;
-	elseif strcmp(smooth_kernel,'g')
-		
-		kernx=[-3*smoothing:1/movie_fs:3*smoothing];
-		kernel=normpdf(kernx,0,smoothing);
-
-		%kernel=kernel./sum(kernel);
-	end
-
-	for i=1:ndays
-
-		% boxcar smoothing, swap out kernel here (gauss more appropriate?)
-		% zero pad or repeat extreme values (or wrap)
-
-		disp(['Note causal filter length ' num2str(length(kernel))]);
-		
-		tmp=DATA{i};
-
-		% wrap around for smoothing
-	
-		zeropad_len=round(length(kernel)/2);
-		%zeropad=repmat(DATA{i}(1,:,:),[zeropad_len 1 1]);
-		
-		zeropad=DATA{i}(end-(zeropad_len-1):end,:,:);
-
-		tmp=[zeropad;tmp];
-		
-		tmp=filter(kernel,1,tmp);
-		DATA{i}=tmp(zeropad_len+1:end,:,:);
-
-	end
-
-end
+[DATA,phase_shift]=stan_cadata_preprocess(DATA,'smoothing',smoothing,'smooth_kernel',smooth_kernel,'peak_check',peak_check,...
+	'peak_thresh',peak_thresh,'upsample',upsample,'movie_fs',movie_fs);
 
 for i=1:ndays
-	DATA{i}=DATA{i}(:,inc_rois,:);
 	ave_mat{i}=mean(DATA{i},3);
 end
 
@@ -264,12 +172,6 @@ if upsample>1
 end
 
 % get peak locations, anything in the pads is removed
-
-if smoothing
-	phase_shift=round(length(kernel)/2);
-else
-	phase_shift=0;
-end
 
 [~,peakloc]=max(ave_mat{sort_day});
 del=(peakloc<pad_smps|peakloc>nsamples-(pad_smps-phase_shift));
