@@ -1,4 +1,5 @@
-# control rasters
+#
+#control rasters
 
 control_raster1_path=/controls/lpur72_barecarbon_stan_withinbird.mat
 control_raster1_channel=E3-E1
