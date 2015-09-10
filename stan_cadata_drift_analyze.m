@@ -66,10 +66,8 @@ if ~iscell(DATA)
 end
 
 ndays=length(DATA);
-
 [DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check',peak_check,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
 	'smoothing',smoothing,'smoothing_kernel',smoothing_kernel);
-
 
 % get the sort indices
 

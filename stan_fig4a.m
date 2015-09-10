@@ -40,3 +40,4 @@ for i=1:length(bird_names)
 
 end
 
+% xlim([.33 .75 for lpi5]);

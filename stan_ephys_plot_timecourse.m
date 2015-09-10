@@ -26,8 +26,11 @@ mufun_ci=@(x) iqr(x);
 
 % first spikerate
 
-to_plot={'rms_mu','spikes_mu','threshold'};
-y_labels={'\langleRMS\rangle (\muV)','\langleFR\rangle (Hz)','Thresh (\muV)'};
+%to_plot={'rms_mu','spikes_mu','threshold'};
+%y_labels={'\langleRMS\rangle (\muV)','\langleFR\rangle (Hz)','Thresh (\muV)'};
+
+to_plot={'rms_mu','spikes_mu'};
+y_labels={'\langleRMS\rangle (\muV)','\langleFR\rangle (Hz)'};
 
 spikes_mu=[];
 spikes_mu_ci=[];

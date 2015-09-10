@@ -83,8 +83,10 @@ pos=ones(1,length(swarm_plot_mu));
 pos(1:nbirds:end)=pos(1:nbirds:end)+offset;
 pos=cumsum(pos)
 
+ax=[];
+
 fig.swarm=figure();
-subplot(2,1,1);
+ax(1)=subplot(2,1,1);
 h=plotSpread(swarm_plot_mu,'xValues',pos,'binWidth',.6,'distributionColors',swarm_colors);
 
 % xticks are grouped according to pos
@@ -105,7 +107,7 @@ ylimits=ylim();
 set(gca,'YTick',[ylimits(1) 0 ylimits(2)]);
 ylabel('\langleFeature\rangle (Z)')
 
-subplot(2,1,2);
+ax(2)=subplot(2,1,2);
 h=plotSpread(swarm_plot_var,'xValues',pos,'binWidth',.6,'distributionColors',swarm_colors);
 set(h{1},'markersize',2.5);
 set(gca,'xtick',xticks,'xticklabel',plot_labels,'TickLength',[0 0],'TickDir','out','FontSize',7);
@@ -116,6 +118,7 @@ ylabel('\sigma(Feature) (Z)');
 ylim([-13 8]);
 ylimits=ylim();
 set(gca,'YTick',[ylimits(1) 0 ylimits(2)]);
+linkaxes(ax,'x');
 % rectify
 
 for i=1:length(to_plot)

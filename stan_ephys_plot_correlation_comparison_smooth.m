@@ -15,7 +15,7 @@ t_bins=[]; % bins for the baseline data to compute prctile, etc.
 h_offset=.28;
 v_offset=.095;
 width=.35;
-shade_color=[.85 .65 .65];
+shade_color=[.7 .7 1];
 save_name=['baseline_comparison_stats'];
 % first column is days since 1, second is regression value, third is bird ID
 % remove points where x=0 (by definition == 1, artifacts appear to have r<.4)
@@ -53,12 +53,19 @@ baseline_data.idx(to_del)=[];
 baseline_data
 NERVECUT
 
-win_steps=[-inf 10:10:30 inf ];
+%win_steps=[-inf 10:10:30 inf ];
+
+win=16;
+overlap=5;
+win_step=win-overlap;
+
 %win_steps(1)=-inf;
 %win_steps(end)=inf;
-[~,bins]=histc(baseline_data.days_since,win_steps);
-[~,bins_nervecut]=histc(NERVECUT.days_since,win_steps);
+%[~,bins]=histc(baseline_data.days_since,win_steps);
+%[~,bins_nervecut]=histc(NERVECUT.days_since,win_steps);
 condition={'spikes','rms'};
+
+steps=0:win_step:45;
 
 % collect p-value for each point
 
@@ -71,45 +78,31 @@ p.binned.rms=nan(1,length(NERVECUT.spikes));
 p.binned.spikes=nan(1,length(NERVECUT.spikes));
 p.all.rms=nan(size(p.binned.rms));
 p.all.spikes=nan(size(p.binned.rms));
-p.days_since.rms=nan(size(p.binned.rms));
-p.days_since.spikes=nan(size(p.binned.rms));
 
 for ii=1:2
 	ax(ii)=subplot(2,1,ii);
 
 	for i=1:length(NERVECUT.(condition{ii}))
 		p.all.(condition{ii})(i)=ranksum(baseline_data.(condition{ii}),NERVECUT.(condition{ii})(i),'tail','right');
-		
-		% get all baseline points with days since <= to current point
-
-		cur_days_since=NERVECUT.days_since(i);
-		idx=find(baseline_data.days_since<=cur_days_since)
-
-		if isempty(idx)
-			continue;
-		end
-
-		p.days_since.(condition{ii})(i)=ranksum(baseline_data.(condition{ii})(idx),NERVECUT.(condition{ii})(i),'tail','right');
 	end
 
 	% form x and y data
 	
 	xdata=[];
 	ydata=[];
-	ydata_line=[];
-	xdata_boundary=[];
-	ydata_boundary=[];
 
 	% sliding window?
 
-	for i=1:length(win_steps)-1
+	for i=1:length(steps)
 
-		cur_bin=[win_steps(i) win_steps(i+1)];
-		cur_bindata=baseline_data.(condition{ii})(bins==i);
+		
+		hits=find(baseline_data.days_since>=steps(i)-win/2&baseline_data.days_since<steps(i)+win/2);
+
+		cur_bindata=baseline_data.(condition{ii})(hits);
 		cur_bindata(isnan(cur_bindata))=[];
 
-		cur_birdid=baseline_data.birdid(bins==i);
-		cur_idx=baseline_data.idx(bins==i);
+		cur_birdid=baseline_data.birdid(hits);
+		cur_idx=baseline_data.idx(hits);
 
 		cur_bootdata=[];
 
@@ -119,49 +112,45 @@ for ii=1:2
 
 		% get points that map to this bin
 		
-		nervecut_idx=find(bins_nervecut==i)
+		nervecut_idx=find(NERVECUT.days_since>=steps(i)-win/2&NERVECUT.days_since<steps(i)+win/2);
 
 		for j=1:length(nervecut_idx)
-
 			% ncomparisons (how do we want to account for this?)	
 			p.binned.(condition{ii})(nervecut_idx(j))=ranksum(cur_bindata,NERVECUT.(condition{ii})(nervecut_idx(j)),'tail','right');
-		
 		end
 
 		% hypothesis testing
 
 		bin_mu=median(cur_bindata);
-		%bin_conf(i)=prctile(cur_bootdata,1/100); % bootstrap minimum?
+
+		bin_conf(i,1)=prctile(cur_bootdata,.5); % bootstrap minimum?
+		bin_conf(i,2)=prctile(cur_bootdata,100-.5);
+		bin_conf(i,3)=prctile(cur_bootdata,50);
+		
 		%bin_conf(i)=median(cur_bindata)-2*iqr(cur_bindata);
 		
-		bin_conf(i)=min(cur_bootdata);
+		%bin_conf(i)=min(cur_bootdata);
 		
-		cur_bin(cur_bin==-inf)=-5;
-		cur_bin(cur_bin==inf)=150;
+		xdata=[xdata steps(i)];
+		ydata=[ydata bin_conf(i)];
 
-		xdata=[xdata cur_bin];
-		ydata=[ydata [1 1;bin_conf(i) bin_conf(i)]];
-		ydata_line=[ydata_line bin_conf(i) bin_conf(i)];
-
-	end
-
-
-	for i=1:length(win_steps)-2
-		xdata_boundary=[xdata_boundary win_steps(i+1) win_steps(i+1)];
-		ydata_boundary=[ydata_boundary bin_conf(i) bin_conf(i+1)];
 	end
 
 	% plot everything
 
-	area(xdata,ydata(2,:),0,'facecolor',shade_color,'edgecolor','none');
-	%markolab_shadeplot(xdata,ydata,shade_color,'none');
+	xdata(xdata==0)=-1;
+	%area(xdata,ydata(2,:),0,'facecolor',shade_color,'edgecolor','none');	
+	markolab_shadeplot(xdata,bin_conf(:,[1 2])',shade_color,'k');
 	hold on;
-	plot(xdata,ydata_line,'k-','linewidth',1)
-	plot(xdata_boundary,ydata_boundary,'k-','linewidth',1);
+	plot(xdata,bin_conf(:,3),'k--');
+	%plot(xdata,ydata_line,'k-','linewidth',1)
+	%plot(xdata_boundary,ydata_boundary,'k-','linewidth',1);
 
 	stan_plot_dot_error(NERVECUT.days_since,NERVECUT.(condition{ii}),NERVECUT.([condition{ii} '_ci']),NERVECUT.birdid,...
 		'markersize',10);
-	ylim([0 1]);
+
+	ylim([0 1]);	
+	set(gca,'YTick',[0 1],'layer','top','FontSize',7);
 	yh=ylabel([ condition{ii} ]);
 
 	if ii==2
@@ -170,8 +159,7 @@ for ii=1:2
 		set(gca,'XTick',[]);
 	end
 
-	set(gca,'YTick',[0 1],'layer','top');
-	set(yh,'position',get(yh,'position')+[.2 0 0])
+	set(yh,'position',get(yh,'position')+[2 0 0])
 
 	%pos=get(ax(ii),'position');
 	%asp_ratio=pos(3)/pos(4);
@@ -197,8 +185,8 @@ end
 set(fig,'units','centimeters','position',[3 3 8.4 12],'paperpositionmode','auto');
 
 linkaxes(ax,'xy');
-set(ax(1),'xlim',[-2 30]);
-
+set(ax(1),'xlim',[-1 25]);
+ylim([0 1.01]);
 %linkaxes(new_axis,'xy');
 %set(new_axis(1),'xlim',[-2 40]);
 
@@ -206,4 +194,5 @@ set(ax(1),'xlim',[-2 30]);
 
 %markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),'baseline_nervecut_comparison','eps,fig,png,pdf','renderer','painters');
 save(fullfile(dirs.agg_dir,dirs.fig_dir,[ save_name '.mat']),'baseline_data','p');
+
 

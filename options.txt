@@ -34,6 +34,7 @@ nervecut_raster1_precut_path=/nervecut/lpi5_barecarbon_nervecut_1pre_stan_within
 nervecut_raster1_precut_days=2
 nervecut_raster1_precut_motif_name=motif1_fs20e3_normamp0
 nervecut_raster1_precut_trials=[1 150]
+nervecut_raster1_xlim=[.33 .75]
 
 nervecut_raster1_postcut_path=/nervecut/lpi5_barecarbon_nervecut_2post_stan_withinbird.mat
 nervecut_raster1_postcut_days=6

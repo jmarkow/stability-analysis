@@ -1,4 +1,4 @@
-function FORM_DATA=stan_format_cadata(DATA,varargin)
+function ave_mat=stan_format_cadata(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -17,7 +17,7 @@ dff_check=.5; % check for dff peak
 chk_day=1; % check for dff peak day
 scaling='r'; % scaling ('r' for within roi across days, 's' for within roi sort day, 'l' for within roi and day)
 smoothing=0; % smooth ca trace (not working yet)
-smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
+smoothing_kernel='g'; % gauss smoothing kernel (b for boxcar)
 fig_row=1; % subplot row 
 fig_nrows=1; % total number of subplot rows
 padding=1; % padding before and after song
