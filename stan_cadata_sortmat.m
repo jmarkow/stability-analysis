@@ -60,8 +60,8 @@ for i=1:2:nparams
 			bin_fluo=varargin{i+1};
 		case 'nbins'
 			nbins=varargin{i+1};
-        case 'padding'
-            padding=varargin{i+1};
+        	case 'padding'
+            		padding=varargin{i+1};
 	end
 end
 
