@@ -1,3 +1,2 @@
-1) finish nervecut correlation analysis for spikes and rms
-2) example nervecut and control rasters
-3) example nervecut sonograms
+1) take intersection of day 1/day 5 for ca imaging data
+2) sort by multi-peaks
