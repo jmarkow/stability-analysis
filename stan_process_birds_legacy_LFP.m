@@ -54,7 +54,6 @@ for i=1:length(bird_listing)
 		end
 	end
 
-
 	for j=1:length(rec_listing)
 
 		disp([rec_listing{j}]);	

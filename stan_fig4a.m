@@ -1,43 +1,43 @@
-% REQUIRES plotSpread for beeswarm plot
+function stan_fig6a
+%
 %
 %
 %
 
 [options,dirs]=stan_preflight;
 load custom_colormaps;
+fig=stan_raster_singleunits(fee_map);
+scaling_fun=@(x) (x/1.5)*4;
 
-figs=stan_raster_nervecut(fee_map);
-scaling_fun=@(x) (x/1.69)*5;
+cell_names=fieldnames(fig);
 
-%tightfig(figs.y273);
-%tightfig(figs.lpur72);
+for i=1:length(cell_names)
+	set(fig.(cell_names{i}),'units','centimeters','position',[3 3 8 7],'paperpositionmode','auto');
 
-% scale in a manner that keeps time consistent
-bird_names=fieldnames(figs);
+	% axes 3,4 are spikes, 5 sonogram
+	
+	ax=findall(fig.(cell_names{i}),'type','axes');
 
-for i=1:length(bird_names)
-
-	ax=get(figs.(bird_names{i}),'currentAxes');
-	xrange1=range(get(ax,'xlim'));
-
-	set(figs.(bird_names{i}),'units','centimeters','position',[3 3 10 6.5],'paperpositionmode','auto');
-	ax=findall(figs.(bird_names{i}),'type','axes');
-
-	for j=1:length(ax)
-
+	for j=3:5
 		set(ax(j),'units','centimeters');
 		pos=get(ax(j),'position');
+		xrange=range(get(ax(j),'xlim'));
+		set(ax(j),'position',[ pos(1:2) scaling_fun(xrange) pos(4)]);
 
-		% width change
-
-		new_width=scaling_fun(xrange1);
-		width_change=new_width-pos(3);
-
-		set(ax(j),'position',[pos(1)-width_change/2 pos(2) new_width pos(4)]);
 	end
 
-	markolab_multi_fig_save(figs.(bird_names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),['figure_4a_' bird_names{i}],'eps,png,fig,pdf');
+	ylimits=get(ax(3),'ylim');
+	h=line([0 .2],[ylimits(2)+5 ylimits(2)+5],'parent',ax(3));
+	set(h,'clipping','off');
+	set(ax(3),'xtick',[]);
 
+	markolab_multi_fig_save(fig.(cell_names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),['figure_7a_' cell_names{i}],'eps,png,fig,pdf');
 end
 
-% xlim([.33 .75 for lpi5]);
+%ax=findall(fig,'type','axes');
+%set(ax(:),'xtick',[]);
+%xlimits=get(ax(1),'xlim');
+
+%h=line([xlimits(1) xlimits(1)+.2],[-10 -10]);
+%set(h,'clipping','off');
+

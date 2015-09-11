@@ -16,6 +16,7 @@ control_raster2_xlim=[.12 .95]
 
 # padding for all extractions
 
+sigma_t=2.5
 spike_fs=500
 lfp_fs=250
 padding=[.3 .3]

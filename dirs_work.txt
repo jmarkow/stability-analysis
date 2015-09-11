@@ -13,3 +13,4 @@ user_dir=/userdata
 nervecut_audio_dir=/nervecut_audio
 fig_dir=/figures_and_stats
 su_dir=/single_units
+lfp_mu_dir=/lfp_mu_data

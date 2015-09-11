@@ -16,7 +16,6 @@ end
 
 tau=.005;
 nmads=10;
-sigma_t=2.5;
 gauss_sd=.005;
 
 param_names=who('-regexp','^[a-z]');
@@ -39,8 +38,6 @@ for i=1:2:nparams
 			blanking=varargin{i+1};
 		case 'tau'
 			tau=varargin{i+1};
-		case 'sigma_t'
-			sigma_t=varargin{i+1};
 		case 'nmads'
 			nmads=varargin{i+1};
 		case 'gauss_sd'
@@ -62,7 +59,7 @@ RMS.data=sqrt(filter(rms_filter,1,DATA.^2));
 RMS.fs=FS;
 RMS.params.tau_smps=tau_smps;
 
-spikethreshold=sigma_t*median(abs(DATA)/.6745);
+spikethreshold=options.sigma_t*median(abs(DATA)/.6745);
 SPIKES=spikoclust_spike_detect_mu(DATA,spikethreshold,FS,'visualize','n','method','b');
 
 % estimate smooth rate at lower sampling rate, convolve with standard kernel (normal, 5 ms variance)
