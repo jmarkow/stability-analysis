@@ -4,6 +4,7 @@ function LFP_DATA=stan_ephys_getdata_baseline()
 % first take all of the data from control
 
 [options,dirs]=stan_preflight;
+nboots=1e3;
 
 tmp=dir(fullfile(dirs.agg_dir,dirs.lfp_dir,'*.mat'));
 lfp_files={tmp(:).name};
@@ -13,9 +14,8 @@ LFP_DATA.days_since=[];
 LFP_DATA.ang_diff=[];
 LFP_DATA.channel_id=[];
 LFP_DATA.bird_id=[];
-
-padding_smps=round([options.padding_lfp-.1]*options.lfp_fs);
-rem_bird=[];
+counter=1;
+padding_smps=round([options.padding_lfp+.1]*options.lfp_fs);
 
 % filter setting
 
@@ -23,7 +23,8 @@ rem_bird=[];
 %b=fir1(n,Wn,ftype,kaiser(n+1,beta),'noscale');
 %a=1;
 
-[b,a]=ellip(4,.2,40,[25 35]/(options.lfp_fs/2),'bandpass');
+%[b,a]=ellip(4,.2,40,[25 35]/(options.lfp_fs/2),'bandpass');
+[b,a]=sfield_filt_coeffs(options.lfp_fs,2);
 
 for i=1:length(lfp_files)
 
@@ -87,8 +88,8 @@ for i=1:length(lfp_files)
 
 		pli_data=cat(2,pli_data{:});	
 		[nsamples,ntrials]=size(pli_data);
-	
-		thresh=.001/nsamples;
+
+		thresh=1e-3/nsamples;
 
 		% cat the pli data
 
@@ -99,26 +100,25 @@ for i=1:length(lfp_files)
 
 		% get bootstrap distribution
 	
-		%[nsamples,ntrials]=size(filt_data{1});
-
-		%fft_base=fft(filt_data{1},nsamples);
-		%fft_mag=abs(fft_base);
+		fft_base=fft(filt_data{1}(:,1:options.lfp_trial_limit),nsamples);
+		fft_mag=repmat(abs(fft_base),[1 1 nboots]);
 		%fft_ang=angle(fft_base);
 
-		%pli_boot=zeros(nsamples,100);
+		pli_boot=zeros(nsamples,nboots);
 
-		%for	k=1:100
-		%	fft_rand=fft(randn(size(filt_data{1})));
-		%	fft_ang_rand=angle(fft_rand);
-		%	synth_sig=real(ifft(fft_mag.*exp(1j.*fft_ang_rand)));
-		%	pli_boot(:,k)=abs(mean(exp(1j.*angle(hilbert(synth_sig))),2));
-		%end
+		fft_rand=fft(randn(nsamples,options.lfp_trial_limit,nboots));
+		fft_ang_rand=angle(fft_rand);
+		synth_sig=real(ifft(fft_mag.*exp(1j.*fft_ang_rand)));
 
-		%pli_t0=pval(:,1);
+		for	k=1:nboots
+			pli_boot(:,k)=abs(mean(exp(1j.*angle(hilbert(synth_sig(:,:,k)))),2));
+		end
+
+		pval=mean(repmat(pli_data(:,1),[1 nboots])<=repmat(max(pli_boot),[nsamples 1]),2);
+		pli_t0=pval(:,1);
+		pli_mask=pli_t0<=thresh;
 		
-		%pli_mask=pli_t0<=thresh;
-		
-		pli_mask=pli_data(:,1)>=.7;
+		%pli_mask=pli_data(:,1)>=.5;
 		pli_idx=find(pli_mask);
 		pli_idx(pli_idx<padding_smps(1))=[];
 		pli_idx(pli_idx>nsamples-padding_smps(2))=[];
@@ -129,25 +129,23 @@ for i=1:length(lfp_files)
 			continue;
 		end
 
-		%figure(1);plot(pli_data(:,1));
-		%figure(2);plot(mean(filt_data{1},2));
-		%pause();
-		%
+		[nsamples,ntrials]=size(pli_data);
+
 		ang_diff=zeros(1,ntrials);
 	
 		%template=angle(mean(exp(1j.*ang_data{1}),2));
-
-		template=angle(hilbert(mean(filt_data{1},2)));
+		template=angle(hilbert(mean(zscore(filt_data{1}),2)));
 		template=template(pli_idx);
 
 		for k=1:ntrials
-			compare=mean(filt_data{k},2);
+		
+			compare=mean(zscore(filt_data{k}),2);
 			compare=angle(hilbert(compare));
 			
 			%compare=angle(mean(exp(1j.*ang_data{k}),2));
-			compare=compare(pli_idx);
+			compare=compare(pli_idx);	
+			ang_diff(k)=median(abs(angle(exp(1j.*(template-compare)))));
 
-			ang_diff(k)=mean(abs(angle(exp(1j.*(template-compare)))));
 		end
 	
 		%ang_diff
@@ -155,16 +153,13 @@ for i=1:length(lfp_files)
 		LFP_DATA.ang_diff=[LFP_DATA.ang_diff ang_diff(2:end)];
 		LFP_DATA.days_since=[LFP_DATA.days_since days_since(2:end)];
 		LFP_DATA.bird_id=[LFP_DATA.bird_id ones(size(ang_diff(2:end)))*i];
-		LFP_DATA.channel_id=[LFP_DATA.channel_id ones(size(ang_diff(2:end)))*ch_list(j)];	
+		LFP_DATA.channel_id=[LFP_DATA.channel_id ones(size(ang_diff(2:end)))*counter];	
+		counter=counter+1;
 
 	end
 
-
-
 	% remove pad from ephys data
-
-
 
 end
 
-%save(fullfile(dirs.agg_dir,dirs.fig_dir,['ephys_baseline_data.mat']),'LFP_DATA')
+save(fullfile(dirs.agg_dir,dirs.fig_dir,['ephys_baseline_lfp_data.mat']),'LFP_DATA','options')

@@ -31,8 +31,10 @@ phases.cell_id=[];
 phases.peak_id=[];
 counter=1;
 
-for i=[1:3]
-
+for i=1:length(LFP_DATA)
+	
+	disp([num2str(i)]);
+	
 	[b,a]=sfield_filt_coeffs(LFP_DATA(i).lfp.fs,2);
 	lfp_data=filtfilt(b,a,LFP_DATA(i).lfp.data);
 
@@ -42,24 +44,9 @@ for i=[1:3]
 	hil_data=hilbert(lfp_data);
 	[nsamples,ntrials]=size(LFP_DATA(i).lfp.data);
 
-	spikes=LFP_DATA(i).spikes.times;
-	spikes=spikes/LFP_DATA(i).spikes.fs;
-
-	trials=LFP_DATA(i).spikes.trial;
-
-	uniq_trials=unique(trials);
-	smooth_samples=ceil((nsamples/LFP_DATA(i).lfp.fs)*smooth_fs);
-	smooth_rate=zeros(smooth_samples,length(uniq_trials));
-
-	for j=1:length(uniq_trials)
-		spikes_smps=round(spikes(trials==uniq_trials(j))*smooth_fs);
-		spikes_smps(spikes_smps==0)=1;
-		smooth_rate(spikes_smps,j)=1;
-		smooth_rate(:,j)=conv(smooth_rate(:,j),kernel,'same');
-	end
-
-	mu=mean(zscore(smooth_rate)');
-	[vals,locs]=findpeaks(mu,'minpeakheight',0,'minpeakdistance',round(.01*smooth_fs));
+	mu=mean(zscore(LFP_DATA(i).spikes.smooth_rate)');
+	%mu=mean(LFP_DATA(i).spikes.smooth_rate');
+	[vals,locs]=findpeaks(mu,'minpeakheight',0,'minpeakdistance',round(.01*LFP_DATA(i).spikes.smooth_fs));
 	
 	%locs(locs<200|locs>nsamples-200)=[];
 	locs=round((locs/smooth_fs)*LFP_DATA(i).lfp.fs);

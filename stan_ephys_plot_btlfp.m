@@ -26,7 +26,7 @@ win=BTLFP.pn.hil_win(:,peakmask);
 win_id=BTLFP.pn.cell_id(peakmask);
 inc_trials=axcorr_retain_trials(win_id);
 
-ax(1)=subplot(2,2,1);
+ax(1)=subplot(3,1,1);
 peak_idx=find(peakmask);
 mu=mean(BTLFP.pn.lfp_win(:,peak_idx(inc_trials)),2);
 lim=max(abs(mu));
@@ -41,7 +41,7 @@ plot([0 0],[ylimits],'k-');
 set(gca,'YTick',ylimits,'xtick',[],'FontSize',7);
 yh=ylabel('Amp. (Z)');
 set(yh,'position',get(yh,'position')+[-.2 0 0]);
-title('HVC_X');
+%title('HVC_X');
 
 win=BTLFP.int.hil_win;
 win_id=BTLFP.int.cell_id;
@@ -51,7 +51,7 @@ inc_trials=axcorr_retain_trials(win_id);
 
 % 2 x 2 grid, mean waveform on top, aligned PLI belo
 
-ax(2)=subplot(2,2,2);
+ax(2)=subplot(3,1,2);
 
 mu=mean(BTLFP.int.lfp_win(:,inc_trials),2);
 lim=max(abs(mu));
@@ -64,11 +64,11 @@ hold on;
 
 plot([0 0],[ylimits],'k-');
 set(gca,'YTick',ylimits,'xtick',[],'FontSize',7);
-title('Interneurons');
+%title('Interneurons');
 
 inc_trials=axcorr_retain_trials(BTLFP.mu.peak_id);
 
-ax(3)=subplot(2,2,4);
+ax(3)=subplot(3,1,3);
 mu=mean(BTLFP.mu.lfp_win(:,inc_trials),2);
 lim=max(abs(mu));
 lim_rnd=ceil(lim*10)/10;
@@ -80,9 +80,7 @@ ylimits=ylim();
 hold on;
 plot([0 0],[ylimits],'k-');
 set(gca,'YTick',ylimits,'xtick',[-100 0 100],'FontSize',7);
-title('Multi-unit');
-
-
+%title('Multi-unit');
 
 xlabel('Time (ms)');
 linkaxes(ax,'x');
