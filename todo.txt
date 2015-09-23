@@ -1,2 +1,4 @@
-1) take intersection of day 1/day 5 for ca imaging data
-2) sort by multi-peaks
+1) sort by multi-peaks
+2) projection neuron raster from llb22
+3) check for significance of ephys drift
+4) compare drift among signal classes
