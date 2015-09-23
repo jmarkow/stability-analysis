@@ -1,23 +1,39 @@
+function stan_fig3a
 %
 %
 %
 %
 
 [options,dirs]=stan_preflight;
-load(fullfile(dirs.agg_dir,dirs.fig_dir,'ephys_baseline_lfp_data.mat'));
+scaling_fun=@(x) (x/1)*3;
 
-fig=figure();stan_plot_lfp_angdiff(LFP_DATA);
-ylim([0 .3])
-xlim([0 pi])
-set(gca,'XTick',[0:pi/2:pi],'XTickLabel',{'0','pi/2','pi'},'FontName','symbol','YTick',[0 .3]);
-xlabel('Phase diff.','FontName','Helvetica')
-ylabel('P','FontName','Helvetica')
+load custom_colormaps;
+fig=stan_sonograms_nervecut(fee_map);
+bird_names=fieldnames(fig);
 
-set(fig,'units','centimeters','paperpositionmode','auto')
-set(fig,'position',[5 5 5 4])
+for i=1:length(bird_names)
 
-markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),'lfp_phase_diff','eps,png,fig,pdf','renderer','painters');
+	ax=get(fig.(bird_names{i}),'CurrentAxes');
+	xlimits=get(ax,'xlim');
+	xrange=range(xlimits);
+	
+	set(fig.(bird_names{i}),'units','centimeters','position',[4 4 6 3.5],'paperpositionmode','auto');
 
-% log-normal mle estimates, mode most intuitive here 
+	ax=findall(fig.(bird_names{i}),'type','axes');
+
+	for j=1:length(ax)	
+		set(ax(j),'units','centimeters');
+		pos=get(ax(j),'position')
+		new_width=scaling_fun(xrange)
+		width_change=new_width-pos(3)
+		set(ax(j),'position',[pos(1)-width_change/2 pos(2) new_width pos(4)]);
+	end
+
+
+
+	markolab_multi_fig_save(fig.(bird_names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),['figure_3a_' bird_names{i} ],'eps,png,fig,pdf');
+
+end
+
 
 

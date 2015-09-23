@@ -1,20 +1,23 @@
-function stan_fig6a
 %
 %
 %
 %
 
 [options,dirs]=stan_preflight;
-load custom_colormaps;
-%fig=stan_raster_multi(fee_map);
-fig=stan_raster_multi_raw(fee_map);
-set(fig,'units','centimeters','position',[3 3 14 16],'paperpositionmode','auto');
+load(fullfile(dirs.agg_dir,dirs.fig_dir,'ephys_baseline_lfp_data.mat'));
 
-ax=findall(fig,'type','axes');
-set(ax(:),'xtick',[]);
-xlimits=get(ax(1),'xlim');
+fig=figure();stan_plot_lfp_angdiff(LFP_DATA);
+ylim([0 .3])
+xlim([0 pi])
+set(gca,'XTick',[0:pi/2:pi],'XTickLabel',{'0','pi/2','pi'},'FontName','symbol','YTick',[0 .3]);
+xlabel('Phase diff.','FontName','Helvetica')
+ylabel('P','FontName','Helvetica')
 
-h=line([xlimits(1) xlimits(1)+.2],[-10 -10]);
-set(h,'clipping','off');
+set(fig,'units','centimeters','paperpositionmode','auto')
+set(fig,'position',[5 5 5 4])
 
-markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),['figure_s1'],'eps,png,fig,pdf');
+markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),'lfp_phase_diff','eps,png,fig,pdf','renderer','painters');
+
+% log-normal mle estimates, mode most intuitive here 
+
+
