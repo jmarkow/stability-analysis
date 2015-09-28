@@ -15,6 +15,7 @@ dff_check=.5; % check for dff peak
 scaling='r'; % scaling ('r' for within roi across days, 's' for within roi sort day, 'l' for within roi and day)
 smoothing=0; % smooth ca trace (not working yet)
 smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
+chk_day=1;
 
 nparams=length(varargin);
 
@@ -38,6 +39,8 @@ for i=1:2:nparams
 			scaling=varargin{i+1};
 		case 'smoothing'
 			smoothing=varargin{i+1};
+        case 'chk_day'
+            chk_day=varargin{i+1};
 	end
 end
 
@@ -131,8 +134,8 @@ if smoothing>0
 		% wrap around for smoothing
 	
 		zeropad_len=round(length(kernel)/2);
-		%zeropad=repmat(DATA{i}(1,:,:),[zeropad_len 1 1]);
-		
+	
+		%zeropad=repmat(DATA{i}(1,:,:),[zeropad_len 1 1]);	
 		zeropad=DATA{i}(end-(zeropad_len-1):end,:,:);
 
 		tmp=[zeropad;tmp];

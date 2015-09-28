@@ -13,13 +13,13 @@ end
 % get listing of single units
 %
 
-tmp=dir(fullfile(dirs.agg_dir,dirs.su_dir));
+tmp=dir(fullfile(dirs.agg_dir,dirs.su_plot_dir));
 unit_dirs={};
 unit_names={};
 
 for	i=1:length(tmp)
 	if tmp(i).isdir & tmp(i).name(1)~='.'
-		unit_dirs{end+1}=fullfile(dirs.agg_dir,dirs.su_dir,tmp(i).name);
+		unit_dirs{end+1}=fullfile(dirs.agg_dir,dirs.su_plot_dir,tmp(i).name);
 		unit_names{end+1}=tmp(i).name;
 	end
 end

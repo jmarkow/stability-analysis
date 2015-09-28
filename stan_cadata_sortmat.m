@@ -60,8 +60,8 @@ for i=1:2:nparams
 			bin_fluo=varargin{i+1};
 		case 'nbins'
 			nbins=varargin{i+1};
-        	case 'padding'
-            		padding=varargin{i+1};
+    	case 'padding'
+			padding=varargin{i+1};
 	end
 end
 
@@ -75,7 +75,7 @@ ndays=length(DATA);
 [nsamples,nrois,ntrials]=size(DATA{1});
 
 [DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check',peak_check,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
-	'smoothing',smoothing,'smoothing_kerne',smoothing_kernel);
+	'smoothing',smoothing,'smoothing_kernel',smoothing_kernel);
 
 for i=1:ndays
 	ave_mat{i}=mean(DATA{i},3);
@@ -185,7 +185,7 @@ end
 % get peak locations again
 
 [~,peakloc]=max(ave_mat{sort_day});
-[~,idx]=sort(peakloc)
+[~,idx]=sort(peakloc);
 
 % plot
 
