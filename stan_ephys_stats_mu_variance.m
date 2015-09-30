@@ -1,4 +1,4 @@
-function dist_mat=stan_ephys_stats(EPHYS_DATA)
+function dist_mat=stan_ephys_stats_mu_variance(EPHYS_DATA)
 %
 % stability analysis--baseline data
 % first take all of the data from control

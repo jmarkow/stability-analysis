@@ -1,4 +1,4 @@
-function fig=stan_ephys_plot_lfp(COLORS)
+function fig=stan_ephys_plot_lfp_example(COLORS)
 %
 %
 %

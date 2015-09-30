@@ -1,4 +1,4 @@
-function stan_ephys_getdata_lfp_spikes_all
+function stan_ephys_getdata_lfp_phasehist_all
 %
 %
 %

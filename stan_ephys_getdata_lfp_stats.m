@@ -1,4 +1,4 @@
-function LFP_DATA=stan_ephys_getdata_baseline()
+function LFP_DATA=stan_ephys_getdata_lfp_stats()
 %
 % stability analysis--baseline data
 % first take all of the data from control

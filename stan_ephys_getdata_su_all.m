@@ -1,4 +1,4 @@
-function stan_ephys_get_singleunit()
+function stan_ephys_getdata_su_all
 %
 
 [~,dirs]=system('find . -type d -name ''to_copy''');

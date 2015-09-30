@@ -1,4 +1,4 @@
-function [corrvals,comparemat,pmat]=stan_format_cadata(DATA,varargin)
+function [corrvals,comparemat,pmat]=stan_cadata_analyze(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %

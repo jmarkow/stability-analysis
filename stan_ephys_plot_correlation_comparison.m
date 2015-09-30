@@ -1,4 +1,4 @@
-function fig=stan_ephys_plot(BASELINE,NERVECUT)
+function fig=stan_ephys_plot_correlation_comparison(BASELINE,NERVECUT)
 % ephys stats plots
 % stability analysis--baseline data
 % first take all of the data from control

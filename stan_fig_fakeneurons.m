@@ -1,4 +1,4 @@
-function stan_fig1b
+function stan_fig_fakeneurons
 %
 %
 %

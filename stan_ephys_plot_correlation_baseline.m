@@ -1,4 +1,4 @@
-function fig=stan_ephys_plot(STATS)
+function fig=stan_ephys_plot_correlation_baseline(STATS)
 % ephys stats plots
 % stability analysis--baseline data
 % first take all of the data from control

@@ -1,4 +1,4 @@
-function fig=stan_btlfp_plot(BTLFP)
+function fig=stan_ephys_plot_btlfp(BTLFP)
 %
 %
 %

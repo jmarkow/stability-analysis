@@ -1,4 +1,4 @@
-function [pmat,zmat]=stan_format_cadata(DATA,varargin)
+function [pmat,zmat]=stan_ephys_su_drift_analyze(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %

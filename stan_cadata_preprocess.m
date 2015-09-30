@@ -1,4 +1,4 @@
-function [DATA,PHASE_SHIFT]=stan_format_cadata(DATA,varargin)
+function [DATA,PHASE_SHIFT]=stan_cadata_preprocess(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %

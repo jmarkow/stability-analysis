@@ -1,4 +1,4 @@
-function [phasehist,phasebins]=stan_ephys_stats_lfp_mu(LFP_DATA,NORMALIZE,THRESH)
+function [phasehist,phasebins]=stan_ephys_stats_phasehist(LFP_DATA,NORMALIZE,THRESH)
 %
 %
 %

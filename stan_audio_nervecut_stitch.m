@@ -1,4 +1,4 @@
-function stan_analyze_nervecut_audio()
+function stan_audio_nervecut_stitch()
 %
 %
 %

@@ -1,4 +1,4 @@
-function COMBINED_DATA=stan_format_cadata(varargin)
+function COMBINED_DATA=stan_cadata_merge(varargin)
 % merges rois from multiple files
 %
 %

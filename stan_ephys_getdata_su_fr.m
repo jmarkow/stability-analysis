@@ -1,4 +1,4 @@
-function SU_DATA=stan_plot_singleunits(COLORS)
+function SU_DATA=stan_ephys_getdata_su_fr
 %
 %
 %

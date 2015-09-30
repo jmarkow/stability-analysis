@@ -1,4 +1,4 @@
-function BASELINE_STATS=stan_ephys_stats(EPHYS_DATA)
+function BASELINE_STATS=stan_ephys_stats_baseline(EPHYS_DATA)
 %
 % stability analysis--baseline data
 % first take all of the data from control

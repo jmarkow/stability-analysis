@@ -1,4 +1,4 @@
-function COLLECT_DATA=stan_format_cadata(DIR)
+function COLLECT_DATA=stan_cadata_collect_freedomscope_v2(DIR)
 % takes data where cell arrays correspond to separate songs, rows to samples, and columns to rois
 % and reformats for stan_cadata_sortmat
 %

@@ -1,4 +1,4 @@
-function ave_mat=stan_format_cadata(DATA,varargin)
+function ave_mat=stan_cadata_sortmat(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %

@@ -1,4 +1,4 @@
-function phases=stan_ephys_stats_lfp_mu(LFP_DATA)
+function phases=stan_ephys_stats_lfp_spikes(LFP_DATA)
 %
 %
 %

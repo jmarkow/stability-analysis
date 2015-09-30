@@ -1,4 +1,4 @@
-function NERVECUT_STATS=stan_compute_baseline()
+function NERVECUT_STATS=stan_ephys_getdata_nervecut
 %
 % stability analysis--baseline data
 % first take all of the data from control
