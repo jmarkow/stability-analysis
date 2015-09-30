@@ -17,4 +17,5 @@ nervecut_audio_dir=/nervecut_audio
 fig_dir=/figures_and_stats
 su_dir=/single_units
 su_plot_dir=/single_units_display
+su_analyze_dir=/single_units_analysis
 lfp_mu_dir=/lfp_mu_data
