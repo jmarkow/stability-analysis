@@ -92,7 +92,7 @@ pad_smps=padding*movie_fs;
 % any peaks outside of the pads?
 
 [~,peakloc]=max(ave_mat{chk_day});
-del=(peakloc<pad_smps|peakloc>nsamples-(pad_smps-phase_shift))
+del=(peakloc<pad_smps|peakloc>nsamples-(pad_smps-phase_shift));
 
 for i=1:ndays
 	DATA{i}(:,del,:)=[];
