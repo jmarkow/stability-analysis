@@ -36,8 +36,12 @@ for i=1:2:nparams
 end
 
 grps=unique(C);
-ngrps=length(grps);
-cmap=paruly(ngrps);
+ngrps=length(grps);i
+if isempty(colors)
+    cmap=parula(ngrps);
+else
+    cmap=colors;
+end
 
 for i=1:length(X)
 
