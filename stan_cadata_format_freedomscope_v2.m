@@ -1,4 +1,4 @@
-function [FORM_DATA,FORM_T]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRESH,THRESH2,NEWFS)
+function [FORM_DATA,FORM_T]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRESH,THRESH2,NEWFS,MINT,MAXT)
 % Using Bill's newformat, use the following command:
 %
 % [form_data,t]=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,roi_ave.RawTime);
@@ -8,16 +8,25 @@ function [FORM_DATA,FORM_T]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRES
 %
 % returns a 3d matrix samples x rois x trials 
 
+if nargin<7
+	MAXT=[];
+end
+
+if nargin<6
+	MINT=[];
+end
+
 if nargin<5 | isempty(NEWFS)
-	NEWFS=29.97; % sampling rate of interpolated data
+	%NEWFS=29.97; % sampling rate of interpolated data
+	NEWFS=100;
 end
 
 if nargin<4 | isempty(THRESH2)
-	THRESH2=50; % threshold on raw pixel values
+	THRESH2=30; % threshold on raw pixel values
 end
 
 if nargin<3 | isempty(THRESH)
-	THRESH=80; % threshold on deriv of raw pixel values
+	THRESH=50; % threshold on deriv of raw pixel values
 end
 
 if nargin<2
@@ -48,29 +57,37 @@ old_t(cam_change|cam_off)=[];
 
 % interpolate and cat
 
-%maxtime=inf;
-%
-%for i=1:length(old_t)
-%	tmp=min(old_t{i}(end,:));
-%
-%	if tmp<maxtime
-%		maxtime=tmp;
-%	end
-%end
-%
-%mintime=-inf;
-%
-%for i=1:length(old_t)
-%	tmp=max(old_t{i}(1,:));
-%
-%	if tmp>mintime
-%		mintime=tmp;
-%	end
-%end
+if isempty(MAXT)
+	maxtime=inf;
+
+	for i=1:length(old_t)
+		tmp=min(old_t{i}(end,:));
+
+		if tmp<maxtime
+			maxtime=tmp;
+		end
+	end
+else
+	maxtime=MAXT;
+end
+
+if isempty(MINT)
+	mintime=-inf;
+
+	for i=1:length(old_t)
+		tmp=max(old_t{i}(1,:));
+
+		if tmp>mintime
+			mintime=tmp;
+		end
+	end
+else
+	mintime=MINT;
+end
 
 
-maxtime=1.6; % debug with fixed time to start
-mintime=.033;
+%maxtime=1.6; % debug with fixed time to start
+%mintime=.033;
 newtime=[mintime:1/NEWFS:maxtime]';
 
 to_del=[];
@@ -86,7 +103,7 @@ FORM_T=newtime;
 % convert to dff
 
 for i=1:length(FORM_DATA)
-	FORM_DATA{i}=fluolab_detrend(FORM_DATA{i},'fs',NEWFS,'method','prctile','win',0,'per',12);
+	FORM_DATA{i}=fluolab_detrend(FORM_DATA{i},'fs',NEWFS,'method','prctile','win',.4,'per',12);
 end
 
 % cat to 3D matrix, samples x rois x trials

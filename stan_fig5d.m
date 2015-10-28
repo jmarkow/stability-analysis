@@ -8,12 +8,12 @@
 load(fullfile(dirs.agg_dir,dirs.fig_dir,'combined_rois.mat'));
 
 newdata=stan_cadata_format(data1,data2,data3,data4,data5);
-[corrvals,comparevals,pmat,zmat]=stan_cadata_drift_analyze(newdata,'smoothing',0.05,'padding',.6);
+[corrvals,comparevals,pmat,zmat]=stan_cadata_drift_analyze(newdata,'smoothing',0.05,'padding',1);
 
 test_alpha=.05;
 [ndays,nrois]=size(zmat);
 
-tmp=pmat(2:end,:);
+tmp=pmat([ 2 3 4 5],:);
 tmp=tmp(:);
 pmat_cor=markolab_bonf_holm(tmp,.05);
 pmat_cor=reshape(pmat_cor',size(pmat(2:end,:)))

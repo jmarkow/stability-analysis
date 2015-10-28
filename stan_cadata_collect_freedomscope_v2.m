@@ -13,7 +13,11 @@ end
 listing=dir(fullfile(DIR,'*.mat'));
 COLLECT_DATA=cell(1,length(listing));
 
+MINT=[];
+MAXT=[];
 for i=1:length(listing)
 	load(listing(i).name,'roi_ave');
-	COLLECT_DATA{i}=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,roi_ave.RawTime);
+	[COLLECT_DATA{i},TIME]=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,roi_ave.RawTime,50,30,100,MINT,MAXT);
+	MINT=min(TIME);
+	MAXT=max(TIME);
 end

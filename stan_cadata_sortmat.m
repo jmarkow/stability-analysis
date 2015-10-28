@@ -17,7 +17,7 @@ dff_check=.5; % check for dff peak
 chk_day=1; % check for dff peak day
 scaling='r'; % scaling ('r' for within roi across days, 's' for within roi sort day, 'l' for within roi and day)
 smoothing=0; % smooth ca trace (not working yet)
-smoothing_kernel='g'; % gauss smoothing kernel (b for boxcar)
+smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
 fig_row=1; % subplot row 
 fig_nrows=1; % total number of subplot rows
 padding=1; % padding before and after song
@@ -48,8 +48,8 @@ for i=1:2:nparams
 			scaling=varargin{i+1};
 		case 'smoothing'
 			smoothing=varargin{i+1};
-		case 'smoothing_kernel'
-			smoothing_kernel=varargin{i+1};
+		case 'smooth_kernel'
+			smooth_kernel=varargin{i+1};
 		case 'fig_row'
 			fig_row=varargin{i+1};
 		case 'fig_nrows'
@@ -75,7 +75,7 @@ ndays=length(DATA);
 [nsamples,nrois,ntrials]=size(DATA{1});
 
 [DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check',peak_check,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
-	'smoothing',smoothing,'smoothing_kernel',smoothing_kernel);
+	'smoothing',smoothing,'smooth_kernel',smooth_kernel);
 
 for i=1:ndays
 	ave_mat{i}=mean(DATA{i},3);
@@ -93,6 +93,30 @@ end
 % renormalize within each day, using min/max from sort day or within each day, or
 % within each roi across days
 %
+
+pad_smps=round(padding*(movie_fs));
+[~,peakloc]=max(ave_mat{sort_day});
+del=(peakloc<pad_smps|peakloc>nsamples-(pad_smps));
+
+for i=1:ndays
+	ave_mat{i}(:,del)=[];
+end
+
+if ~isempty(padding) & smoothing>0
+	for i=1:ndays
+		ave_mat{i}=ave_mat{i}(pad_smps:nsamples-(pad_smps),:);
+	end
+	
+	xmin=pad_smps;
+	xmax=nsamples-(pad_smps);
+	
+else
+	xmin=0;
+	xmax=nsamples-1;
+end
+
+[nsamples,nrois,~]=size(ave_mat{1});
+
 
 if strcmp(lower(scaling(1)),'l')
 
@@ -157,30 +181,29 @@ else
 
 end
 
+
 % get the sort indices
 
-movie_x=[0:nsamples-1]/movie_fs;
 pad_smps=padding*movie_fs;
+nsamples=size(ave_mat{1},1);
 
 if upsample>1
 
 	for i=1:ndays
-		interp_x=[0:1/upsample:nsamples-1]/movie_fs;
+		interp_x=[xmin:1/upsample:xmax]/movie_fs;
 		ave_mat{i}=interp1(1:nsamples,ave_mat{i},[1:1/upsample:nsamples],'spline');
 	end
 
 	pad_smps=padding*(movie_fs*upsample);
 	nsamples=size(ave_mat{1},1);
+	phase_shift=phase_shift*upsample;
+else
+	interp_x=[xmin:xmax]/movie_fs;
 end
 
 % get peak locations, anything in the pads is removed
 
-[~,peakloc]=max(ave_mat{sort_day});
-del=(peakloc<pad_smps|peakloc>nsamples-(pad_smps-phase_shift));
 
-for i=1:ndays
-	ave_mat{i}(:,del)=[];
-end
 
 % get peak locations again
 
@@ -193,7 +216,6 @@ if bin_fluo
 	bin_edges=0:1/nbins:1
 	for i=1:ndays
 		[~,ave_mat{i}]=histc(ave_mat{i},bin_edges);
-		ave_mat{i}
 	end
 end
 
