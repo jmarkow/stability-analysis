@@ -17,7 +17,8 @@ MINT=[];
 MAXT=[];
 for i=1:length(listing)
 	load(listing(i).name,'roi_ave');
-	[COLLECT_DATA{i},TIME]=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,roi_ave.RawTime,50,30,100,MINT,MAXT);
+	listing(i).name
+	[COLLECT_DATA{i},TIME]=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,roi_ave.RawTime,100,20,100,MINT,MAXT);
 	MINT=min(TIME);
 	MAXT=max(TIME);
 end

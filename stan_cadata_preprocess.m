@@ -17,6 +17,7 @@ scaling='r'; % scaling ('r' for within roi across days, 's' for within roi sort 
 smoothing=0; % smooth ca trace (not working yet)
 smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
 chk_day=1;
+padding=[1 1];
 
 nparams=length(varargin);
 
@@ -71,7 +72,7 @@ if peak_check_pad | peak_check_consistency
 
 	for i=1:ntrials
 		[sortca.peaks{i},sortca.vals{i}]=fb_compute_peak_simple(DATA{chk_day}(:,:,i),...
-			'thresh_t',.2,'debug',0,'onset_only',0,'thresh_hi',2,'thresh_int',8,'thresh_dist',.2,...
+			'thresh_t',.2,'debug',0,'onset_only',0,'thresh_hi',1,'thresh_int',8,'thresh_dist',.2,...
 			'fs',movie_fs); % thresh_int previously 5
 	end
 
@@ -119,8 +120,8 @@ if peak_check_pad | peak_check_consistency
 
 	if peak_check_pad
 
-		left_edge=padding;
-		right_edge=nsamples/movie_fs-padding;
+		left_edge=padding(1);
+		right_edge=nsamples/movie_fs-padding(2);
 
 		tmp=[];
 
@@ -131,9 +132,9 @@ if peak_check_pad | peak_check_consistency
 			for j=1:ntrials
 
 				peak_timing=sortca.peaks{j}{i}/movie_fs;
+				peak_chk=peak_timing>left_edge&peak_timing<right_edge;
 				
-				if peak_timing>left_edge & peak_timing<right_edge
-
+				if any(peak_chk)
 					tmp=[tmp i];
 				end
 			end

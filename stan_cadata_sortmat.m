@@ -20,7 +20,7 @@ smoothing=0; % smooth ca trace (not working yet)
 smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
 fig_row=1; % subplot row 
 fig_nrows=1; % total number of subplot rows
-padding=1; % padding before and after song
+padding=[1 1]; % padding before and after song
 bin_fluo=0; % discretize fluorescence 
 nbins=10; % number of bins for discretization
 
@@ -75,7 +75,7 @@ ndays=length(DATA);
 [nsamples,nrois,ntrials]=size(DATA{1});
 
 [DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check',peak_check,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
-	'smoothing',smoothing,'smooth_kernel',smooth_kernel);
+	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding);
 
 for i=1:ndays
 	ave_mat{i}=mean(DATA{i},3);
@@ -83,7 +83,7 @@ end
 
 % check for high enough dff
 
-inc_rois=find(any(ave_mat{chk_day}>dff_check));
+inc_rois=find(any(ave_mat{chk_day}>dff_check))
 nrois=length(inc_rois);
 
 for i=1:ndays
@@ -95,20 +95,20 @@ end
 %
 
 pad_smps=round(padding*(movie_fs));
-[~,peakloc]=max(ave_mat{sort_day});
-del=(peakloc<pad_smps|peakloc>nsamples-(pad_smps));
+%[~,peakloc]=max(ave_mat{sort_day});
+%del=(peakloc<pad_smps(1)|peakloc>nsamples-(pad_smps(2)));
 
-for i=1:ndays
-	ave_mat{i}(:,del)=[];
-end
+%for i=1:ndays
+%	ave_mat{i}(:,del)=[];
+%end
 
 if ~isempty(padding) & smoothing>0
 	for i=1:ndays
-		ave_mat{i}=ave_mat{i}(pad_smps:nsamples-(pad_smps),:);
+		ave_mat{i}=ave_mat{i}(pad_smps(1):nsamples-(pad_smps(2)),:);
 	end
 	
-	xmin=pad_smps;
-	xmax=nsamples-(pad_smps);
+	xmin=pad_smps(1);
+	xmax=nsamples-(pad_smps(2));
 	
 else
 	xmin=0;
@@ -184,7 +184,6 @@ end
 
 % get the sort indices
 
-pad_smps=padding*movie_fs;
 nsamples=size(ave_mat{1},1);
 
 if upsample>1

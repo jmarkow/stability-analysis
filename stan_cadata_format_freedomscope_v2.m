@@ -1,4 +1,4 @@
-function [FORM_DATA,FORM_T]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRESH,THRESH2,NEWFS,MINT,MAXT)
+function [FORM_DATA,FORM_T]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRESH,THRESH2,NEWFS,MINT,MAXT,PADDING)
 % Using Bill's newformat, use the following command:
 %
 % [form_data,t]=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,roi_ave.RawTime);
@@ -7,6 +7,10 @@ function [FORM_DATA,FORM_T]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRES
 % and reformats for stan_cadata_sortmat
 %
 % returns a 3d matrix samples x rois x trials 
+
+if nargin<8
+	PADDING=[];
+end
 
 if nargin<7
 	MAXT=[];
@@ -46,6 +50,12 @@ for i=1:ntrials
 end
 
 % high diff or low raw values are used to exclude trials w/ camera off
+
+if ~isempty(PADDING)
+	for i=1:ntrials
+		FORM_DATA{i}=FORM_DATA{i}(PADDING(1):end-PADDING(2),:);
+	end
+end
 
 cam_change=cellfun(@(x) any(any(abs(diff(x))>THRESH)),FORM_DATA);
 cam_off=cellfun(@(x) any(any(x<THRESH2)),FORM_DATA);
@@ -88,6 +98,7 @@ end
 
 %maxtime=1.6; % debug with fixed time to start
 %mintime=.033;
+mintime=0;
 newtime=[mintime:1/NEWFS:maxtime]';
 
 to_del=[];
@@ -103,7 +114,7 @@ FORM_T=newtime;
 % convert to dff
 
 for i=1:length(FORM_DATA)
-	FORM_DATA{i}=fluolab_detrend(FORM_DATA{i},'fs',NEWFS,'method','prctile','win',.4,'per',12);
+	FORM_DATA{i}=fluolab_detrend(FORM_DATA{i},'fs',NEWFS,'method','prctile','win',0,'per',12);
 end
 
 % cat to 3D matrix, samples x rois x trials
