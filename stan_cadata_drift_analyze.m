@@ -8,7 +8,7 @@ function [corrvals,comparevals,pmat,zmat]=stan_format_cadata(DATA,varargin)
 %
 
 movie_fs=22; % sampling rate of camera
-upsample=10; % upsample factor (set to 1 for no upsampling)
+upsample=1; % upsample factor (set to 1 for no upsampling)
 upsample_method='spline'; % upsample method (spline and linear work fine)
 peak_check_pad=0; % check for peak consistency 
 peak_thresh=.05; % if closest peak is >peak_thresh, exclude roi
@@ -19,11 +19,12 @@ smoothing=0; % smooth ca trace (not working yet)
 smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
 padding=1; % padding before and after song
 compare_day=1; % day to use as basis for comparison
-nperms=1e5; % as expected, permutation and ranksum give roughly the same answer
+nperms=1e3; % as expected, permutation and ranksum give roughly the same answer
 method='r'; % (r)anksum, (t)test, (p)ermutation (note that permutation is dog slow)
 nparams=length(varargin);
 tail='right';
-maxlag=.05;
+maxlag=.03;
+lag_corr=0;
 
 if mod(nparams,2)>0
 	error('Parameters must be specified as parameter/value pairs');
@@ -57,6 +58,9 @@ for i=1:2:nparams
 			tail=varargin{i+1};
 		case 'method'
 			method=varargin{i+1};
+		case 'lag_corr'
+			lag_corr=varargin{i+1};
+
 	end
 end
 
@@ -78,17 +82,18 @@ end
 
 % check for high enough dff
 
-pad_smps=round(padding*movie_fs)
-inc_rois=find(any(ave_mat{chk_day}(pad_smps:end-pad_smps,:)>dff_check))
+pad_smps=round(padding*movie_fs);
+
+%inc_rois=find(any(ave_mat{chk_day}(pad_smps(1):end-pad_smps(2),:)>dff_check))
 [nsamples,nrois,ntrials]=size(DATA{1});
 
-for i=1:ndays
-	ave_mat{i}=ave_mat{i}(:,inc_rois);
-	DATA{i}=DATA{i}(:,inc_rois,:);
-end
+%for i=1:ndays
+%	ave_mat{i}=ave_mat{i}(:,inc_rois);
+%	DATA{i}=DATA{i}(:,inc_rois,:);
+%end
 
 movie_x=[0:nsamples-1]/movie_fs;
-pad_smps=padding*movie_fs;
+pad_smps=round(padding*movie_fs);
 
 % any peaks outside of the pads?
 
@@ -120,7 +125,7 @@ end
 % trim pads and zscore
 
 for i=1:ndays
-	DATA{i}=zscore(DATA{i}(pad_smps:end-pad_smps,:,:));
+	DATA{i}=zscore(DATA{i}(pad_smps(1):end-pad_smps(2),:,:));
 end
 
 % get corr values from the comparison day
@@ -134,19 +139,24 @@ maxlag_smps=round(maxlag*(movie_fs*upsample));
 
 for i=1:nrois
 
-	tmp=zeros(ntrials,ntrials);
+	if lag_corr
+		tmp=zeros(ntrials,ntrials);
 
-	i
 
-	for j=1:ntrials
-		for k=1:ntrials
-			tmp(j,k)=max(xcorr(DATA{compare_day}(:,i,j),DATA{compare_day}(:,i,k),maxlag_smps,'coeff'));
+		[x,y]=find(triu(ones(size(tmp)),1));
+
+		% fill upper triangle only
+		
+		for j=1:length(x)
+			tmp(x(j),y(j))=max(xcorr(DATA{compare_day}(:,i,x(j)),DATA{compare_day}(:,i,y(j)),maxlag_smps,'coeff'));
 		end
+
+	else
+
+		tmp=corr(squeeze(DATA{compare_day}(:,i,:)));
 	end
 
-	%tmp=corr(squeeze(DATA{compare_day}(:,i,:)));
 	corrvals(:,i)=tmp(find(triu(ones(size(tmp)),1)));
-	%corrvals(:,i)=tmp;
 
 end
 
@@ -155,25 +165,29 @@ pmat=zeros(ndays,nrois);
 zmat=zeros(ndays,nrois);
 
 for i=1:ndays
-	i
 	for j=1:nrois
-	
-		j
-		%tmp=corr(squeeze(DATA{compare_day}(:,j,:)),squeeze(DATA{i}(:,j,:)));
-	
-		ntrials2=size(DATA{i},3);	
-	
-		tmp=zeros(ntrials,ntrials2);
 
-		for k=1:ntrials
-			for l=1:ntrials2
-				tmp(k,l)=max(xcorr(DATA{compare_day}(:,j,k),DATA{i}(:,j,l),maxlag_smps,'coeff'));
+		ntrials2=size(DATA{i},3);	
+
+		if lag_corr
+
+			j
+
+			tmp=zeros(ntrials,ntrials2);
+
+			[x,y]=find(triu(ones(size(tmp)),1));
+			for k=1:length(x)
+				tmp(x(k),y(k))=max(xcorr(DATA{compare_day}(:,j,x(k)),DATA{i}(:,j,y(k)),maxlag_smps,'coeff'));
 			end
+
+		else
+			tmp=corr(squeeze(DATA{compare_day}(:,j,:)),squeeze(DATA{i}(:,j,:)));
 		end
+
 
 		inc_vals=tmp(find(triu(ones(size(tmp)),1)));
 		comparevals{i,j}=inc_vals;
-	
+
 		% use either t-test, ranksum or permutation (all yield similar answers)
 
 		switch lower(method(1))
@@ -197,14 +211,13 @@ for i=1:ndays
 				rndvals=allvals(rndidx);
 
 				% data splits
-				
+
 				pop1=rndvals(:,idx1)';
 				pop2=rndvals(:,idx2)';
 
 				% test statistic
 
 				nulldist=(mean(pop1)-mean(pop2))./(sqrt(std(pop1).*std(pop2)));
-
 				obs=(mean(corrvals(:,j))-mean(inc_vals))/(sqrt(std(corrvals(:,j))*std(inc_vals)));
 
 				% check appropriate tail
@@ -218,12 +231,12 @@ for i=1:ndays
 				end
 
 				pmat(i,j)=(tmp+1)/(nperms+1);  
-	
+
 			otherwise
 				error('Did not understand method selection');		
-		end	
-				
-		zmat(i,j)=(mean(inc_vals)-mean(corrvals(:,j)))/(sqrt(std(corrvals(:,j))*std(inc_vals))); 
+			end	
 
+			zmat(i,j)=(mean(inc_vals)-mean(corrvals(:,j)))/(sqrt(std(corrvals(:,j))*std(inc_vals))); 
+
+		end
 	end
-end

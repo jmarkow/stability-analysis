@@ -117,7 +117,6 @@ if peak_check_pad | peak_check_consistency
 
 	% check for dff peak in song (exclude pads)
 
-
 	if peak_check_pad
 
 		left_edge=padding(1);
@@ -174,8 +173,8 @@ if smoothing>0
 
 		zeropad_len=round(length(kernel)/2);
 
-		zeropad=repmat(DATA{i}(1,:,:),[zeropad_len 1 1]);	
-		%zeropad=DATA{i}(end-(zeropad_len-1):end,:,:);
+		%zeropad=repmat(DATA{i}(1,:,:),[zeropad_len 1 1]);	
+		zeropad=DATA{i}(end-(zeropad_len-1):end,:,:);
 
 		tmp=[zeropad;tmp];
 

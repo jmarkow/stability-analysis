@@ -95,6 +95,7 @@ end
 %
 
 pad_smps=round(padding*(movie_fs));
+
 %[~,peakloc]=max(ave_mat{sort_day});
 %del=(peakloc<pad_smps(1)|peakloc>nsamples-(pad_smps(2)));
 
@@ -102,7 +103,7 @@ pad_smps=round(padding*(movie_fs));
 %	ave_mat{i}(:,del)=[];
 %end
 
-if ~isempty(padding) & smoothing>0
+if ~isempty(padding) & all(padding~=0) & smoothing>0
 	for i=1:ndays
 		ave_mat{i}=ave_mat{i}(pad_smps(1):nsamples-(pad_smps(2)),:);
 	end
@@ -201,9 +202,6 @@ else
 end
 
 % get peak locations, anything in the pads is removed
-
-
-
 % get peak locations again
 
 [~,peakloc]=max(ave_mat{sort_day});
