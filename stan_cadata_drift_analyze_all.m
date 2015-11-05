@@ -7,7 +7,6 @@ function stan_cadata_drift_analyze_all()
 % batch analysis of all calcium imaging birds
 
 maxlag=.033;
-
 [options,dirs]=stan_preflight;
 
 % bird 1
@@ -21,7 +20,6 @@ cadata.data(2)=load(fullfile(dirs.agg_dir,dirs.ca_dir,'lny13.mat'),'roi_data');
 % bird 3
 
 cadata.data(3)=load(fullfile(dirs.agg_dir,dirs.ca_dir,'lny18.mat'),'roi_data');
-
 cadata.fs=[22 100 100];
 
 % analyze data
@@ -38,4 +36,4 @@ cadata.fs=[22 100 100];
   stan_cadata_drift_analyze(cadata.data(3).roi_data,'padding',[.1 .1],'movie_fs',cadata.fs(3),...
   'lag_corr',1,'realign',1,'smoothing',0,'smooth_kernel','b','maxlag',maxlag);
 
-save(fullfile(options.agg_dir,options.datastore_dir,['cadata_stats.mat']),'stats','cadata');
+save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats.mat']),'stats','cadata');

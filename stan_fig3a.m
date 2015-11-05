@@ -9,9 +9,6 @@ load custom_colormaps;
 figs=stan_raster_nervecut(fee_map);
 scaling_fun=@(x) (x/1.69)*5;
 
-%tightfig(figs.y273);
-%tightfig(figs.lpur72);
-
 % scale in a manner that keeps time consistent
 bird_names=fieldnames(figs);
 

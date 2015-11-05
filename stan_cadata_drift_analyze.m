@@ -77,7 +77,7 @@ end
 ndays=length(DATA);
 [DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check_pad,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
 	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign);
-
+	
 % get the sort indices
 
 for i=1:ndays
