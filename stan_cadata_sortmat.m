@@ -23,6 +23,7 @@ fig_nrows=1; % total number of subplot rows
 padding=[1 1]; % padding before and after song
 bin_fluo=0; % discretize fluorescence 
 nbins=10; % number of bins for discretization
+realign=1;
 
 nparams=length(varargin);
 
@@ -62,6 +63,8 @@ for i=1:2:nparams
 			nbins=varargin{i+1};
     	case 'padding'
 			padding=varargin{i+1};
+		case 'realign'
+			realign=varargin{i+1};
 	end
 end
 
@@ -75,7 +78,7 @@ ndays=length(DATA);
 [nsamples,nrois,ntrials]=size(DATA{1});
 
 [DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check',peak_check,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
-	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding);
+	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign);
 
 for i=1:ndays
 	ave_mat{i}=mean(DATA{i},3);
@@ -89,6 +92,8 @@ nrois=length(inc_rois);
 for i=1:ndays
 	ave_mat{i}=ave_mat{i}(:,inc_rois);
 end
+
+% remove jitter using the xcorr across rois
 
 % renormalize within each day, using min/max from sort day or within each day, or
 % within each roi across days

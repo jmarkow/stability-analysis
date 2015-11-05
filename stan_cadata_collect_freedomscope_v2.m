@@ -15,13 +15,13 @@ COLLECT_DATA=cell(1,length(listing));
 
 MINT=[];
 MAXT=[];
-SONG_LEN=.7;
+SONG_LEN=.8; % .59 for lny13 .625 for lny18 (.8 for each then pad later?)
 
 % remove pad first here? 
 
 for i=1:length(listing)
 
-	load(listing(i).name,'roi_ave');
+	load(fullfile(DIR,listing(i).name),'roi_ave');
 
 	% if not offset data, set to empty
 
@@ -40,7 +40,7 @@ for i=1:length(listing)
 		roi_ave.RawTime,...
 		60,... % threshold on derivative (check for gain shift, in raw px values)
 		30,... % threshold for camera on (px values below this considered LED off)
-		60,... % new sampling rate
+		100,... % new sampling rate
 		MINT,... % minimum time point for new time frame
 		MAXT,... % maximum time point for new tie frame
 		roi_ave.padding,... % padding for extraction 

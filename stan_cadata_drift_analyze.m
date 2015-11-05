@@ -1,4 +1,4 @@
-function [corrvals,comparevals,pmat,zmat]=stan_format_cadata(DATA,varargin)
+function [corrvals,comparevals,pmat,zmat,rmat_mu]=stan_cadata_drift_analyze(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -10,7 +10,7 @@ function [corrvals,comparevals,pmat,zmat]=stan_format_cadata(DATA,varargin)
 movie_fs=22; % sampling rate of camera
 upsample=1; % upsample factor (set to 1 for no upsampling)
 upsample_method='spline'; % upsample method (spline and linear work fine)
-peak_check_pad=0; % check for peak consistency 
+peak_check_pad=0; % check for peak consistency
 peak_thresh=.05; % if closest peak is >peak_thresh, exclude roi
 dff_check=1;
 chk_day=1; % check for dff peak day
@@ -23,8 +23,9 @@ nperms=1e3; % as expected, permutation and ranksum give roughly the same answer
 method='r'; % (r)anksum, (t)test, (p)ermutation (note that permutation is dog slow)
 nparams=length(varargin);
 tail='right';
-maxlag=.03;
+maxlag=.02;
 lag_corr=0;
+realign=1;
 
 if mod(nparams,2)>0
 	error('Parameters must be specified as parameter/value pairs');
@@ -52,15 +53,18 @@ for i=1:2:nparams
 			smooth_kernel=varargin{i+1};
 		case 'compare_day'
 			compare_day=varargin{i+1};
-        case 'padding'
-            padding=varargin{i+1};
+    case 'padding'
+      padding=varargin{i+1};
 		case 'tail'
 			tail=varargin{i+1};
 		case 'method'
 			method=varargin{i+1};
 		case 'lag_corr'
 			lag_corr=varargin{i+1};
-
+		case 'realign'
+			realign=varargin{i+1};
+		case 'maxlag'
+			maxlag=varargin{i+1};
 	end
 end
 
@@ -72,7 +76,7 @@ end
 
 ndays=length(DATA);
 [DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check_pad,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
-	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding);
+	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign);
 
 % get the sort indices
 
@@ -86,25 +90,7 @@ pad_smps=round(padding*movie_fs);
 
 %inc_rois=find(any(ave_mat{chk_day}(pad_smps(1):end-pad_smps(2),:)>dff_check))
 [nsamples,nrois,ntrials]=size(DATA{1});
-
-%for i=1:ndays
-%	ave_mat{i}=ave_mat{i}(:,inc_rois);
-%	DATA{i}=DATA{i}(:,inc_rois,:);
-%end
-
-movie_x=[0:nsamples-1]/movie_fs;
 pad_smps=round(padding*movie_fs);
-
-% any peaks outside of the pads?
-
-%[~,peakloc]=max(ave_mat{chk_day});
-%del=(peakloc<pad_smps|peakloc>nsamples-(pad_smps));
-
-%for i=1:ndays
-%	DATA{i}(:,del,:)=[];
-%end
-
-[nsamples,nrois,ntrials]=size(DATA{1});
 
 % not necessary here, but left in just in case
 
@@ -135,18 +121,17 @@ pairs=nchoosek(1:ntrials,2);
 npairs=size(pairs,1);
 corrvals=zeros(npairs,nrois);
 maxlag_smps=round(maxlag*(movie_fs*upsample));
+
 % grab values from upper triangle of corr matrix
 
 for i=1:nrois
 
 	if lag_corr
 		tmp=zeros(ntrials,ntrials);
-
-
 		[x,y]=find(triu(ones(size(tmp)),1));
 
 		% fill upper triangle only
-		
+
 		for j=1:length(x)
 			tmp(x(j),y(j))=max(xcorr(DATA{compare_day}(:,i,x(j)),DATA{compare_day}(:,i,y(j)),maxlag_smps,'coeff'));
 		end
@@ -154,6 +139,7 @@ for i=1:nrois
 	else
 
 		tmp=corr(squeeze(DATA{compare_day}(:,i,:)));
+
 	end
 
 	corrvals(:,i)=tmp(find(triu(ones(size(tmp)),1)));
@@ -163,19 +149,19 @@ end
 comparevals=cell(ndays,nrois);
 pmat=zeros(ndays,nrois);
 zmat=zeros(ndays,nrois);
+zmat_mu=zeros(ndays,nrois);
 
 for i=1:ndays
+
 	for j=1:nrois
 
-		ntrials2=size(DATA{i},3);	
+		ntrials2=size(DATA{i},3);
 
 		if lag_corr
 
-			j
-
 			tmp=zeros(ntrials,ntrials2);
 
-			[x,y]=find(triu(ones(size(tmp)),1));
+			[x,y]=find(triu(ones(size(tmp)),0));
 			for k=1:length(x)
 				tmp(x(k),y(k))=max(xcorr(DATA{compare_day}(:,j,x(k)),DATA{i}(:,j,y(k)),maxlag_smps,'coeff'));
 			end
@@ -184,8 +170,7 @@ for i=1:ndays
 			tmp=corr(squeeze(DATA{compare_day}(:,j,:)),squeeze(DATA{i}(:,j,:)));
 		end
 
-
-		inc_vals=tmp(find(triu(ones(size(tmp)),1)));
+		inc_vals=tmp(find(triu(ones(size(tmp)),0)));
 		comparevals{i,j}=inc_vals;
 
 		% use either t-test, ranksum or permutation (all yield similar answers)
@@ -223,20 +208,39 @@ for i=1:ndays
 				% check appropriate tail
 
 				if strcmp(lower(tail(1)),'r')
-					tmp=sum(obs<nulldist); % right tail 
+					tmp=sum(obs<nulldist); % right tail
 				elseif strcmp(lower(tail(1)),'l')
 					tmp=sum(obs>nulldist); % left tail
 				else
 					tmp=sum(abs(obs)>abs(nulldist)); % two tail
 				end
 
-				pmat(i,j)=(tmp+1)/(nperms+1);  
+				pmat(i,j)=(tmp+1)/(nperms+1);
 
 			otherwise
-				error('Did not understand method selection');		
-			end	
+				error('Did not understand method selection');
+			end
 
-			zmat(i,j)=(mean(inc_vals)-mean(corrvals(:,j)))/(sqrt(std(corrvals(:,j))*std(inc_vals))); 
+			zmat(i,j)=(mean(inc_vals)-mean(corrvals(:,j)))/(sqrt(std(corrvals(:,j))*std(inc_vals)));
 
 		end
 	end
+
+% get the correlation difference using means (probably the most reliable here,
+% jitter should average out assuming it's symmetric)
+
+mu1=mean(zscore(DATA{compare_day}),3);
+
+for i=1:ndays
+	mu2=mean(zscore(DATA{i}),3);
+	corrmat=zeros(nrois,nrois);
+	if lag_corr
+		for j=1:nrois
+			corrmat(j,j)=max(xcorr(mu1(:,j),mu2(:,j),maxlag_smps,'coeff'));
+		end
+	else
+		corrmat=corr(mu1,mu2,'type','pearson');
+	end
+
+	rmat_mu(i,:)=corrmat(find(diag(ones(nrois,1),0)));
+end

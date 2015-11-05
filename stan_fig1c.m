@@ -1,4 +1,4 @@
-function stan_fig2a
+function stan_fig1c
 %
 %
 %

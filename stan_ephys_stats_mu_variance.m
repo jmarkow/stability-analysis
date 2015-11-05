@@ -29,10 +29,10 @@ for i=1:length(EPHYS_DATA.dates)
 	disp([num2str(i)]);
 
 	%rms_mu_corr=cellfun(mufun_corr,EPHYS_DATA.rms{i},'uniformoutput',0);
-	
+
 	spikerate_mu_corr=cellfun(mufun_corr,EPHYS_DATA.spike_rate{i},'uniformoutput',0);
 
-	% loop through spike_rates, estimate variance via peak-to-peak distance across trials 
+	% loop through spike_rates, estimate variance via peak-to-peak distance across trials
 	% zscore, within trials take all turning points, take closest peak relative to mean peaks
 
 	% typecast, etc. etc.
@@ -42,8 +42,8 @@ for i=1:length(EPHYS_DATA.dates)
 
 	[~,template_locs]=findpeaks(template,'minpeakheight',100,'minpeakdistance',round(.005*options.spike_fs));
 
-	% loop, find closest peak 
-	
+	% loop, find closest peak
+
 	[nsamples,ntrials]=size(cur_rates);
 
 	nlocs=length(template_locs);
@@ -64,3 +64,5 @@ for i=1:length(EPHYS_DATA.dates)
 	end
 
 end
+
+save(fullfile(dirs.agg_dir,dirs.datastore_dir,['mu_variance.mat']),'dist_mat');

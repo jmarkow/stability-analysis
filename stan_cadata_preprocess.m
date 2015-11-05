@@ -12,12 +12,14 @@ sort_day=1; % day to use for sorting
 peak_thresh=.05; % if closest peak is >peak_thresh, exclude roi
 peak_check_consistency=0;
 peak_check_pad=1;
-dff_check=.5; % check for dff peak 
+dff_check=.5; % check for dff peak
 scaling='r'; % scaling ('r' for within roi across days, 's' for within roi sort day, 'l' for within roi and day)
 smoothing=0; % smooth ca trace (not working yet)
 smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
 chk_day=1;
 padding=[1 1];
+realign=1;
+maxlag=.03;
 
 nparams=length(varargin);
 
@@ -37,8 +39,8 @@ for i=1:2:nparams
 			scaling=varargin{i+1};
 		case 'smoothing'
 			smoothing=varargin{i+1};
-        case 'chk_day'
-            chk_day=varargin{i+1};
+    case 'chk_day'
+      chk_day=varargin{i+1};
 		case 'smooth_kernel'
 			smooth_kernel=varargin{i+1};
 		case 'padding'
@@ -49,6 +51,10 @@ for i=1:2:nparams
 			peak_check_pad=varargin{i+1};
 		case 'peak_thresh'
 			peak_thresh=varargin{i+1};
+		case 'realign'
+			realign=varargin{i+1};
+		case 'maxlag'
+			maxlag=varargin{i+1};
 	end
 end
 
@@ -101,7 +107,7 @@ if peak_check_pad | peak_check_consistency
 					tmp=min(abs(template(k)-sortca.peaks{j}{i}))/movie_fs;
 					if tmp<mindist
 						mindist=tmp;
-					end			
+					end
 				end
 			end
 
@@ -132,7 +138,7 @@ if peak_check_pad | peak_check_consistency
 
 				peak_timing=sortca.peaks{j}{i}/movie_fs;
 				peak_chk=peak_timing>left_edge&peak_timing<right_edge;
-				
+
 				if any(peak_chk)
 					tmp=[tmp i];
 				end
@@ -151,10 +157,9 @@ if smoothing>0
 
 	ts=round(smoothing*movie_fs);
 
-	if strcmp(smooth_kernel,'b')	
+	if strcmp(smooth_kernel,'b')
 		kernel=ones(ts,1)/ts;
 	elseif strcmp(smooth_kernel,'g')
-
 		kernx=[-3*smoothing:1/movie_fs:3*smoothing];
 		kernel=normpdf(kernx,0,smoothing);
 		kernel=kernel./sum(kernel);
@@ -173,7 +178,7 @@ if smoothing>0
 
 		zeropad_len=round(length(kernel)/2);
 
-		%zeropad=repmat(DATA{i}(1,:,:),[zeropad_len 1 1]);	
+		%zeropad=repmat(DATA{i}(1,:,:),[zeropad_len 1 1]);
 		zeropad=DATA{i}(end-(zeropad_len-1):end,:,:);
 
 		tmp=[zeropad;tmp];
@@ -198,3 +203,70 @@ else
 end
 
 
+if realign
+
+	maxlag_smps=ceil(maxlag*movie_fs);
+
+	disp([sprintf('Realigning with maximum jitter of %g (%g frames)',maxlag,maxlag_smps)])
+
+	% average across rois, then across trials from the sort day
+
+	if ~isempty(padding)
+		pad_smps=round(padding*movie_fs);
+	else
+		pad_smps=[1 0];
+	end
+
+	template=mean(zscore(DATA{sort_day}(pad_smps(1):end-pad_smps(2),:,:)),3);
+
+	for i=1:ndays
+
+		ntrials=size(DATA{i},3);
+		shift=zeros(ntrials,1);
+
+		for j=1:ntrials
+
+			tmp=zeros(nrois,1);
+
+			for k=1:nrois
+
+				% maximum shift correspond to max expected jitter?
+
+				[r,lags]=xcorr(zscore(DATA{i}(pad_smps(1):end-pad_smps(2),k,j)),template(:,k),maxlag_smps,'coeff');
+				[~,loc]=max(r);
+				tmp(k)=lags(loc);
+
+				% reject shift of sufficient size?
+
+				%DATA{i}(:,k,j)=circshift(DATA{i}(:,k,j),[-lags(loc) 0]);
+
+			end
+
+			DATA{i}(:,:,j)=circshift(DATA{i}(:,:,j),[ -round(median(tmp)) 0 ] );
+
+		end
+	end
+
+end
+
+%if realign
+%
+%	% average across rois, then across trials from the sort day
+%
+%	template=mean(mean(zscore(DATA{sort_day}),3),2);
+%
+%	for i=1:ndays
+%
+%		shift=zeros(ntrials,1);
+%
+%		for j=1:ntrials
+%
+%			[r,lags]=xcorr(mean(zscore(DATA{i}(:,:,j)),2),template,30);
+%			[~,loc]=max(r);
+%			tmp=lags(loc);
+%			DATA{i}(:,:,j)=circshift(DATA{i}(:,:,j),[-lags(loc) 0]);
+%
+%		end
+%	end
+%
+%end

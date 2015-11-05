@@ -9,7 +9,7 @@ function fig=stan_ephys_plot_correlation_baseline(STATS)
 
 ci_inv=.01; % alpha level (/2 to get two-tailed)
 ylimit_rounding=1e-1;
-r_cutoff=.4; % below this value typically due to equipment failure
+r_cutoff=.4; % due to equipment failure
 save_name='baseline_regression';
 markersize=5;
 
@@ -96,4 +96,3 @@ set(xh,'position',get(xh,'position')+[0 .01 0]);
 linkaxes(new_axis,'x');
 set(new_axis(1),'xlim',[0 120]);
 set(new_axis(end),'xtick',get(new_axis(end),'xlim'));
-

@@ -4,7 +4,7 @@
 %
 
 [options,dirs]=stan_preflight;
-load(fullfile(dirs.agg_dir,dirs.fig_dir,'ephys_baseline_lfp_data.mat'));
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,'ephys_baseline_lfp_data.mat'));
 
 fig=figure();stan_plot_lfp_angdiff(LFP_DATA);
 ylim([0 .3])

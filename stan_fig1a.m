@@ -4,7 +4,7 @@ function stan_fig1a
 %
 
 [options,dirs]=stan_preflight;
-load(fullfile(dirs.agg_dir,dirs.fig_dir,'btlfp_data.mat'));
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,'btlfp_data.mat'));
 fig=figure();
 stan_ephys_plot_btlfp(BTLFP);
 set(fig,'units','centimeters','position',[4 4 3 7],'paperpositionmode','auto');
