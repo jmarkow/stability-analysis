@@ -16,12 +16,12 @@ for i=1:length(bird_names)
 	ax=get(fig.(bird_names{i}),'CurrentAxes');
 	xlimits=get(ax,'xlim');
 	xrange=range(xlimits);
-	
+
 	set(fig.(bird_names{i}),'units','centimeters','position',[4 4 6 3.5],'paperpositionmode','auto');
 
 	ax=findall(fig.(bird_names{i}),'type','axes');
 
-	for j=1:length(ax)	
+	for j=1:length(ax)
 		set(ax(j),'units','centimeters');
 		pos=get(ax(j),'position')
 		new_width=scaling_fun(xrange)
@@ -34,6 +34,3 @@ for i=1:length(bird_names)
 	markolab_multi_fig_save(fig.(bird_names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),['figure_3a_' bird_names{i} ],'eps,png,fig,pdf');
 
 end
-
-
-
