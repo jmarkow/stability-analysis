@@ -26,5 +26,5 @@ for i=1:length(listing)
 
 end
 
-save(fullfile(cur_dir,'..','sdi_data.mat'),...
+save(fullfile(cur_dir,'..','sdi_data_consensus.mat'),...
 	'data','-v7.3');
