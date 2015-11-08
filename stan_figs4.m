@@ -21,7 +21,7 @@ fig.sdi=figure();
 ax(1)=subplot(2,1,1);
 
 if consensus
-  imagesc(data(1).t,data(1).f/1e3,mean(data(1).sdi.consensus>threshold,3));
+  imagesc(data(1).t,data(1).f/1e3,mean(data(1).consensus>threshold,3));
 else
   imagesc(data(1).t,data(1).f/1e3,data(1).sdi.im);
 end
@@ -33,7 +33,7 @@ colorbar();
 
 ax(2)=subplot(2,1,2);
 if consensus
-  imagesc(data(2).t,data(2).f/1e3,mean(data(2).sdi.consensus>threshold,3));
+  imagesc(data(2).t,data(2).f/1e3,mean(data(2).consensus>threshold,3));
 else
   imagesc(data(2).t,data(2).f/1e3,data(2).sdi.im);
 end
