@@ -1,4 +1,4 @@
-function [DATA,PHASE_SHIFT]=stan_cadata_preprocess(DATA,varargin)
+function [DATA,PHASE_SHIFT,inc_rois]=stan_cadata_preprocess(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -65,7 +65,7 @@ if ~iscell(DATA)
 end
 
 ndays=length(DATA);
-[nsamples,nrois,ntrials]=size(DATA{1});
+[nsamples,nrois,ntrials]=size(DATA{chk_day});
 
 inc_rois=1:nrois;
 
@@ -202,6 +202,7 @@ else
 	PHASE_SHIFT=0;
 end
 
+nrois=length(inc_rois);
 
 if realign
 
@@ -218,12 +219,12 @@ if realign
 	end
 
 	template=mean(zscore(DATA{sort_day}(pad_smps(1):end-pad_smps(2),:,:)),3);
-
+    
 	for i=1:ndays
 
 		ntrials=size(DATA{i},3);
 		shift=zeros(ntrials,1);
-
+        
 		for j=1:ntrials
 
 			tmp=zeros(nrois,1);

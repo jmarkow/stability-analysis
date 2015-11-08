@@ -1,4 +1,4 @@
-function ave_mat=stan_cadata_sortmat(DATA,varargin)
+function [ave_mat,inc_rois]=stan_cadata_sortmat(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -77,8 +77,8 @@ end
 ndays=length(DATA);
 [nsamples,nrois,ntrials]=size(DATA{1});
 
-[DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check',peak_check,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
-	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign);
+[DATA,phase_shift,inc_rois]=stan_cadata_preprocess(DATA,'peak_check',peak_check,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
+	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'chk_day',chk_day);
 
 for i=1:ndays
 	ave_mat{i}=mean(DATA{i},3);
