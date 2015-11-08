@@ -7,23 +7,25 @@ function stan_cadata_schnitzplot()
 
 [options,dirs]=stan_preflight;
 %load(fullfile(dirs.agg_dir,dirs.fig_dir,'AwesomeNess.mat'));
-load(fullfile(dirs.agg_dir,dirs.ca_dir,'lw76.mat'),'roi_data.mat'));
+load(fullfile(dirs.agg_dir,dirs.ca_dir,'lw76.mat'),'roi_data');
+
 
 fig.localnorm=figure();
 
-stan_cadata_sortmat(newdata,'scaling','l','sort_day',1,'smoothing',.15,'smooth_kernel','g',...
-	'padding',[1 1],'movie_fs',22,'chk_day',1,'fig_row',1,'fig_nrows',3);
+stan_cadata_sortmat(roi_data,'scaling','l','sort_day',1,'smoothing',.15,'smooth_kernel','g',...
+	'padding',[1 1],'movie_fs',22,'chk_day',1,'fig_row',1,'fig_nrows',2);
 
-stan_cadata_sortmat(newdata,'scaling','l','sort_day',3,'smoothing',.15,'smooth_kernel','g',...
-	'padding',[1 1],'movie_fs',22,'chk_day',1,'fig_row',2,'fig_nrows',3)
+%stan_cadata_sortmat(roi_data,'scaling','l','sort_day',3,'smoothing',.15,'smooth_kernel','g',...
+%	'padding',[1 1],'movie_fs',22,'chk_day',1,'fig_row',2,'fig_nrows',3)
 
-stan_cadata_sortmat(newdata,'scaling','l','sort_day',5,'smoothing',.15,'smooth_kernel','g',...
-	'padding',[1 1],'movie_fs',22,'chk_day',1,'fig_row',3,'fig_nrows',3)
+stan_cadata_sortmat(roi_data,'scaling','l','sort_day',5,'smoothing',.15,'smooth_kernel','g',...
+	'padding',[1 1],'movie_fs',22,'chk_day',1,'fig_row',2,'fig_nrows',2)
 colormap(jet);
 
 ax=findall(gcf,'type','axes')
 linkaxes(ax,'xy')
 
+ylimits=ylim();
 set(ax(end),'YTick',ylim(),'YTickLabel',[ylim()-min(ylim())]+1,'FontSize',8);
 yh=ylabel(ax(end),'Cell');
 set(yh,'position',get(yh,'position')+[.3 0 0]);
