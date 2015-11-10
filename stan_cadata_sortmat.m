@@ -11,17 +11,17 @@ movie_fs=22; % sampling rate of camera
 upsample=10; % upsample factor (set to 1 for no upsampling)
 upsample_method='spline'; % upsample method (spline and linear work fine)
 sort_day=1; % day to use for sorting
-peak_check=0; % check for peak consistency 
+peak_check=0; % check for peak consistency
 peak_thresh=.05; % if closest peak is >peak_thresh, exclude roi
-dff_check=.5; % check for dff peak 
+dff_check=.5; % check for dff peak
 chk_day=1; % check for dff peak day
 scaling='r'; % scaling ('r' for within roi across days, 's' for within roi sort day, 'l' for within roi and day)
 smoothing=0; % smooth ca trace (not working yet)
 smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
-fig_row=1; % subplot row 
+fig_row=1; % subplot row
 fig_nrows=1; % total number of subplot rows
 padding=[1 1]; % padding before and after song
-bin_fluo=0; % discretize fluorescence 
+bin_fluo=0; % discretize fluorescence
 nbins=10; % number of bins for discretization
 realign=1;
 
@@ -101,21 +101,23 @@ end
 
 pad_smps=round(padding*(movie_fs));
 
-%[~,peakloc]=max(ave_mat{sort_day});
-%del=(peakloc<pad_smps(1)|peakloc>nsamples-(pad_smps(2)));
+[~,peakloc]=max(ave_mat{sort_day});
+del=(peakloc<pad_smps(1)|peakloc>nsamples-(pad_smps(2)));
 
-%for i=1:ndays
-%	ave_mat{i}(:,del)=[];
-%end
+for i=1:ndays
+	ave_mat{i}(:,del)=[];
+end
 
-if ~isempty(padding) & all(padding~=0) & smoothing>0
+nrois=size(ave_mat,2);
+
+if ~isempty(padding) & all(padding~=0)
 	for i=1:ndays
 		ave_mat{i}=ave_mat{i}(pad_smps(1):nsamples-(pad_smps(2)),:);
 	end
-	
+
 	xmin=pad_smps(1);
 	xmax=nsamples-(pad_smps(2));
-	
+
 else
 	xmin=0;
 	xmax=nsamples-1;
@@ -138,7 +140,7 @@ elseif strcmp(lower(scaling(1)),'r')
 
 	disp('ROI across days');
 
-	% cycle through each roi, agg ca data across days, normalize using 
+	% cycle through each roi, agg ca data across days, normalize using
 	% across day min/max
 
 	tmp=cat(1,ave_mat{:});

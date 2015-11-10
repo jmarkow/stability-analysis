@@ -160,7 +160,7 @@ if smoothing>0
 	if strcmp(smooth_kernel,'b')
 		kernel=ones(ts,1)/ts;
 	elseif strcmp(smooth_kernel,'g')
-		kernx=[-3*smoothing:1/movie_fs:3*smoothing];
+		kernx=[-2*smoothing:1/movie_fs:2*smoothing];
 		kernel=normpdf(kernx,0,smoothing);
 		kernel=kernel./sum(kernel);
 	end
@@ -219,12 +219,12 @@ if realign
 	end
 
 	template=mean(zscore(DATA{sort_day}(pad_smps(1):end-pad_smps(2),:,:)),3);
-    
+
 	for i=1:ndays
 
 		ntrials=size(DATA{i},3);
 		shift=zeros(ntrials,1);
-        
+
 		for j=1:ntrials
 
 			tmp=zeros(nrois,1);

@@ -77,20 +77,25 @@ end
 ndays=length(DATA);
 [DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check_pad,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
 	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign);
-	
+
 % get the sort indices
 
 for i=1:ndays
 	ave_mat{i}=mean(DATA{i},3);
 end
 
-% check for high enough dff
-
-pad_smps=round(padding*movie_fs);
-
-%inc_rois=find(any(ave_mat{chk_day}(pad_smps(1):end-pad_smps(2),:)>dff_check))
 [nsamples,nrois,ntrials]=size(DATA{1});
 pad_smps=round(padding*movie_fs);
+
+[~,peakloc]=max(ave_mat{compare_day});
+del=(peakloc<pad_smps(1)|peakloc>nsamples-(pad_smps(2)));
+
+%for i=1:ndays
+%	DATA{i}(:,del,:)=[];
+%end
+
+%inc_rois=find(any(ave_mat{chk_day}(pad_smps(1):end-pad_smps(2),:)>dff_check))
+%pad_smps=round(padding*movie_fs);
 
 % not necessary here, but left in just in case
 
