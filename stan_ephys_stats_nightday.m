@@ -9,8 +9,8 @@ function dist_mat=stan_ephys_stats_mu_variance(EPHYS_DATA)
 
 padding_smps=round([options.padding-.1]*options.spike_fs);
 
-mufun_corr_day=@(x) mean(zscore(x(:,1:floor(size(x,2)/2))),2);
-mufun_corr_night=@(x) mean(zscore(x(:,end-(floor(size(x,2)/2)-1):end)),2);
+mufun_corr_day=@(x) mean(zscore(x(:,1:floor(size(x,2)/10))),2);
+mufun_corr_night=@(x) mean(zscore(x(:,end-(floor(size(x,2)/10)-1):end)),2);
 %mufun_corr_day=@(x) mean(zscore(x(:,1:100)),2);
 %mufun_corr_night=@(x) mean(zscore(x(:,end-100:end)),2);
 mufun=@(x) mean(x);
@@ -49,15 +49,13 @@ for i=1:length(EPHYS_DATA.dates)
 	tmp_within=corr(spikerate_mu_corr_day,spikerate_mu_corr_night,'type','pearson');
 	tmp_within=tmp_within(find(diag(ones(ndays,1),0)));
 
-	idx=find(daydiff==1);
+	idx=find(daydiff==2);
 
 	if isempty(idx)
 		continue;
 	end
 
-	tmp_between=corr(spikerate_mu_corr_night(:,idx),spikerate_mu_corr_day(:,idx+1),'type','pearson');
-	size(tmp_between)
-	length(idx)
+	tmp_between=corr(spikerate_mu_corr_night(:,idx),spikerate_mu_corr_night(:,idx+1),'type','pearson');
 	tmp_between=tmp_between(find(diag(ones(length(idx),1),0)));
 
 	%tmp_between=tmp_between-(tmp_within(idx));

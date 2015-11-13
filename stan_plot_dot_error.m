@@ -1,4 +1,4 @@
-function stan_dot_error_plot(X,Y,CI,C,varargin)
+function h=stan_dot_error_plot(X,Y,CI,C,varargin)
 % takes collected stats, plots and performs hypothesis tests
 % 
 %
@@ -36,7 +36,7 @@ for i=1:2:nparams
 end
 
 grps=unique(C);
-ngrps=length(grps);i
+ngrps=length(grps);
 if isempty(colors)
     cmap=parula(ngrps);
 else

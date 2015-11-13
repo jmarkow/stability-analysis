@@ -1,4 +1,4 @@
-function [corrvals,comparevals,pmat,zmat,rmat_mu,rmat_mu_withinday,rmat_mu_nightday]=stan_cadata_drift_analyze(DATA,varargin)
+function [corrvals,comparevals,pmat,zmat,rmat_mu,rmat_mu_withinday,rmat_mu_lag]=stan_cadata_drift_analyze(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -256,7 +256,9 @@ end
 
 
 rmat_mu_withinday=zeros(ndays,nrois);
-rmat_mu_nightday=zeros(ndays-3,nrois);
+rmat_mu_lag.day={};
+rmat_mu_lag.night={};
+%zeros(ndays-3,nrois);
 
 for i=1:ndays
 
@@ -266,7 +268,7 @@ for i=1:ndays
 	ntrials=size(DATA{i},3);
 
 	pool1=1:floor(ntrials/2);
-	pool2=ntrials-(floor(ntrials/2)-1):ntrials;
+	pool2=ntrials-(floor(ntrials/4)-1):ntrials;
 
 	mu1=mean(zscore(DATA{i}(:,:,pool1)),3);
 	mu2=mean(zscore(DATA{i}(:,:,pool2)),3);
@@ -281,30 +283,35 @@ for i=1:ndays
 
 	rmat_mu_withinday(i,:)=corrmat(find(diag(ones(nrois,1),0)));
 
-	% modify to compute with separate lags...
+	% lag analysis
 
-	if i+2<(ndays)
+	for j=(i+1):ndays
 
-		ntrials2=size(DATA{i+3},3);
-		pool3=(ntrials2-floor(ntrials2/2)):ntrials2
-		pool3=1:floor(ntrials2/5);
+		ntrials2=size(DATA{j},3);
 
-		%pool3=1:ntrials2;
+		pool3=1:floor(ntrials2/4);
+		pool4=(ntrials2-floor(ntrials2/4)):ntrials2;
 
-		mu3=mean(zscore(DATA{i+3}(:,:,pool3)),3);
+		mu3=mean(zscore(DATA{j}(:,:,pool3)),3);
+		mu4=mean(zscore(DATA{j}(:,:,pool4)),3);
 
 		corrmat=zeros(nrois,nrois);
+		corrmat2=zeros(nrois,nrois);
+
 		compare=mu2;
 
 		if lag_corr
 			for j=1:nrois
 				corrmat(j,j)=max(xcorr(compare(:,j),mu3(:,j),maxlag_smps,'coeff'));
+				corrmat2(j,j)=max(xcorr(compare(:,j),mu4(:,j),maxlag_smps,'coeff'));
 			end
 		else
 			corrmat=corr(compare,mu3,'type','pearson');
+			corrmat2=corr(compare,mu4,'type','pearson');
 		end
 
-		rmat_mu_nightday(i,:)=corrmat(find(diag(ones(nrois,1),0)));
+		rmat_mu_lag.day{j-i}(i,:)=corrmat(find(diag(ones(nrois,1),0)));
+		rmat_mu_lag.night{j-i}(i,:)=corrmat2(find(diag(ones(nrois,1),0)));
 
 	end
 
