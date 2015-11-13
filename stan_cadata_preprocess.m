@@ -216,8 +216,12 @@ if realign
 		pad_smps=round(padding*movie_fs);
 	else
 		pad_smps=[1 0];
-	end
+    end
 
+    if pad_smps(1)==0
+        pad_smps(1)=1;
+    end
+    
 	template=mean(zscore(DATA{sort_day}(pad_smps(1):end-pad_smps(2),:,:)),3);
 
 	for i=1:ndays

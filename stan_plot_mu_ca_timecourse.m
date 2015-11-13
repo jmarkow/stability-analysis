@@ -53,21 +53,48 @@ figs.cabeeswarm=figure();
 % collect points for each day
 
 allcapoints=[];
-plotpoints{1}=teststats.val_mu(teststats.days_since<5);
+idx=teststats.days_since<5;
+bird=teststats.birdid(idx);
+val=teststats.val_mu(idx);
+[uniq_bird]=unique(bird);
+
+plotpoints{1}=[];
+for i=1:length(uniq_bird)
+  plotpoints{1}(end+1)=min(val(bird==uniq_bird(i)))
+end
+
+%plotpoints{1}=teststats.val_mu(teststats.days_since<5);
 pval=ones(1,length(stats))*NaN;
+pval2=ones(1,length(stats))*NaN;
+
+plotpoints{2}=[];
+inc_rois={};
+for i=1:length(stats)
+  tmp=median(stats(i).rmat_mu_withinday);
+  %inc_rois{i}=find(tmp>.6);
+  %tmp(tmp<.6)=[];
+  plotpoints{2}=[plotpoints{2};tmp(:)];
+end
 
 for i=1:length(stats)
-  tmp=stats(i).rmat_mu(3:5,:);
-  plotpoints{i+1}=tmp(:);
-  [pval(i)]=ranksum(plotpoints{1},plotpoints{i+1},'tail','right');
+  %tmp=stats(i).rmat_mu(2:5,inc_rois{i});
+  tmp=stats(i).rmat_mu(2:5,:);
+  tmp=min(tmp);
+  plotpoints{i+2}=tmp(:);
+  pval(i)=ranksum(plotpoints{1},plotpoints{i+2},'tail','right');
+  pval2(i)=ranksum(plotpoints{2},plotpoints{i+2},'tail','right');
 end
+
+pval
+pval2
+% compare within a day
 
 % for statistical comparison?
 
-pos=[1 1+swarm_offset ones(1,length(stats)-1)];
+pos=[1 1+swarm_offset 1+swarm_offset ones(1,length(stats)-1)];
 pos=cumsum(pos)
-cmap=paruly(length(plotpoints)-1);
-swarm_colors=[.7 .7 .7;cmap];
+cmap=paruly(length(plotpoints)-2);
+swarm_colors=[.7 .7 .7;0 0 1;cmap];
 
 % pairwise ranksum, Holm-Bonferonni stepdown
 

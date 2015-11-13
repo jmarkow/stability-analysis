@@ -1,4 +1,4 @@
-function [corrvals,comparevals,pmat,zmat,rmat_mu]=stan_cadata_drift_analyze(DATA,varargin)
+function [corrvals,comparevals,pmat,zmat,rmat_mu,rmat_mu_withinday,rmat_mu_nightday]=stan_cadata_drift_analyze(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -76,7 +76,7 @@ end
 
 ndays=length(DATA);
 [DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check_pad,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
-	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign);
+	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'maxlag',maxlag);
 
 % get the sort indices
 
@@ -86,6 +86,10 @@ end
 
 [nsamples,nrois,ntrials]=size(DATA{1});
 pad_smps=round(padding*movie_fs);
+
+if pad_smps(1)==0;
+	pad_smps(1)=1;
+end
 
 [~,peakloc]=max(ave_mat{compare_day});
 del=(peakloc<pad_smps(1)|peakloc>nsamples-(pad_smps(2)));
@@ -248,4 +252,60 @@ for i=1:ndays
 	end
 
 	rmat_mu(i,:)=corrmat(find(diag(ones(nrois,1),0)));
+end
+
+
+rmat_mu_withinday=zeros(ndays,nrois);
+rmat_mu_nightday=zeros(ndays-3,nrois);
+
+for i=1:ndays
+
+	corrmat=zeros(nrois,nrois);
+	corrmat_nightday=zeros(nrois,nrois);
+
+	ntrials=size(DATA{i},3);
+
+	pool1=1:floor(ntrials/2);
+	pool2=ntrials-(floor(ntrials/2)-1):ntrials;
+
+	mu1=mean(zscore(DATA{i}(:,:,pool1)),3);
+	mu2=mean(zscore(DATA{i}(:,:,pool2)),3);
+
+	if lag_corr
+		for j=1:nrois
+			corrmat(j,j)=max(xcorr(mu1(:,j),mu2(:,j),maxlag_smps,'coeff'));
+		end
+	else
+		corrmat=corr(mu1,mu2,'type','pearson');
+	end
+
+	rmat_mu_withinday(i,:)=corrmat(find(diag(ones(nrois,1),0)));
+
+	% modify to compute with separate lags...
+
+	if i+2<(ndays)
+
+		ntrials2=size(DATA{i+3},3);
+		pool3=(ntrials2-floor(ntrials2/2)):ntrials2
+		pool3=1:floor(ntrials2/5);
+
+		%pool3=1:ntrials2;
+
+		mu3=mean(zscore(DATA{i+3}(:,:,pool3)),3);
+
+		corrmat=zeros(nrois,nrois);
+		compare=mu2;
+
+		if lag_corr
+			for j=1:nrois
+				corrmat(j,j)=max(xcorr(compare(:,j),mu3(:,j),maxlag_smps,'coeff'));
+			end
+		else
+			corrmat=corr(compare,mu3,'type','pearson');
+		end
+
+		rmat_mu_nightday(i,:)=corrmat(find(diag(ones(nrois,1),0)));
+
+	end
+
 end

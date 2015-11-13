@@ -1,4 +1,4 @@
-function [FORM_DATA,FORM_T]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRESH,THRESH2,NEWFS,MINT,MAXT,PADDING,SONG_LEN,OFFSET)
+function [FORM_DATA,FORM_T,FORM_DATE]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRESH,THRESH2,NEWFS,MINT,MAXT,PADDING,SONG_LEN,OFFSET,FILENAMES)
 % Using Bill's newformat, use the following command:
 %
 % [form_data,t]=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,roi_ave.RawTime);
@@ -6,7 +6,7 @@ function [FORM_DATA,FORM_T]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRES
 % takes data where cell arrays correspond to separate songs, rows to samples, and columns to rois
 % and reformats for stan_cadata_sortmat
 %
-% returns a 3d matrix samples x rois x trials 
+% returns a 3d matrix samples x rois x trials
 
 if nargin<10
 	OFFSET=[];
@@ -50,6 +50,7 @@ end
 [nrois,ntrials]=size(CADATA);
 
 FORM_DATA=cell(1,ntrials);
+FORM_DATE=zeros(1,ntrials);
 old_t=cell(1,ntrials);
 
 for i=1:ntrials
@@ -57,6 +58,10 @@ for i=1:ntrials
 	old_t{i}=cat(1,TIME{:,i})';
 	if ~isempty(OFFSET)
 		offset=cat(1,OFFSET{:})';
+	end
+	if ~isempty(FILENAMES)
+		tmp=regexp(FILENAMES{i},'\d+-\d+-\d+ \d+ \d+ \d+','match');
+		FORM_DATE(i)=datenum(tmp{1},'yyyy-mm-dd HH MM SS');
 	end
 end
 
@@ -67,7 +72,7 @@ to_del=[];
 for i=1:length(FORM_DATA)
 
 	% apply offset correction if it exists
-
+    
 	if ~isempty(OFFSET)
 		old_t{i}=old_t{i}-offset(i)/1e3;
 	end
@@ -91,35 +96,8 @@ for i=1:length(FORM_DATA)
 end
 
 FORM_DATA(to_del)=[];
+FORM_DATE(to_del)=[];
 old_t(to_del)=[];
-
-%if isempty(MAXT)
-%	maxtime=inf;
-%
-%	for i=1:length(old_t)
-%		tmp=min(old_t{i}(end,:));
-%
-%		if tmp<maxtime
-%			maxtime=tmp;
-%		end
-%	end
-%else
-%	maxtime=MAXT;
-%end
-%
-%if isempty(MINT)
-%	mintime=-inf;
-%
-%	for i=1:length(old_t)
-%		tmp=max(old_t{i}(1,:));
-%
-%		if tmp>mintime
-%			mintime=tmp;
-%		end
-%	end
-%else
-%	mintime=MINT;
-%end
 
 mintime=0;
 maxtime=SONG_LEN;
