@@ -1,4 +1,4 @@
-function dist_mat=stan_ephys_stats_mu_variance(EPHYS_DATA)
+function store=stan_ephys_stats_nightday(EPHYS_DATA)
 %
 % stability analysis--baseline data
 % first take all of the data from control
@@ -9,16 +9,19 @@ function dist_mat=stan_ephys_stats_mu_variance(EPHYS_DATA)
 
 padding_smps=round([options.padding-.1]*options.spike_fs);
 
-mufun_corr_day=@(x) mean(zscore(x(:,1:floor(size(x,2)/10))),2);
-mufun_corr_night=@(x) mean(zscore(x(:,end-(floor(size(x,2)/10)-1):end)),2);
+mufun_corr_day=@(x) mean(zscore(x(:,1:floor(size(x,2)/2))),2);
+mufun_corr_night=@(x) mean(zscore(x(:,end-(floor(size(x,2)/2)-1):end)),2);
+mufun_corr_all=@(x) mean(zscore(x),2);
+
 %mufun_corr_day=@(x) mean(zscore(x(:,1:100)),2);
 %mufun_corr_night=@(x) mean(zscore(x(:,end-100:end)),2);
 mufun=@(x) mean(x);
 varfun=@(x) std(x);
 dist_mat={};
 
-within_day=[];
-between_day=[];
+store.within_day=[];
+store.between_day=[];
+store.lags=[];
 
 for i=1:length(EPHYS_DATA.dates)
 
@@ -38,38 +41,32 @@ for i=1:length(EPHYS_DATA.dates)
 
 	spikerate_mu_corr_day=cellfun(mufun_corr_day,EPHYS_DATA.spike_rate{i},'uniformoutput',0);
 	spikerate_mu_corr_night=cellfun(mufun_corr_night,EPHYS_DATA.spike_rate{i},'uniformoutput',0);
-
+	spikerate_mu_corr_all=cellfun(mufun_corr_all,EPHYS_DATA.spike_rate{i},'uniformoutput',0);
 	spikerate_mu_corr_day=cat(2,spikerate_mu_corr_day{:});
 	spikerate_mu_corr_night=cat(2,spikerate_mu_corr_night{:});
+	spikerate_mu_corr_all=cat(2,spikerate_mu_corr_all{:});
 
-	ndays=size(spikerate_mu_corr_day,2);
+	ndays=size(spikerate_mu_corr_day,2)
+	daydiff=diff(EPHYS_DATA.days_since{i})
+	lags=EPHYS_DATA.days_since{i}
 
-	daydiff=diff(EPHYS_DATA.days_since{i});
+	for j=1:ndays
+		lags(j)
 
-	tmp_within=corr(spikerate_mu_corr_day,spikerate_mu_corr_night,'type','pearson');
-	tmp_within=tmp_within(find(diag(ones(ndays,1),0)));
+		for k=j+1:ndays
+			curlag=lags(k)-lags(j);
 
-	idx=find(daydiff==2);
+			tmp_within=corr(spikerate_mu_corr_night(:,k),spikerate_mu_corr_all(:,j),'type','pearson');
+			tmp_between=corr(spikerate_mu_corr_day(:,k),spikerate_mu_corr_all(:,j),'type','pearson');
 
-	if isempty(idx)
-		continue;
+			store.between_day=[store.between_day tmp_between];
+			store.within_day=[store.within_day tmp_within];
+			store.lags=[store.lags curlag];
+
+		end
+
 	end
 
-	tmp_between=corr(spikerate_mu_corr_night(:,idx),spikerate_mu_corr_night(:,idx+1),'type','pearson');
-	tmp_between=tmp_between(find(diag(ones(length(idx),1),0)));
-
-	%tmp_between=tmp_between-(tmp_within(idx));
-	%tmp_within=tmp_within(2:end)-tmp_within(1:end-1);
-
-	within_day=[within_day;tmp_within(:)];
-	between_day=[between_day;tmp_between(:)];
-
 end
-
-d{1}=within_day;
-d{2}=between_day;
-figure();plotSpread(d,'binwidth',.01);
-figure();markolab_boxplot(d);
-ranksum(within_day,between_day)
 
 %save(fullfile(dirs.agg_dir,dirs.datastore_dir,['mu_variance.mat']),'dist_mat');

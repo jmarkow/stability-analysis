@@ -1,4 +1,4 @@
-function [corrvals,comparevals,pmat,zmat,rmat_mu,rmat_mu_withinday,rmat_mu_lag]=stan_cadata_drift_analyze(DATA,varargin)
+function [rmat_mu,pmat]=stan_cadata_drift_analyze(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -6,6 +6,7 @@ function [corrvals,comparevals,pmat,zmat,rmat_mu,rmat_mu_withinday,rmat_mu_lag]=
 %
 %
 %
+pmat=[];
 
 movie_fs=22; % sampling rate of camera
 upsample=1; % upsample factor (set to 1 for no upsampling)
@@ -132,108 +133,108 @@ corrvals=zeros(npairs,nrois);
 maxlag_smps=round(maxlag*(movie_fs*upsample));
 
 % grab values from upper triangle of corr matrix
-
-for i=1:nrois
-
-	if lag_corr
-		tmp=zeros(ntrials,ntrials);
-		[x,y]=find(triu(ones(size(tmp)),1));
-
-		% fill upper triangle only
-
-		for j=1:length(x)
-			tmp(x(j),y(j))=max(xcorr(DATA{compare_day}(:,i,x(j)),DATA{compare_day}(:,i,y(j)),maxlag_smps,'coeff'));
-		end
-
-	else
-
-		tmp=corr(squeeze(DATA{compare_day}(:,i,:)));
-
-	end
-
-	corrvals(:,i)=tmp(find(triu(ones(size(tmp)),1)));
-
-end
-
-comparevals=cell(ndays,nrois);
-pmat=zeros(ndays,nrois);
-zmat=zeros(ndays,nrois);
-zmat_mu=zeros(ndays,nrois);
-
-for i=1:ndays
-
-	for j=1:nrois
-
-		ntrials2=size(DATA{i},3);
-
-		if lag_corr
-
-			tmp=zeros(ntrials,ntrials2);
-
-			[x,y]=find(triu(ones(size(tmp)),0));
-			for k=1:length(x)
-				tmp(x(k),y(k))=max(xcorr(DATA{compare_day}(:,j,x(k)),DATA{i}(:,j,y(k)),maxlag_smps,'coeff'));
-			end
-
-		else
-			tmp=corr(squeeze(DATA{compare_day}(:,j,:)),squeeze(DATA{i}(:,j,:)));
-		end
-
-		inc_vals=tmp(find(triu(ones(size(tmp)),0)));
-		comparevals{i,j}=inc_vals;
-
-		% use either t-test, ranksum or permutation (all yield similar answers)
-
-		switch lower(method(1))
-			case 't'
-				[~,pmat(i,j)]=ttest2(corrvals(:,j),inc_vals,'tail',tail);
-			case 'r'
-				pmat(i,j)=ranksum(corrvals(:,j),inc_vals,'tail',tail);
-			case 'p'
-				nulldist=zeros(nperms,1);
-				allvals=[corrvals(:,j);inc_vals(:)];
-
-				idx1=1:size(corrvals,1);
-				idx2=size(corrvals,1)+1:size(allvals);
-
-				% random permutation nperms
-
-				[~,rndidx]=sort(rand(nperms,length(allvals)),2);
-
-				% permuted data
-
-				rndvals=allvals(rndidx);
-
-				% data splits
-
-				pop1=rndvals(:,idx1)';
-				pop2=rndvals(:,idx2)';
-
-				% test statistic
-
-				nulldist=(mean(pop1)-mean(pop2))./(sqrt(std(pop1).*std(pop2)));
-				obs=(mean(corrvals(:,j))-mean(inc_vals))/(sqrt(std(corrvals(:,j))*std(inc_vals)));
-
-				% check appropriate tail
-
-				if strcmp(lower(tail(1)),'r')
-					tmp=sum(obs<nulldist); % right tail
-				elseif strcmp(lower(tail(1)),'l')
-					tmp=sum(obs>nulldist); % left tail
-				else
-					tmp=sum(abs(obs)>abs(nulldist)); % two tail
-				end
-
-				pmat(i,j)=(tmp+1)/(nperms+1);
-
-			otherwise
-				error('Did not understand method selection');
-			end
-
-			zmat(i,j)=(mean(inc_vals)-mean(corrvals(:,j)))/(sqrt(std(corrvals(:,j))*std(inc_vals)));
-
-		end
-	end
+%
+% for i=1:nrois
+%
+% 	if lag_corr
+% 		tmp=zeros(ntrials,ntrials);
+% 		[x,y]=find(triu(ones(size(tmp)),1));
+%
+% 		% fill upper triangle only
+%
+% 		for j=1:length(x)
+% 			tmp(x(j),y(j))=max(xcorr(DATA{compare_day}(:,i,x(j)),DATA{compare_day}(:,i,y(j)),maxlag_smps,'coeff'));
+% 		end
+%
+% 	else
+%
+% 		tmp=corr(squeeze(DATA{compare_day}(:,i,:)));
+%
+% 	end
+%
+% 	corrvals(:,i)=tmp(find(triu(ones(size(tmp)),1)));
+%
+% end
+%
+% comparevals=cell(ndays,nrois);
+% pmat=zeros(ndays,nrois);
+% zmat=zeros(ndays,nrois);
+% zmat_mu=zeros(ndays,nrois);
+%
+% for i=1:ndays
+%
+% 	for j=1:nrois
+%
+% 		ntrials2=size(DATA{i},3);
+%
+% 		if lag_corr
+%
+% 			tmp=zeros(ntrials,ntrials2);
+%
+% 			[x,y]=find(triu(ones(size(tmp)),0));
+% 			for k=1:length(x)
+% 				tmp(x(k),y(k))=max(xcorr(DATA{compare_day}(:,j,x(k)),DATA{i}(:,j,y(k)),maxlag_smps,'coeff'));
+% 			end
+%
+% 		else
+% 			tmp=corr(squeeze(DATA{compare_day}(:,j,:)),squeeze(DATA{i}(:,j,:)));
+% 		end
+%
+% 		inc_vals=tmp(find(triu(ones(size(tmp)),0)));
+% 		comparevals{i,j}=inc_vals;
+%
+% 		% use either t-test, ranksum or permutation (all yield similar answers)
+%
+% 		switch lower(method(1))
+% 			case 't'
+% 				[~,pmat(i,j)]=ttest2(corrvals(:,j),inc_vals,'tail',tail);
+% 			case 'r'
+% 				pmat(i,j)=ranksum(corrvals(:,j),inc_vals,'tail',tail);
+% 			case 'p'
+% 				nulldist=zeros(nperms,1);
+% 				allvals=[corrvals(:,j);inc_vals(:)];
+%
+% 				idx1=1:size(corrvals,1);
+% 				idx2=size(corrvals,1)+1:size(allvals);
+%
+% 				% random permutation nperms
+%
+% 				[~,rndidx]=sort(rand(nperms,length(allvals)),2);
+%
+% 				% permuted data
+%
+% 				rndvals=allvals(rndidx);
+%
+% 				% data splits
+%
+% 				pop1=rndvals(:,idx1)';
+% 				pop2=rndvals(:,idx2)';
+%
+% 				% test statistic
+%
+% 				nulldist=(mean(pop1)-mean(pop2))./(sqrt(std(pop1).*std(pop2)));
+% 				obs=(mean(corrvals(:,j))-mean(inc_vals))/(sqrt(std(corrvals(:,j))*std(inc_vals)));
+%
+% 				% check appropriate tail
+%
+% 				if strcmp(lower(tail(1)),'r')
+% 					tmp=sum(obs<nulldist); % right tail
+% 				elseif strcmp(lower(tail(1)),'l')
+% 					tmp=sum(obs>nulldist); % left tail
+% 				else
+% 					tmp=sum(abs(obs)>abs(nulldist)); % two tail
+% 				end
+%
+% 				pmat(i,j)=(tmp+1)/(nperms+1);
+%
+% 			otherwise
+% 				error('Did not understand method selection');
+% 			end
+%
+% 			zmat(i,j)=(mean(inc_vals)-mean(corrvals(:,j)))/(sqrt(std(corrvals(:,j))*std(inc_vals)));
+%
+% 		end
+% 	end
 
 % get the correlation difference using means (probably the most reliable here,
 % jitter should average out assuming it's symmetric)
@@ -251,14 +252,13 @@ for i=1:ndays
 		corrmat=corr(mu1,mu2,'type','pearson');
 	end
 
-	rmat_mu(i,:)=corrmat(find(diag(ones(nrois,1),0)));
+	rmat_mu.acrossday(i,:)=corrmat(find(diag(ones(nrois,1),0)));
+
 end
 
-
-rmat_mu_withinday=zeros(ndays,nrois);
-rmat_mu_lag.day={};
-rmat_mu_lag.night={};
-%zeros(ndays-3,nrois);
+rmat_mu.withinday=zeros(ndays,nrois);
+rmat_mu.lag.day={};
+rmat_mu.lag.night={};
 
 for i=1:ndays
 
@@ -268,7 +268,7 @@ for i=1:ndays
 	ntrials=size(DATA{i},3);
 
 	pool1=1:floor(ntrials/2);
-	pool2=ntrials-(floor(ntrials/4)-1):ntrials;
+	pool2=ntrials-(floor(ntrials/2)-1):ntrials;
 
 	mu1=mean(zscore(DATA{i}(:,:,pool1)),3);
 	mu2=mean(zscore(DATA{i}(:,:,pool2)),3);
@@ -281,9 +281,15 @@ for i=1:ndays
 		corrmat=corr(mu1,mu2,'type','pearson');
 	end
 
-	rmat_mu_withinday(i,:)=corrmat(find(diag(ones(nrois,1),0)));
+	rmat_mu.withinday(i,:)=corrmat(find(diag(ones(nrois,1),0)));
 
 	% lag analysis
+
+	%pool_compare=ntrials-(floor(ntrials/4)-1):ntrials;
+	%pool_compare=1:floor(ntrials/4);
+
+	pool_compare=1:ntrials;
+	compare=mean(zscore(DATA{i}(:,:,pool_compare)),3);
 
 	for j=(i+1):ndays
 
@@ -294,24 +300,29 @@ for i=1:ndays
 
 		mu3=mean(zscore(DATA{j}(:,:,pool3)),3);
 		mu4=mean(zscore(DATA{j}(:,:,pool4)),3);
+		mu5=mean(zscore(DATA{j}),3);
 
 		corrmat=zeros(nrois,nrois);
 		corrmat2=zeros(nrois,nrois);
-
-		compare=mu2;
+		corrmat3=zeros(nrois,nrois);
 
 		if lag_corr
-			for j=1:nrois
-				corrmat(j,j)=max(xcorr(compare(:,j),mu3(:,j),maxlag_smps,'coeff'));
-				corrmat2(j,j)=max(xcorr(compare(:,j),mu4(:,j),maxlag_smps,'coeff'));
+			for k=1:nrois
+				corrmat(k,k)=max(xcorr(compare(:,k),mu3(:,k),maxlag_smps,'coeff'));
+				corrmat2(k,k)=max(xcorr(compare(:,k),mu4(:,k),maxlag_smps,'coeff'));
+				corrmat3(k,k)=max(xcorr(compare(:,k),mu5(:,k),maxlag_smps,'coeff'));
 			end
 		else
 			corrmat=corr(compare,mu3,'type','pearson');
 			corrmat2=corr(compare,mu4,'type','pearson');
+			corrmat3=corr(compare,mu5,'type','pearson');
 		end
 
-		rmat_mu_lag.day{j-i}(i,:)=corrmat(find(diag(ones(nrois,1),0)));
-		rmat_mu_lag.night{j-i}(i,:)=corrmat2(find(diag(ones(nrois,1),0)));
+		diag_idx=find(diag(ones(nrois,1),0));
+
+		rmat_mu.lag.day{j-i}(i,:)=corrmat(diag_idx);
+		rmat_mu.lag.night{j-i}(i,:)=corrmat2(diag_idx);
+		rmat_mu.lag.all{j-i}(i,:)=corrmat3(diag_idx);
 
 	end
 
