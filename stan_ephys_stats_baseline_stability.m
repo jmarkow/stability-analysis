@@ -48,22 +48,29 @@ for i=1:length(use_data)
 	tmp=corr(zscore(use_data{i}{trials_to_use(1)}));
 	baseline_data=tmp(find(triu(ones(size(tmp)),1))); % get upper triangle of corr
 
-	mu1=mean(zscore(use_data{i}{trials_to_use(1)}),2);
+	i
 
-	for j=trials_to_use(2:end)
+	for j=trials_to_use
 
-		tmp=corr(zscore(use_data{i}{trials_to_use(1)}),zscore(use_data{i}{j}));
-		mu2=mean(zscore(use_data{i}{j}),2);
-		tmp_mu=corr(mu1(:),mu2(:),'type','pearson');
+		mu1=mean(zscore(use_data{i}{trials_to_use(j)}),2);
 
-		new_data=tmp(find(triu(ones(size(tmp)),0))); % get upper triangle of corr
-		teststats.val(counter)=(mean(new_data(:))-mean(baseline_data(:)))./(sqrt(std(baseline_data(:))*std(new_data(:))));
-		teststats.days_since(counter)=BASELINE_DATA.days_since{i}(j)-BASELINE_DATA.days_since{i}(trials_to_use(1));
-		teststats.birdid(counter)=i;
-		teststats.val_mu(counter)=tmp_mu(2,1);
+		for k=trials_to_use
 
-		%[teststats.pval{i}(counter),h]=ranksum(baseline_data(:),new_data(:),'tail','right')
-		counter=counter+1;
+			%tmp=corr(zscore(use_data{i}{trials_to_use(1)}),zscore(use_data{i}{j}));
+			mu2=mean(zscore(use_data{i}{k}),2);
+			tmp_mu=corr(mu1(:),mu2(:),'type','pearson');
+
+			%new_data=tmp(find(triu(ones(size(tmp)),0))); % get upper triangle of corr
+			%teststats.val(counter)=(mean(new_data(:))-mean(baseline_data(:)))./(sqrt(std(baseline_data(:))*std(new_data(:))));
+
+			teststats.days_since(counter)=BASELINE_DATA.days_since{i}(k)-BASELINE_DATA.days_since{i}(j);
+			teststats.birdid(counter)=i;
+			teststats.val_mu(counter)=tmp_mu;
+
+			%[teststats.pval{i}(counter),h]=ranksum(baseline_data(:),new_data(:),'tail','right')
+			counter=counter+1;
+
+		end
 
 	end
 

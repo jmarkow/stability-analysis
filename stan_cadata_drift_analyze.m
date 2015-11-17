@@ -259,44 +259,48 @@ end
 rmat_mu.withinday=zeros(ndays,nrois);
 rmat_mu.lag.day={};
 rmat_mu.lag.night={};
+rmat_mu.lag.all={};
+frac=2;
 
 for i=1:ndays
 
-	corrmat=zeros(nrois,nrois);
-	corrmat_nightday=zeros(nrois,nrois);
+	% corrmat=zeros(nrois,nrois);
+	% corrmat_nightday=zeros(nrois,nrois);
+	%
 
 	ntrials=size(DATA{i},3);
 
-	pool1=1:floor(ntrials/2);
-	pool2=ntrials-(floor(ntrials/2)-1):ntrials;
+	%
+	% pool1=1:round(ntrials/2);
+	% pool2=(ntrials-(round(ntrials/2)-1)):ntrials;
+	%
+	% mu1=mean(zscore(DATA{i}(:,:,pool1)),3);
+	% mu2=mean(zscore(DATA{i}(:,:,pool2)),3);
+	%
+	% if lag_corr
+	% 	for j=1:nrois
+	% 		corrmat(j,j)=max(xcorr(mu1(:,j),mu2(:,j),maxlag_smps,'coeff'));
+	% 	end
+	% else
+	% 	corrmat=corr(mu1,mu2,'type','pearson');
+	% end
+	%
+	% rmat_mu.withinday(i,:)=corrmat(find(diag(ones(nrois,1),0)));
+	%
+	% % lag analysis
 
-	mu1=mean(zscore(DATA{i}(:,:,pool1)),3);
-	mu2=mean(zscore(DATA{i}(:,:,pool2)),3);
-
-	if lag_corr
-		for j=1:nrois
-			corrmat(j,j)=max(xcorr(mu1(:,j),mu2(:,j),maxlag_smps,'coeff'));
-		end
-	else
-		corrmat=corr(mu1,mu2,'type','pearson');
-	end
-
-	rmat_mu.withinday(i,:)=corrmat(find(diag(ones(nrois,1),0)));
-
-	% lag analysis
-
-	%pool_compare=ntrials-(floor(ntrials/4)-1):ntrials;
-	%pool_compare=1:floor(ntrials/4);
-
-	pool_compare=1:ntrials;
+	pool_compare=(ntrials-(round(ntrials/frac)-1)):ntrials;
+	%pool_compare=1:round(ntrials/4);
+	%pool_compare=1:ntrials;
 	compare=mean(zscore(DATA{i}(:,:,pool_compare)),3);
+	compare_all=mean(zscore(DATA{i}),3);
 
-	for j=(i+1):ndays
+	for j=i:ndays
 
 		ntrials2=size(DATA{j},3);
 
-		pool3=1:floor(ntrials2/4);
-		pool4=(ntrials2-floor(ntrials2/4)):ntrials2;
+		pool3=1:round(ntrials2/frac);
+		pool4=(ntrials2-(round(ntrials2/frac)-1)):ntrials2;
 
 		mu3=mean(zscore(DATA{j}(:,:,pool3)),3);
 		mu4=mean(zscore(DATA{j}(:,:,pool4)),3);
@@ -310,7 +314,7 @@ for i=1:ndays
 			for k=1:nrois
 				corrmat(k,k)=max(xcorr(compare(:,k),mu3(:,k),maxlag_smps,'coeff'));
 				corrmat2(k,k)=max(xcorr(compare(:,k),mu4(:,k),maxlag_smps,'coeff'));
-				corrmat3(k,k)=max(xcorr(compare(:,k),mu5(:,k),maxlag_smps,'coeff'));
+				corrmat3(k,k)=max(xcorr(compare_all(:,k),mu5(:,k),maxlag_smps,'coeff'));
 			end
 		else
 			corrmat=corr(compare,mu3,'type','pearson');
@@ -320,9 +324,9 @@ for i=1:ndays
 
 		diag_idx=find(diag(ones(nrois,1),0));
 
-		rmat_mu.lag.day{j-i}(i,:)=corrmat(diag_idx);
-		rmat_mu.lag.night{j-i}(i,:)=corrmat2(diag_idx);
-		rmat_mu.lag.all{j-i}(i,:)=corrmat3(diag_idx);
+		rmat_mu.lag.day{(j-i)+1}(i,:)=corrmat(diag_idx);
+		rmat_mu.lag.night{(j-i)+1}(i,:)=corrmat2(diag_idx);
+		rmat_mu.lag.all{(j-i)+1}(i,:)=corrmat3(diag_idx);
 
 	end
 

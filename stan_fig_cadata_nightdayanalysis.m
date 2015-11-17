@@ -8,7 +8,9 @@ for i=1:length(names)
 
 	if strcmp(names{i},'daynightcompare')
 		width=5.2;
-	else
+	elseif strfind(names{i},'overnight')
+		width=2.8;
+	else	
 		width=4.5;
 	end
 

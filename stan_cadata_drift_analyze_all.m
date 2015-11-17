@@ -5,7 +5,7 @@ function stan_cadata_drift_analyze_all()
 %
 % batch analysis of all calcium imaging birds
 
-maxlag=.033;
+maxlag=.0165;
 %maxlag=.1;
 [options,dirs]=stan_preflight;
 
