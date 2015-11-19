@@ -114,46 +114,53 @@ set(gca,'XTick',[1 2],'XTickLabel',{'First','Last'})
 
 % for each animal, check shift within each ROI (between relative to within)
 
-pool1=[];
-pool2=[];
-pool3=[];
-pool4=[];
+pool_pval=[];
+poolz=[];
 
 dprime=[];
 
 for i=1:length(CASTATS)
 
   mu=mean(CASTATS(i).rmat_mu.lag.day{1});
+  mu2=mean(CASTATS(i).rmat_mu.lag.day{2});
   %idx=mu>prctile(mu,75);
-  idx=mu>0
+  idx=1:length(mu);
 
-  tmp1=mean(CASTATS(i).rmat_mu.lag.day{4}(:,idx));
+  tmp1=mean(CASTATS(i).rmat_mu.lag.day{2}(:,idx));
   tmp2=mean(CASTATS(i).rmat_mu.lag.day{1}(:,idx));
   tmp3=std(CASTATS(i).rmat_mu.lag.day{1}(:,idx));
   tmp4=std(CASTATS(i).rmat_mu.lag.day{2}(:,idx));
+
   nrois=length(tmp1);
 
-  %for j=1:nrois
-  %  pval(j)=ranksum(CASTATS(i).rmat_mu.lag.day{1}(:,j),CASTATS(i).rmat_mu.lag.day{2}(:,j),'tail','right');
-  %end
+  bootmu=mean(cat(3,CASTATS(i).rmat_mu.bootstrap.lag.day{1}{:}),3);
+  pval=mean(repmat(mu2,[size(bootmu,1) 1])>bootmu)+(1/size(bootmu,1));
+  %pval=mu2<=prctile(bootmu,.5);
 
-  pool1=[pool1 tmp1];
-  pool2=[pool2 tmp2];
-  pool3=[pool3 tmp3];
-  pool4=[pool4 tmp4];
-  %pool4=[pool4 pval];
+  poolz=[poolz (mu2-mean(bootmu))./std(bootmu)]
+  pool_pval=[pool_pval pval];
 
   %dprime=[dprime tmp3];
   %dprime=[dprime (pool1-pool2)./pool2];
 
 end
 
-d{1}=pool1;
-d{2}=pool2;
-figure();markolab_boxplot(d);
-pause();
-e{1}=(pool1-pool2)./sqrt(pool3.*pool3);
-%figure();hist(e{1},20)
+% significant pool
+
+bins=[-14:1:4];
+size(poolz)
+est=histc(poolz,bins);
+est2=histc(poolz(pool_pval<.05),bins);
+
+fig.stairplot=figure();
+ax(1)=markolab_stairplot(est,bins,'facecolor',[.5 .5 .5],'edgecolor','k','method','p');
+hold on;
+ax(2)=markolab_stairplot(est2,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
+xlim([-14 4]);
+xlabel('Z (Between day-within day)')
+ylabel('N(rois)')
+
+e{1}=poolz;
 
 figs.overnight_swarm=figure();
 plotSpread(e,'binWidth',.01);
@@ -162,7 +169,6 @@ set(gca,'YTick',[-5 0 5],'TickLength',[0 0],'XTick',[],'outerposition',[.05 0 1 
 hold on
 plot(get(gca,'xlim'),[0 0],'k-');
 yh=ylabel('\DeltaCorr. (Z)');
-%set(yh,'position',get(yh,'position')+[.0005 0 0])
 
 figs.overnight_box=figure();
 markolab_boxplot(e);
@@ -170,5 +176,3 @@ ylim([-3 3]);
 set(gca,'YTick',[-3 0 3],'TickLength',[0 0],'XTick',[],'outerposition',[.05 0 1 1]);
 plot(get(gca,'xlim'),[0 0],'k-');
 ylabel('\DeltaCorr. (Z)');
-
-%bootci(1e3,{@median,(pool1-pool2)},'type','cper')

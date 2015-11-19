@@ -27,6 +27,7 @@ tail='right';
 maxlag=.02;
 lag_corr=0;
 realign=1;
+nboots=1e5;
 
 if mod(nparams,2)>0
 	error('Parameters must be specified as parameter/value pairs');
@@ -261,37 +262,47 @@ rmat_mu.lag.day={};
 rmat_mu.lag.night={};
 rmat_mu.lag.all={};
 frac=2;
+%
+% rmat_mu.bootstrap=zeros(nboots,nrois);
+%
+% [~,rndidx]=sort(rand(ntrials,nboots));
+ntrials=size(DATA{1},3);
+pool1=1:floor(ntrials/frac);
+pool2=floor(ntrials/frac)+1:ntrials;
+diag_idx=find(diag(ones(nrois,1),0));
+%
+% for i=1:nboots
+%
+% 	% scramble within day (first day?)
+%
+% 	trial_pool=1:ntrials;
+% 	boot1=rndidx(pool1,i);
+% 	boot2=rndidx(pool2,i);
+%
+% 	corrmat=zeros(nrois,nrois);
+% 	mu1=mean(zscore(DATA{1}(:,:,boot1)),3);
+% 	mu2=mean(zscore(DATA{1}(:,:,boot2)),3);
+%
+% 	if lag_corr
+% 		for j=1:nrois
+% 			corrmat(j,j)=max(xcorr(mu1(:,j),mu2(:,j),maxlag_smps,'coeff'));
+% 		end
+% 	else
+% 		corrmat=corr(mu1,mu2,'type','pearson');
+% 	end
+%
+% 	rmat_mu.bootstrap(i,:)=corrmat(diag_idx);
+%
+% end
 
 for i=1:ndays
 
-	% corrmat=zeros(nrois,nrois);
-	% corrmat_nightday=zeros(nrois,nrois);
-	%
+	ntrials1=size(DATA{i},3);
 
-	ntrials=size(DATA{i},3);
-
-	%
-	% pool1=1:round(ntrials/2);
-	% pool2=(ntrials-(round(ntrials/2)-1)):ntrials;
-	%
-	% mu1=mean(zscore(DATA{i}(:,:,pool1)),3);
-	% mu2=mean(zscore(DATA{i}(:,:,pool2)),3);
-	%
-	% if lag_corr
-	% 	for j=1:nrois
-	% 		corrmat(j,j)=max(xcorr(mu1(:,j),mu2(:,j),maxlag_smps,'coeff'));
-	% 	end
-	% else
-	% 	corrmat=corr(mu1,mu2,'type','pearson');
-	% end
-	%
-	% rmat_mu.withinday(i,:)=corrmat(find(diag(ones(nrois,1),0)));
-	%
-	% % lag analysis
-
-	pool_compare=(ntrials-(round(ntrials/frac)-1)):ntrials;
-	%pool_compare=1:round(ntrials/4);
+	pool_compare=(ntrials1-(round(ntrials1/frac)-1)):ntrials1;
+	%pool_compare=1:round(ntrials/frac);
 	%pool_compare=1:ntrials;
+
 	compare=mean(zscore(DATA{i}(:,:,pool_compare)),3);
 	compare_all=mean(zscore(DATA{i}),3);
 
@@ -299,34 +310,103 @@ for i=1:ndays
 
 		ntrials2=size(DATA{j},3);
 
-		pool3=1:round(ntrials2/frac);
-		pool4=(ntrials2-(round(ntrials2/frac)-1)):ntrials2;
+		pool1=1:round(ntrials2/frac);
+		pool2=(ntrials2-(round(ntrials2/frac)-1)):ntrials2;
 
-		mu3=mean(zscore(DATA{j}(:,:,pool3)),3);
-		mu4=mean(zscore(DATA{j}(:,:,pool4)),3);
-		mu5=mean(zscore(DATA{j}),3);
+		mu_day=mean(zscore(DATA{j}(:,:,pool1)),3);
+		mu_night=mean(zscore(DATA{j}(:,:,pool2)),3);
+		mu_all=mean(zscore(DATA{j}),3);
 
-		corrmat=zeros(nrois,nrois);
-		corrmat2=zeros(nrois,nrois);
-		corrmat3=zeros(nrois,nrois);
+		corrmat_day=zeros(nrois,nrois);
+		corrmat_night=zeros(nrois,nrois);
+		corrmat_all=zeros(nrois,nrois);
 
 		if lag_corr
 			for k=1:nrois
-				corrmat(k,k)=max(xcorr(compare(:,k),mu3(:,k),maxlag_smps,'coeff'));
-				corrmat2(k,k)=max(xcorr(compare(:,k),mu4(:,k),maxlag_smps,'coeff'));
-				corrmat3(k,k)=max(xcorr(compare_all(:,k),mu5(:,k),maxlag_smps,'coeff'));
+				corrmat_day(k,k)=max(xcorr(compare(:,k),mu_day(:,k),maxlag_smps,'coeff'));
+				corrmat_night(k,k)=max(xcorr(compare(:,k),mu_night(:,k),maxlag_smps,'coeff'));
+				corrmat_all(k,k)=max(xcorr(compare_all(:,k),mu_all(:,k),maxlag_smps,'coeff'));
 			end
 		else
-			corrmat=corr(compare,mu3,'type','pearson');
-			corrmat2=corr(compare,mu4,'type','pearson');
-			corrmat3=corr(compare,mu5,'type','pearson');
+			corrmat_day=corr(compare,mu_day,'type','pearson');
+			corrmat_night=corr(compare,mu_night,'type','pearson');
+			corrmat_all=corr(compare_all,mu_all,'type','pearson');
 		end
 
-		diag_idx=find(diag(ones(nrois,1),0));
+		rmat_mu.lag.day{(j-i)+1}(i,:)=corrmat_day(diag_idx);
+		rmat_mu.lag.night{(j-i)+1}(i,:)=corrmat_night(diag_idx);
+		rmat_mu.lag.all{(j-i)+1}(i,:)=corrmat_all(diag_idx);
 
-		rmat_mu.lag.day{(j-i)+1}(i,:)=corrmat(diag_idx);
-		rmat_mu.lag.night{(j-i)+1}(i,:)=corrmat2(diag_idx);
-		rmat_mu.lag.all{(j-i)+1}(i,:)=corrmat3(diag_idx);
+		% monte carlo permutation test for each comparison
+
+		rmat_mu.bootstrap.lag.day{(j-i)+1}{i}=zeros(nboots,nrois);
+		rmat_mu.bootstrap.lag.night{(j-i)+1}{i}=zeros(nboots,nrois);
+		rmat_mu.bootstrap.lag.all{(j-i)+1}{i}=zeros(nboots,nrois);
+
+		if nboots>0
+
+			% monte carlo for day,night and all
+
+			ntrials1=size(DATA{i},3);
+			ntrials2=size(DATA{j},3);
+
+			compare1=ntrials1-(floor(ntrials1/frac)-1):ntrials1;
+			pool1=1:floor(ntrials2/frac);
+			pool2=ntrials2-(floor(ntrials2/frac)-1):ntrials2;
+
+			all_stitch=zscore(cat(3,DATA{i},DATA{j}));
+			day_stitch=zscore(cat(3,DATA{i}(:,:,compare1),DATA{j}(:,:,pool1)));
+			night_stitch=zscore(cat(3,DATA{i}(:,:,compare1),DATA{j}(:,:,pool2)));
+
+			% get random permutations
+
+			all_ntrials=size(all_stitch,3);
+			day_ntrials=size(day_stitch,3);
+			night_ntrials=size(night_stitch,3);
+
+			[~,rndidx_all]=sort(rand(all_ntrials,nboots));
+			[~,rndidx_day]=sort(rand(day_ntrials,nboots));
+			[~,rndidx_night]=sort(rand(night_ntrials,nboots));
+
+			all_split=floor(all_ntrials/2);
+			day_split=floor(day_ntrials/2);
+			night_split=floor(night_ntrials/2);
+
+			for k=1:nboots
+
+				k
+				mu_all1=mean(all_stitch(:,:,rndidx_all(1:all_split,k)),3);
+				mu_all2=mean(all_stitch(:,:,rndidx_all(all_split+1:end,k)),3);
+
+				mu_day1=mean(day_stitch(:,:,rndidx_day(1:day_split,k)),3);
+				mu_day2=mean(day_stitch(:,:,rndidx_day(day_split+1:end,k)),3);
+
+				mu_night1=mean(night_stitch(:,:,rndidx_night(1:night_split,k)),3);
+				mu_night2=mean(night_stitch(:,:,rndidx_night(night_split+1:end,k)),3);
+
+				corrmat_day=zeros(nrois,nrois);
+				corrmat_night=zeros(nrois,nrois);
+				corrmat_all=zeros(nrois,nrois);
+
+				if lag_corr
+					for l=1:nrois
+						corrmat_day(l,l)=max(xcorr(mu_day1(:,l),mu_day2(:,l),maxlag_smps,'coeff'));
+						corrmat_night(l,l)=max(xcorr(mu_night1(:,l),mu_night2(:,l),maxlag_smps,'coeff'));
+						corrmat_all(l,l)=max(xcorr(mu_all1(:,l),mu_all2(:,l),maxlag_smps,'coeff'));
+					end
+				else
+					corrmat_day=corr(mu_day1,mu_day2,'type','pearson');
+					corrmat_night=corr(mu_night1,mu_night2,'type','pearson');
+					corrmat_all=corr(mu_all1,mu_all2,'type','pearson');
+				end
+
+				rmat_mu.bootstrap.lag.day{(j-i)+1}{i}(k,:)=corrmat_day(diag_idx);
+				rmat_mu.bootstrap.lag.night{(j-i)+1}{i}(k,:)=corrmat_night(diag_idx);
+				rmat_mu.bootstrap.lag.all{(j-i)+1}{i}(k,:)=corrmat_all(diag_idx);
+
+			end
+
+		end
 
 	end
 
