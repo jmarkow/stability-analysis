@@ -20,9 +20,9 @@ listing=dir(fullfile(feature_dir,'*.mat'));
 listing={listing(:).name};
 post_z=struct();
 
-for i=1:length(listing)	
+for i=1:length(listing)
 
-	listing{i}	
+	listing{i}
 	load(fullfile(feature_dir,listing{i}),'pre_features','post_features');
 
 	feature_names=fieldnames(pre_features);
@@ -42,7 +42,10 @@ for i=1:length(listing)
 		% convert post to z
 
 		mu2=mean(post_features.(feature_names{j})(post_amp_idx,:));
-		var2=var(post_features.(feature_names{j})(post_amp_idx,:));		
+		var2=var(post_features.(feature_names{j})(post_amp_idx,:));
+
+		post_z.ranksum_mu(i).(feature_names{j})=ranksum(mu1,mu2);
+		post_z.ranksum_var(i).(feature_names{j})=ranksum(var1,var2);
 
 		post_z.mu(i).(feature_names{j})=(mu2(1:100)-mean(mu1))/std(mu1);
 		post_z.var(i).(feature_names{j})=(var2(1:100)-mean(var1))/std(var1);

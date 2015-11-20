@@ -10,11 +10,11 @@ for i=1:length(names)
 		width=5.2;
 	elseif strfind(names{i},'overnight')
 		width=2.8;
-	else	
+	else
 		width=4.5;
 	end
 
-	set(fig.(names{i}),'units','centimeters','position',[10 10 width 5],'paperpositionmode','auto');
+	set(fig.(names{i}),'units','centimeters','position',[10 10 width 4],'paperpositionmode','auto');
   set(fig.(names{i}),'paperpositionmode','auto');
 
 	markolab_multi_fig_save(fig.(names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),[ 'cadata_analysis_' names{i} ],'eps,png,fig',...

@@ -27,7 +27,7 @@ tail='right';
 maxlag=.02;
 lag_corr=0;
 realign=1;
-nboots=1e5;
+nboots=1e4;
 
 if mod(nparams,2)>0
 	error('Parameters must be specified as parameter/value pairs');
@@ -299,6 +299,7 @@ for i=1:ndays
 
 	ntrials1=size(DATA{i},3);
 
+	i
 	pool_compare=(ntrials1-(round(ntrials1/frac)-1)):ntrials1;
 	%pool_compare=1:round(ntrials/frac);
 	%pool_compare=1:ntrials;
@@ -372,9 +373,9 @@ for i=1:ndays
 			day_split=floor(day_ntrials/2);
 			night_split=floor(night_ntrials/2);
 
+			tic
 			for k=1:nboots
 
-				k
 				mu_all1=mean(all_stitch(:,:,rndidx_all(1:all_split,k)),3);
 				mu_all2=mean(all_stitch(:,:,rndidx_all(all_split+1:end,k)),3);
 
@@ -405,7 +406,7 @@ for i=1:ndays
 				rmat_mu.bootstrap.lag.all{(j-i)+1}{i}(k,:)=corrmat_all(diag_idx);
 
 			end
-
+			toc
 		end
 
 	end

@@ -1,4 +1,4 @@
-function [figs,fig_stats]=stan_plot_barecarbon_ca_timecourse()
+function [figs,figs_stats]=stan_plot_barecarbon_ca_timecourse()
 %
 %
 %
@@ -7,7 +7,7 @@ function [figs,fig_stats]=stan_plot_barecarbon_ca_timecourse()
 interp_factor=5;
 ndays=4;
 swarm_offset=1;
-nboots=1e3;
+nboots=1e2;
 
 [options,dirs]=stan_preflight;
 
@@ -23,15 +23,13 @@ figs.catime=figure();
 colors=paruly(3);
 x=0:ndays;
 
-%baseline_ci=bootci(nboots,{@mean,teststats.val_mu(teststats.days_since<5)},'type','cper');
-%markolab_shadeplot(x,repmat([1;baseline_ci(2)],[1 length(x)]),[.7 .7 .7],'k');
-%hold on;
-
 for i=1:length(stats)
 
   mu=ones(1,ndays+1);
   mu_ci=ones(2,ndays+1);
   cur_data=stats(i).rmat_mu.lag.all;
+
+  % day one from bootstrap
 
   for j=1:ndays
     mu_ci(:,j+1)=bootci(nboots,{@mean,cur_data{j+1}(:)},'type','cper');
@@ -51,9 +49,9 @@ end
 
 yh=ylabel('Correlation (R)')
 set(yh,'position',get(yh,'position')+[.16 0 0]);
-ylim([.6 1]);
+ylim([.5 1]);
 ylimits=ylim();
-set(gca,'YTick',ylimits,'TickLength',[0 0],'FontSize',9);
+set(gca,'YTick',ylimits,'TickLength',[0 0],'FontSize',7);
 
 % plotspread version??
 
@@ -71,29 +69,16 @@ for i=1:length(uniq_bird)
   plotpoints{1}(end+1)=mean(val(bird==uniq_bird(i)));
 end
 
-%plotpoints{1}=teststats.val_mu(teststats.days_since<5);
-pval=ones(1,length(stats))*NaN;
-pval2=ones(1,length(stats))*NaN;
-
-% plotpoints{2}=[];
-% inc_rois={};
-% for i=1:length(stats)
-%   tmp=(stats(i).rmat_mu_withinday(1,:));
-%   %inc_rois{i}=find(tmp>.6);
-%   %tmp(tmp<.6)=[];
-%   plotpoints{2}=[plotpoints{2};tmp(:)];
-% end
+figs_stats.mu_v_ca.pval=ones(1,length(stats))*NaN;
 
 for i=1:length(stats)
-  %tmp=stats(i).rmat_mu(2:5,inc_rois{i});
-  %tmp=stats(i).rmat_mu.acrossday(2:5,:);
   tmp=cat(1,stats(i).rmat_mu.lag.all{2:5});
   tmp=mean(tmp);
   plotpoints{i+1}=tmp(:);
-  pval(i)=ranksum(plotpoints{1},plotpoints{i+1},'tail','right');
-  %compare=stats(i).rmat_mu_withinday;
-  %pval2(i)=ranksum(compare(:),plotpoints{i+1},'tail','right');
+  figs_stats.mu_v_ca.pval(i)=ranksum(plotpoints{1},plotpoints{i+1},'tail','right')
 end
+
+figs_stats.mu_v_ca_all.pval=ranksum(plotpoints{1},cat(1,plotpoints{2:end}));
 
 % compare within a day
 % for statistical comparison?
@@ -106,25 +91,103 @@ swarm_colors=[repmat([.7 .7 .7],[npre 1]);cmap];
 
 % pairwise ranksum, Holm-Bonferonni stepdown
 
+length(plotpoints{1})
+length(plotpoints{2})
+length(plotpoints{3})
+length(plotpoints{4})
+
 figs.beeswarm=figure();
-pval_cor=markolab_bonf_holm(pval,.05)
-h=plotSpread(plotpoints,'xValues',pos,'binWidth',.4,'distributionColors',swarm_colors);
+h=plotSpread(plotpoints,'xValues',pos,'binWidth',.6,'distributionColors',swarm_colors);
 for i=1:length(h)-1
   set(h{i},'markersize',8);
 end
 ylim([0 1]);
 ylimits=ylim();
 set(gca,'Xtick',pos([1 3]),'XTickLabel',{'Multi-unit','PNs'},'TickLength',[0 0],'YTick',[ylimits(1) ylimits(2)],...
-  'FontSize',9,'outerPosition',[.05 0 1 1])
+  'FontSize',7,'outerPosition',[.05 0 1 1])
 yh=ylabel('Correlation (R)')
 set(yh,'position',get(yh,'position')+[.16 0 0]);
-
-
-swarm_colors
 
 figs.box=figure();
 markolab_boxplot(plotpoints,[],'box_color',swarm_colors,'feature_idx',[4:-1:1],'med_color',repmat([0 0 0],[4 1]));
 ylim([.2 1])
 set(gca,'YTick',get(gca,'YLim'),'outerPosition',[.05 0 1 1])
 yh=ylabel('Correlation (R)')
-set(yh,'position',get(yh,'position')+[.16 0 0]);
+set(yh,'position',get(yh,'position')+[.16 0 0],'FontSize',7);
+
+% monte carlo permutation test for fraction of unstable cells
+
+figs_stats.drift.pval=cell(1,length(stats));
+for i=1:length(stats)
+
+  % get pvals for each lag
+  nrois=size(stats(i).rmat_mu.lag.all{1},2);
+  figs_stats.drift.pval{i}=zeros(ndays,nrois);
+
+  for j=1:ndays
+    cur_data=stats(i).rmat_mu.lag.all{j+1};
+    boot_data=stats(i).rmat_mu.bootstrap.lag.all{j+1};
+
+    boot_data=mean(cat(3,boot_data{:}),3);
+
+    if size(cur_data,1)>1
+      cur_data=mean(cur_data);
+    end
+
+    cur_data=repmat(cur_data,[size(boot_data,1) 1]);
+    pval=mean(cur_data>boot_data)+1/size(boot_data,1);
+    figs_stats.drift.pval{i}(j,:)=pval;
+  end
+
+end
+
+% test for whether within day variability accounts for change
+variability=[];
+change=[];
+
+for i=1:length(stats)
+  variability=[variability mean(stats(i).rmat_mu.lag.day{1})];
+  change=[change mean(stats(i).rmat_mu.lag.day{4})-mean(stats(i).rmat_mu.lag.day{1})];
+end
+
+figs.var_v_change=figure();
+scatter(variability,change)
+[r,p]=corrcoef(variability,change)
+
+figs_stats.drift.var_v_change.p=p(2,1);
+figs_stats.drift.var_v_change.r=r(2,1);
+
+% plot cum fraction of unstable cells for each bird (MC correction for number of ROIs)
+
+figs.frac_unstable=figure();
+frac=zeros(3,ndays+1);
+fig_stats.surv_time=cell(1,length(stats));
+for i=1:length(stats)
+  nrois=size(stats(i).rmat_mu.lag.day{1},2);
+  unstable=zeros(ndays+1,nrois);
+  for j=1:ndays
+    unstable(j+1,:)=(markolab_bonf_holm(figs_stats.drift.pval{i}(j,:),.05)<.01);
+  end
+
+  tmp=[];
+  for j=1:size(unstable,2)
+    tmp2=min(find(unstable(:,j)))
+    if ~isempty(tmp2)
+      tmp=[tmp tmp2];
+    end
+  end
+
+  count=cumsum(unstable);
+  n=sum(count>0,2);
+  frac(i,:)=n./nrois;
+
+  figs_stats.surv_time{i}=tmp;
+  figs_stats.drift.unstable_n(i)=size(stats(i).rmat_mu.lag.all{1},2);
+  plot([0:4],frac(i,:),'ko-','color',cmap(i,:),'markersize',8,'markerfacecolor',[1 1 1]);
+  hold on;
+end
+
+figs_stats.drift.unstable=frac;
+ylim([0 1])
+xlim([-.5 4.5])
+set(gca,'TickLength',[0 0],'YTick',[0:.5:1],'XTick',[0:4],'FontSize',7)

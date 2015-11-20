@@ -7,7 +7,7 @@ function [figs figs_stats]=stan_plot_ca_nightdat(CASTATS)
 
 nlags=length(CASTATS(1).rmat_mu.lag.day)-1; % first point is lag 0
 npoints=nlags*2; % nlags morning/evening
-nboots=1e3;
+nboots=1e4;
 
 agg=cell(1,npoints);
 counter=1;
@@ -57,9 +57,8 @@ hold on;
 xlim([x(1)-.5 x(end)+.5]);
 ylim([.45 .85]);
 ylabel('Correlation (R)');
-xlabel('Lag (day)');
 set(gca,'XTick',x(1)+.5:2:x(end),'XTickLabel',[1:4],'Ytick',get(gca,'ylim'));
-set(gca,'layer','top');
+set(gca,'layer','top','FontSize',7);
 
 % group together night and day (histogram of day-night????)
 
@@ -87,8 +86,8 @@ for i=1:length(days)
   plot_mu_ci(:,counter)=bootci(nboots,{@mean,norm_day{i}},'type','cper');
   plot_mu_ci(:,counter+1)=bootci(nboots,{@mean,norm_night{i}},'type','cper');
 
-  figs_stats.lagtest(i)=ranksum(norm_night{i},norm_night{1});
-  figs_stats.pairtest(i)=signrank(days{i},nights{i});
+  figs_stats.circadian.lagtest(i)=ranksum(norm_night{i},norm_night{1});
+  figs_stats.circadian.pairtest(i)=signrank(days{i},nights{i});
   counter=counter+2;
 
 end
@@ -110,69 +109,103 @@ L=legend(h,{'1 day','2 days','3 days','4 days'})
 legend boxoff;
 set(L,'location','northwest','FontSize',6)
 xlim([.5 2.5])
-set(gca,'XTick',[1 2],'XTickLabel',{'First','Last'})
+set(gca,'XTick',[1 2],'XTickLabel',{'First','Last'},'FontSize',7)
 
 % for each animal, check shift within each ROI (between relative to within)
 
-pool_pval=[];
-poolz=[];
+pool_pval1_left=[];
+pool_pval1_right=[];
+pool_pval2_left=[];
+pool_pval2_right=[];
+poolz1=[];
+poolz2=[];
+
+pool1=[];
+pool2=[];
 
 dprime=[];
 
 for i=1:length(CASTATS)
 
-  mu=mean(CASTATS(i).rmat_mu.lag.day{1});
+  mu1=mean(CASTATS(i).rmat_mu.lag.day{1});
   mu2=mean(CASTATS(i).rmat_mu.lag.day{2});
-  %idx=mu>prctile(mu,75);
-  idx=1:length(mu);
 
-  tmp1=mean(CASTATS(i).rmat_mu.lag.day{2}(:,idx));
-  tmp2=mean(CASTATS(i).rmat_mu.lag.day{1}(:,idx));
-  tmp3=std(CASTATS(i).rmat_mu.lag.day{1}(:,idx));
-  tmp4=std(CASTATS(i).rmat_mu.lag.day{2}(:,idx));
-
-  nrois=length(tmp1);
+  tmp1=CASTATS(i).rmat_mu.lag.day{1};
+  tmp2=CASTATS(i).rmat_mu.lag.day{2};
+  pool1=[pool1 mu1];
+  pool2=[pool2 mu2];
 
   bootmu=mean(cat(3,CASTATS(i).rmat_mu.bootstrap.lag.day{1}{:}),3);
-  pval=mean(repmat(mu2,[size(bootmu,1) 1])>bootmu)+(1/size(bootmu,1));
-  %pval=mu2<=prctile(bootmu,.5);
 
-  poolz=[poolz (mu2-mean(bootmu))./std(bootmu)]
-  pool_pval=[pool_pval pval];
+  pval1_right=mean(repmat(mu1,[size(bootmu,1) 1])>bootmu)+(1/size(bootmu,1));
+  pval1_left=mean(repmat(mu1,[size(bootmu,1) 1])<bootmu)+(1/size(bootmu,1));
 
-  %dprime=[dprime tmp3];
-  %dprime=[dprime (pool1-pool2)./pool2];
+  pval2_right=mean(repmat(mu2,[size(bootmu,1) 1])>bootmu)+(1/size(bootmu,1));
+  pval2_left=mean(repmat(mu2,[size(bootmu,1) 1])<bootmu)+(1/size(bootmu,1));
+
+  poolz1=[poolz1 (mu1-mean(bootmu))./std(bootmu)];
+  poolz2=[poolz2 (mu2-mean(bootmu))./std(bootmu)];
+
+  pool_pval1_left=[pool_pval1_left pval1_left];
+  pool_pval1_right=[pool_pval1_right pval1_right];
+
+  pool_pval2_left=[pool_pval2_left pval2_left];
+  pool_pval2_right=[pool_pval2_right pval2_right];
 
 end
 
 % significant pool
 
-bins=[-14:1:4];
-size(poolz)
-est=histc(poolz,bins);
-est2=histc(poolz(pool_pval<.05),bins);
+figs_stats.overnight.roi_pval1.left=[pool_pval1_left];
+figs_stats.overnight.roi_pval1.right=[pool_pval1_right];
+figs_stats.overnight.all_pval1=signrank(poolz1,0,'tail','left')
 
-fig.stairplot=figure();
-ax(1)=markolab_stairplot(est,bins,'facecolor',[.5 .5 .5],'edgecolor','k','method','p');
+figs_stats.overnight.roi_pval2.left=[pool_pval2_left];
+figs_stats.overnight.roi_pval2.right=[pool_pval2_right];
+figs_stats.overnight.all_pval2=signrank(poolz2,poolz1,'tail','left')
+
+bins=[-15:1:5];
+est1=histc(poolz1,bins);
+est2=histc(poolz1(pool_pval1_right<.05),bins);
+est3=histc(poolz1(pool_pval1_left<.05),bins);
+
+figs.roihist1=figure();
+ax(1)=markolab_stairplot(est1,bins,'facecolor',[.5 .5 .5],'edgecolor','k','method','p');
 hold on;
-ax(2)=markolab_stairplot(est2,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
-xlim([-14 4]);
-xlabel('Z (Between day-within day)')
-ylabel('N(rois)')
+ax(2)=markolab_stairplot(est2,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
+ax(3)=markolab_stairplot(est3,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
+plot([0 0],[0 40],'k--');
+xlim([-15 5]);
+set(gca,'YTick',[0:10:40],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
 
-e{1}=poolz;
+est12=histc(poolz2,bins);
+est22=histc(poolz2(pool_pval2_right<.05),bins);
+est32=histc(poolz2(pool_pval2_left<.05),bins);
 
-figs.overnight_swarm=figure();
-plotSpread(e,'binWidth',.01);
-ylim([-5 5]);
-set(gca,'YTick',[-5 0 5],'TickLength',[0 0],'XTick',[],'outerposition',[.05 0 1 1]);
-hold on
-plot(get(gca,'xlim'),[0 0],'k-');
-yh=ylabel('\DeltaCorr. (Z)');
+figs.roihist1=figure();
+ax(1)=markolab_stairplot(est12,bins,'facecolor',[.5 .5 .5],'edgecolor','k','method','p');
+hold on;
+ax(2)=markolab_stairplot(est22,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
+ax(3)=markolab_stairplot(est32,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
+plot([0 0],[0 40],'k--');
+xlim([-15 5]);
+set(gca,'YTick',[0:10:40],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
 
-figs.overnight_box=figure();
-markolab_boxplot(e);
-ylim([-3 3]);
-set(gca,'YTick',[-3 0 3],'TickLength',[0 0],'XTick',[],'outerposition',[.05 0 1 1]);
-plot(get(gca,'xlim'),[0 0],'k-');
-ylabel('\DeltaCorr. (Z)');
+ax=[];
+figs.comparehist=figure();
+ax(1)=markolab_stairplot(est1,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
+hold on;
+ax(2)=markolab_stairplot(est12,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
+plot([0 0],[0 40],'k--');
+xlim([-15 5]);
+set(gca,'YTick',[0:10:40],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
+L=legend(ax,{'Night','Day'});
+legend boxoff;
+set(L,'FontSize',5,'Location','Northwest')
+
+% figs.compareswarm=figure();
+% d{1}=poolz1;
+% d{2}=poolz2;
+% plotSpread(d,'binwidth',.25)
+% hold on;
+% markolab_boxplot(d,[],'box_color','none','med_color',repmat([0 0 0],[4 1]))

@@ -51,13 +51,14 @@ for i=1:length(EPHYS_DATA.dates)
 	lags=EPHYS_DATA.days_since{i}
 
 	for j=1:ndays
+		
 		lags(j)
 
-		for k=j+1:ndays
+		for k=j:ndays
 			curlag=lags(k)-lags(j);
 
-			tmp_within=corr(spikerate_mu_corr_night(:,k),spikerate_mu_corr_all(:,j),'type','pearson');
-			tmp_between=corr(spikerate_mu_corr_day(:,k),spikerate_mu_corr_all(:,j),'type','pearson');
+			tmp_within=corr(spikerate_mu_corr_night(:,k),spikerate_mu_corr_night(:,j),'type','pearson');
+			tmp_between=corr(spikerate_mu_corr_day(:,k),spikerate_mu_corr_night(:,j),'type','pearson');
 
 			store.between_day=[store.between_day tmp_between];
 			store.within_day=[store.within_day tmp_within];
