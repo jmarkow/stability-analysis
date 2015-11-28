@@ -97,7 +97,7 @@ length(plotpoints{3})
 length(plotpoints{4})
 
 figs.beeswarm=figure();
-h=plotSpread(plotpoints,'xValues',pos,'binWidth',.6,'distributionColors',swarm_colors);
+h=plotSpread(plotpoints,'xValues',pos,'binWidth',.6,'distributionColors',swarm_colors,'spreadFcn',{'xp',[]});
 for i=1:length(h)-1
   set(h{i},'markersize',8);
 end
@@ -152,10 +152,14 @@ end
 
 figs.var_v_change=figure();
 scatter(variability,change)
-[r,p]=corrcoef(variability,change)
+[r,p]=corr(variability(:),change(:),'type','spearman')
+[r2,p2]=corrcoef(variability,change)
+[r3,p3]=corr(variability(:),change(:),'type','pearson')
 
-figs_stats.drift.var_v_change.p=p(2,1);
-figs_stats.drift.var_v_change.r=r(2,1);
+pause();
+
+figs_stats.drift.var_v_change.p=p;
+figs_stats.drift.var_v_change.r=r;
 
 % plot cum fraction of unstable cells for each bird (MC correction for number of ROIs)
 

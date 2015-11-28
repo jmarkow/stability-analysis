@@ -163,6 +163,7 @@ figs_stats.overnight.all_pval1=signrank(poolz1,0,'tail','left')
 figs_stats.overnight.roi_pval2.left=[pool_pval2_left];
 figs_stats.overnight.roi_pval2.right=[pool_pval2_right];
 figs_stats.overnight.all_pval2=signrank(poolz2,poolz1,'tail','left')
+figs_stats.overnight.all_pval2_raw=signrank(pool2,pool1,'tail','left');
 
 bins=[-15:1:5];
 est1=histc(poolz1,bins);
@@ -202,6 +203,15 @@ set(gca,'YTick',[0:10:40],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'lay
 L=legend(ax,{'Night','Day'});
 legend boxoff;
 set(L,'FontSize',5,'Location','Northwest')
+
+bins_raw=[-1:.01:1];
+est_raw=histc(pool2-pool1,bins_raw);
+
+figs.rawhist=figure();
+ax(1)=markolab_stairplot(est_raw,bins_raw,'facecolor',[.3 .3 .3],'edgecolor','k','method','p');
+hold on;
+plot([0 0],[0 50],'k--');
+xlim([-1 1]);
 
 % figs.compareswarm=figure();
 % d{1}=poolz1;
