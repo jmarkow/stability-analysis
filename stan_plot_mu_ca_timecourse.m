@@ -12,6 +12,9 @@ nboots=1e2;
 [options,dirs]=stan_preflight;
 
 load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats.mat'),'stats');
+peakstats=load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_peaktime.mat'),'stats');
+peakstats=peakstats.stats;
+
 load(fullfile(dirs.agg_dir,dirs.datastore_dir,'mu_baseline_stability.mat'),'teststats');
 
 % get baseline from ephys data
@@ -156,15 +159,13 @@ scatter(variability,change)
 [r2,p2]=corrcoef(variability,change)
 [r3,p3]=corr(variability(:),change(:),'type','pearson')
 
-pause();
-
 figs_stats.drift.var_v_change.p=p;
 figs_stats.drift.var_v_change.r=r;
 
 % plot cum fraction of unstable cells for each bird (MC correction for number of ROIs)
 
 figs.frac_unstable=figure();
-frac=zeros(3,ndays+1);
+frac=zeros(length(stats),ndays+1);
 fig_stats.surv_time=cell(1,length(stats));
 for i=1:length(stats)
   nrois=size(stats(i).rmat_mu.lag.day{1},2);
@@ -192,6 +193,27 @@ for i=1:length(stats)
 end
 
 figs_stats.drift.unstable=frac;
+ylim([0 1])
+xlim([-.5 4.5])
+set(gca,'TickLength',[0 0],'YTick',[0:.5:1],'XTick',[0:4],'FontSize',7)
+
+
+figs.frac_unstable_peaktime=figure();
+frac_peaktime=zeros(length(peakstats),ndays+1);
+for i=1:length(peakstats)
+  nrois=size(peakstats(i).peak_stable,2);
+  unstable=zeros(ndays+1,nrois);
+  for j=1:ndays
+    unstable(j+1,:)=(peakstats(i).peak_stable(1,:)==1&peakstats(i).peak_stable(j+1,:)==0);
+  end
+
+  count=cumsum(unstable);
+  n=sum(count>0,2);
+  frac_peaktime(i,:)=n./nrois;
+  plot([0:4],frac_peaktime(i,:),'ko-','color',cmap(i,:),'markersize',8,'markerfacecolor',[1 1 1]);
+  hold on;
+end
+
 ylim([0 1])
 xlim([-.5 4.5])
 set(gca,'TickLength',[0 0],'YTick',[0:.5:1],'XTick',[0:4],'FontSize',7)

@@ -14,17 +14,10 @@ load(fullfile(dirs.agg_dir,dirs.sdi_dir,'analysis','sdi_analysis_data.mat'),'tfd
 
 % analyze circadian variation within-day/overnight shift
 
-day={};
-night={};
 
-maxlag=20;
-for i=1:maxlag
-	day{i}=[];
-	night{i}=[];
-end
-
-score_day={};
-score_night={};
+score_day2night={};
+score_night2night={};
+score_day2day={};
 
 for i=1:length(tfdensity)
 
@@ -32,6 +25,7 @@ for i=1:length(tfdensity)
 	i
 
 	for j=1:ndays
+
 		template=mean(tfdensity{i}.night{j},3);
 		norm1=sum(template(:).^2);
 		template2=mean(tfdensity{i}.day{j},3);
@@ -55,8 +49,9 @@ for i=1:length(tfdensity)
 				cur_contour_night=double(tfdensity{i}.night{k}(:,:,l));
 				norm3=sum(cur_contour_night(:).^2);
 
-				score_day{i}{j,k}(l)=sum(sum(template.*cur_contour_day))/sqrt(norm1*norm2);
-				score_night{i}{j,k}(l)=sum(sum(template.*cur_contour_night))/sqrt(norm1*norm3);
+				score_day2night{i}{j,k}(l)=sum(sum(template.*cur_contour_day))/sqrt(norm1*norm2);
+				score_day2day{i}{j,k}(l)=sum(sum(template2.*cur_contour_day))/sqrt(norm12*norm2);
+				score_night2night{i}{j,k}(l)=sum(sum(template.*cur_contour_night))/sqrt(norm1*norm3);
 
 			end
 		end
