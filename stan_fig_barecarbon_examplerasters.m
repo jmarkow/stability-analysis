@@ -6,7 +6,7 @@ function stan_fig1c
 
 [options,dirs]=stan_preflight;
 load custom_colormaps;
-figs=stan_raster_control(fee_map);
+figs=stan_ephys_raster_control(fee_map);
 scaling_fun=@(x) (x/1.69)*3.6;
 
 %tightfig(figs.y273);
@@ -33,7 +33,7 @@ for i=1:length(ax)
 	pos=get(ax(i),'position');
 
 	% width change
-	
+
 	new_width=scaling_fun(xrange1);
 	width_change=new_width-pos(3);
 
@@ -50,7 +50,7 @@ for i=1:length(ax)
 	pos=get(ax(i),'position');
 
 	% width change
-	
+
 	new_width=scaling_fun(xrange2);
 	width_change=new_width-pos(3);
 
@@ -60,6 +60,3 @@ end
 
 markolab_multi_fig_save(figs.y273,fullfile(dirs.agg_dir,dirs.fig_dir),['figure_2a_y273'],'eps,png,fig,pdf');
 markolab_multi_fig_save(figs.lpur72,fullfile(dirs.agg_dir,dirs.fig_dir),['figure_2a_lpur72'],'eps,png,fig,pdf');
-
-
-

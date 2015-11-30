@@ -17,7 +17,7 @@ option_names=fieldnames(options);
 
 % which options specify control raster
 
-idx=regexp(option_names,'nervecut_raster(\d+)_(\w+)','tokens'); 
+idx=regexp(option_names,'nervecut_raster(\d+)_(\w+)','tokens');
 
 % gather all rasters specified in options
 
@@ -33,10 +33,10 @@ end
 template_key=stan_read_templates();
 
 for i=1:length(ctrl)
-	
+
 	ctrl(i).precut_path=fullfile(dirs.agg_dir,ctrl(i).precut_path);
 	ctrl(i).postcut_path=fullfile(dirs.agg_dir,ctrl(i).postcut_path);
-	
+
 	% load data
 
 	load(ctrl(i).precut_path,'store');
@@ -48,7 +48,7 @@ for i=1:length(ctrl)
 	clear store;
 
 	% get templates
-	
+
 
 	motif_list={precut_store(:).motif_name};
 	precut_idx=find(strcmp(ctrl(i).precut_motif_name,motif_list));
@@ -96,7 +96,7 @@ for i=1:length(ctrl)
 		r=corr(zscore(plot_spikes(j).smooth_rate(100:end-100,:)));
 
 		% find good case, mean r > .4
-	
+
 		r_vec=mean(r,2);
 		[~,good_trial]=max(r_vec);
 		r_check=r(good_trial,:);
@@ -118,7 +118,7 @@ for i=1:length(ctrl)
 		uniq_trials=unique(plot_spikes(j).trial);
 
 		for k=1:length(uniq_trials)
-			% correct trials 
+			% correct trials
 
 			correction=sum(outliers<uniq_trials(k));
 			new_idx=(plot_spikes(j).trial==uniq_trials(k));
@@ -131,7 +131,7 @@ for i=1:length(ctrl)
 
 	plot_spect=repmat(spect,[length(ctrl(i).precut_days) 1]);
 	plot_trials=repmat(ctrl(i).precut_trials,[length(ctrl(i).precut_days) 1]);
-	
+
 	shift_template=postcut_template.data;
 
 	%if shift<0
@@ -155,14 +155,14 @@ for i=1:length(ctrl)
 		r=corr(zscore(plot_spikes(j+offset).smooth_rate(100:end-100,:)));
 
 		% find good case, mean r > .4
-	
+
 		r_vec=mean(r,2);
 		[~,good_trial]=max(r_vec);
 		r_check=r(good_trial,:);
 		outliers=find(r_check<(mean(r_check)-1.5*(std(r_check))));
 
 		fr_check=mean(plot_spikes(j+offset).smooth_rate);
-		
+
 		outliers2=find(fr_check>(mean(fr_check)+2*(std(fr_check))));
 		outliers3=find(fr_check<(mean(fr_check)-2*(std(fr_check))));
 		outliers=unique([outliers(:);outliers2(:);outliers3(:)])
@@ -179,7 +179,7 @@ for i=1:length(ctrl)
 		uniq_trials=unique(plot_spikes(j+offset).trial);
 
 		for k=1:length(uniq_trials)
-			% correct trials 
+			% correct trials
 
 			correction=sum(outliers<uniq_trials(k));
 			new_idx=(plot_spikes(j+offset).trial==uniq_trials(k));
@@ -192,10 +192,10 @@ for i=1:length(ctrl)
 
 	plot_spect=[plot_spect;repmat(spect,[length(ctrl(i).postcut_days) 1])];
 	plot_trials=[plot_trials;repmat(ctrl(i).postcut_trials,[length(ctrl(i).postcut_days) 1])];
-	
+
 	fig.(precut_store(precut_idx).bird_id)=figure();
-	ax=stan_plot_raster_horizontal(plot_spect,plot_spikes,'plot_trials',plot_trials,'colors',COLORS,'spike_width',.01,'spike_height',.5);
-	
+	ax=stan_ephys_plot_raster_horizontal(plot_spect,plot_spikes,'plot_trials',plot_trials,'colors',COLORS,'spike_width',.01,'spike_height',.5);
+
 	set(gca,'xtick',[]);
 	xlabel('');
 	h=line([.25 .45],[170 170],'linewidth',1.5,'color','k');

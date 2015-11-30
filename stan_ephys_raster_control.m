@@ -16,7 +16,7 @@ option_names=fieldnames(options);
 
 % which options specify control raster
 
-idx=regexp(option_names,'control_raster(\d+)_(\w+)','tokens'); 
+idx=regexp(option_names,'control_raster(\d+)_(\w+)','tokens');
 
 % gather all rasters specified in options
 
@@ -32,30 +32,30 @@ end
 template_key=stan_read_templates();
 
 for i=1:length(ctrl)
-	
+
 	ctrl(i).path=fullfile(dirs.agg_dir,ctrl(i).path);
-	
+
 	load(ctrl(i).path,'store');
 
 	% get template
-	
+
 	motif_list={store(:).motif_name};
 	idx=find(strcmp(ctrl(i).motif_name,motif_list));
 
 	load(fullfile(dirs.agg_dir,dirs.template_dir,...
 		[ store(idx).bird_id '_' store(idx).motif_name ]),'template','parameters');
 
-	% parse bird and motif_name from 
+	% parse bird and motif_name from
 
 	% pad out the template
-	
+
 	pad_smps=round(template.fs*options.padding);
 
 	template.data=[repmat(template.data(1),[pad_smps(1) 1]);template.data(:);repmat(template.data(end),[pad_smps(2) 1])]
 
 	[spect.s,spect.f,spect.t]=zftftb_pretty_sonogram(template.data,template.fs,'filtering',300,'clipping',[-3 2],...
 		'len',70,'overlap',69.5,'zeropad',0);
-	
+
 	% collect spike rasters, throw together into figure
 
 	ch_list=store(idx).ch_list;
@@ -63,7 +63,7 @@ for i=1:length(ctrl)
 
 	plot_spikes=struct();
 	plot_trials=ctrl(i).trials;
-	
+
 	for j=1:length(ctrl(i).days)
 
 		plot_spikes(j).trial=store(idx).spikes.trial{ch_idx}{ctrl(i).days(j)};
@@ -75,7 +75,7 @@ for i=1:length(ctrl)
 		r=corr(zscore(plot_spikes(j).smooth_rate(100:end-100,:)));
 
 		% find good case, mean r > .4
-	
+
 		r_vec=mean(r,2);
 		[~,good_trial]=max(r_vec);
 		r_check=r(good_trial,:);
@@ -97,7 +97,7 @@ for i=1:length(ctrl)
 		uniq_trials=unique(plot_spikes(j).trial);
 
 		for k=1:length(uniq_trials)
-			% correct trials 
+			% correct trials
 
 			correction=sum(outliers<uniq_trials(k));
 			new_idx=(plot_spikes(j).trial==uniq_trials(k));
@@ -111,10 +111,10 @@ for i=1:length(ctrl)
 
 
 	% remove outliers
-	
+
 	fig.(store(idx).bird_id)=figure();
-	ax=stan_plot_raster(spect,plot_spikes,'spike_height',.5,'spike_width',.01,'plot_trials',plot_trials,'colors',COLORS);
-	
+	ax=stan_ephys_plot_raster(spect,plot_spikes,'spike_height',.5,'spike_width',.01,'plot_trials',plot_trials,'colors',COLORS);
+
 	if isfield(ctrl(i),'xlim') & ~isempty(ctrl(i).xlim)
 		xlimits=ctrl(i).xlim;
 		xlim([ctrl(i).xlim]);
@@ -129,14 +129,14 @@ for i=1:length(ctrl)
 	set(ax(3),'ylim',[1 150]);
 	h=line([new_xlimits(1) new_xlimits(1)+.2],[170 170],'linewidth',1.5,'color','k');
 	set(h,'clipping','off');
-	
+
 	for j=1:length(ax)
 		pos=get(ax(j),'position');
 		set(ax(j),'position',[ .025 pos(2) .95 pos(4)]);
-	end	
+	end
 
 	% days between rasters
-	
+
 	days_diff=(store(idx).datenums(ch_idx,ctrl(i).days(end))-store(idx).datenums(ch_idx,ctrl(i).days(1)));
 	ylabel(['+' num2str(days_diff) ' days'])
 

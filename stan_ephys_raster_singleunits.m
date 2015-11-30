@@ -33,10 +33,10 @@ for i=1:length(unit_dirs)
 
 	tmp=regexp(listing(1).name,'^(\w+)\_','tokens');
 	bird_id=tmp{1}{1};
-	date_num=[];	
+	date_num=[];
 
 	for j=1:length(listing)
-		
+
 		% get cluster number
 
 		tmp=regexp(listing(j).name,'\_(\d+-\d+-\d+)\_','tokens');
@@ -54,7 +54,7 @@ for i=1:length(unit_dirs)
 
 	end
 
-	% grab the appropriate template, correct for padding	
+	% grab the appropriate template, correct for padding
 
 	load(fullfile(dirs.agg_dir,dirs.template_dir,[ bird_id '_motif1_padding.mat' ]),'template');
 
@@ -70,7 +70,7 @@ for i=1:length(unit_dirs)
 
 	fig.(unit_names{i})=figure();
 	cols=4;
-	ax=stan_plot_raster(spect,plot_spikes,...
+	ax=stan_ephys_plot_raster(spect,plot_spikes,...
 		'colors',COLORS,'spike_width',.01,'spike_height',.5,'columns',cols);
 
 	for j=1:length(ax)
@@ -95,7 +95,7 @@ for i=1:length(unit_dirs)
 	ax2=[];
 	tvec=[-.0005:1/cluster.parameters.interpolate_fs:.0005];
 	for j=1:length(plot_spikes)
-		
+
 		length(ax)*2-1
 		ax2(j)=subplot(length(ax)*2-1,cols,[counter counter+cols]);
 		counter=counter+cols*2;
@@ -103,7 +103,7 @@ for i=1:length(unit_dirs)
 		sig=std(plot_spikes(j).windows');
 		markolab_shadeplot(tvec*1e3,[mu-sig;mu+sig],[1 0 0],[0 0 0]);
 		hold on;
-		plot([tvec*1e3],mean(plot_spikes(j).windows'),'k-');	
+		plot([tvec*1e3],mean(plot_spikes(j).windows'),'k-');
 		set(ax2(j),'ytick',[],'xtick',[]);
 
 
@@ -121,6 +121,6 @@ for i=1:length(unit_dirs)
 	%set(h,'clipping','off');
 
 
-	
+
 
 end

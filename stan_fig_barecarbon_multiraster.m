@@ -7,7 +7,7 @@ function stan_fig6a
 [options,dirs]=stan_preflight;
 load custom_colormaps;
 %fig=stan_raster_multi(fee_map);
-fig=stan_raster_multi_raw(fee_map);
+fig=stan_ephys_raster_multi_raw(fee_map);
 set(fig,'units','centimeters','position',[3 3 14 16],'paperpositionmode','auto');
 
 ax=findall(fig,'type','axes');
