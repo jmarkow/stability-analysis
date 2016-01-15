@@ -6,7 +6,7 @@ function h=stan_dot_error_plot(X,Y,CI,C,varargin)
 
 
 if nargin<3 | isempty(C)
-	C=ones(size(MU));
+	C=ones(size(Y));
 end
 
 colors='';

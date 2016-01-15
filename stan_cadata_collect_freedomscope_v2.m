@@ -1,4 +1,4 @@
-function [COLLECT_DATA,COLLECT_DATES]=stan_cadata_collect_freedomscope_v2(DIR)
+function [COLLECT_DATA,COLLECT_DATES,TIME]=stan_cadata_collect_freedomscope_v2(DIR)
 % takes data where cell arrays correspond to separate songs, rows to samples, and columns to rois
 % and reformats for stan_cadata_sortmat
 %
@@ -41,7 +41,7 @@ for i=1:length(listing)
 		roi_ave.filename=[];
 	end
 
-	[COLLECT_DATA{i},TIME,COLLECT_DATES{i}]=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,...
+	[COLLECT_DATA{i},TIME{i},COLLECT_DATES{i}]=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,...
 		roi_ave.RawTime,...
 		60,... % threshold on derivative (check for gain shift, in raw px values)
 		30,... % threshold for camera on (px values below this considered LED off)
@@ -53,7 +53,7 @@ for i=1:length(listing)
 		roi_ave.Offset,... % offset
         roi_ave.filename); % filename (for parsing trial times)
 
-	MINT=min(TIME);
-	MAXT=max(TIME);
+	MINT=min(TIME{i});
+	MAXT=max(TIME{i});
 
 end
