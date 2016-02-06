@@ -1,4 +1,4 @@
-function stan_plot_baseline(X,Y,C,varargin)
+function b=stan_plot_baseline(X,Y,C,varargin)
 %
 %
 %
@@ -93,6 +93,7 @@ ylimits=ylim()
 ylimits=round(ylimits/ylimit_rounding)*ylimit_rounding;
 ylim(ylimits);
 set(gca,'layer','top');
+title([num2str(b)])
 %set(gca,'TickDir','out','TickLength',[0 0],'ytick',[ylimits(1):.1:ylimits(2)]);
 %xlim([min(pred_x)-5 max(pred_x)+5]);
 %set(gca,'xtick',[0:20:max(pred_x)]);

@@ -1,4 +1,4 @@
-function post_z=stan_analyze_nervecut_audio()
+function [post_z,pre_z]=stan_analyze_nervecut_audio()
 %
 %
 %
@@ -50,6 +50,30 @@ for i=1:length(listing)
 		post_z.mu(i).(feature_names{j})=(mu2(1:100)-mean(mu1))/std(mu1);
 		post_z.var(i).(feature_names{j})=(var2(1:100)-mean(var1))/std(var1);
 
+		pre_z.raw_mu(i).(feature_names{j})=mu1(1:100);
+		pre_z.raw_var(i).(feature_names{j})=var1(1:100);
+		post_z.raw_mu(i).(feature_names{j})=mu2(1:100);
+		post_z.raw_var(i).(feature_names{j})=var2(1:100);
+
 	end
 
 end
+
+
+
+%%%% print out table with ranksum statistics
+
+fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig3_audionervecut.txt'),'w+');
+
+for i=1:length(feature_names)
+
+	[p_mu,h,stats_mu]=ranksum(cat(2,pre_z(:).raw_mu.(feature_names{i})),cat(2,post_z(:).raw_mu.(feature_names{i})));
+	[p_var,h,stats_var]=ranksum(cat(2,pre_z(:).raw_var.(feature_names{i})),cat(2,post_z(:).raw_var.(feature_names{i})));
+
+	fprintf(fid,'%-20s\tp=%-2.3e\tz=%g\t%-20s\tp=%-2.3e\tz=%g\n',...
+		[ feature_names{i} '(mean)' ] ,p_mu,stats_mu.zval,...
+		[ feature_names{i} '(var)' ],p_var,stats_var.zval);
+end
+
+fprintf(fid,'N(points): %i',length(pre_z.raw_mu(1).(feature_names{1})));
+fclose(fid);

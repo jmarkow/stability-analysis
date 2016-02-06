@@ -49,7 +49,8 @@ fontsize=7;
 fig=figure();
 
 ax(1)=subplot(2,1,1);
-stan_plot_regress(plot_data.days_since(:),plot_data.spikes(:),plot_data.birdid(:),'markersize',markersize);
+
+b(1,:)=stan_plot_regress(plot_data.days_since(:),plot_data.spikes(:),plot_data.birdid(:),'markersize',markersize);
 yh=ylabel('FR');
 set(yh,'position',get(yh,'position')+[5 -.2 0])
 set(gca,'XTick',[],'TickLength',[0 0],'YTick',[0 1],'fontsize',fontsize);
@@ -68,7 +69,7 @@ ylim([0 1]);
 set(gca,'XTick',[],'YTick',[],'TickDir','out','TickLength',[ 0 0 ],'fontsize',fontsize);
 
 ax(2)=subplot(2,1,2);
-stan_plot_regress(plot_data.days_since(:),plot_data.rms(:),plot_data.birdid(:),'markersize',markersize);
+b(2,:)=stan_plot_regress(plot_data.days_since(:),plot_data.rms(:),plot_data.birdid(:),'markersize',markersize);
 yh=ylabel('RMS');
 set(yh,'position',get(yh,'position')+[5 -.2 0])
 set(gca,'TickLength',[0 0],'YTick',[0 1],'fontsize',fontsize);
@@ -96,3 +97,7 @@ set(xh,'position',get(xh,'position')+[0 .01 0]);
 linkaxes(new_axis,'x');
 set(new_axis(1),'xlim',[0 120]);
 set(new_axis(end),'xtick',get(new_axis(end),'xlim'));
+
+fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig1_regression.txt'),'w+');
+fprintf(fid,'FR R=%g\nRMS R=%g\nN(points)=%g\nN(birds)=%g',b(1,1),b(2,1),length(plot_data.days_since(:)),length(unique(plot_data.birdid(:))));
+fclose(fid);

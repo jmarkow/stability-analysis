@@ -1,5 +1,5 @@
-function [FORM_DATA,FORM_T,FORM_DATE]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRESH,THRESH2,NEWFS,MINT,MAXT,PADDING,SONG_LEN,OFFSET,FILENAMES)
-% Using Bill's newformat, use the following command:
+function [FORM_DATA,FORM_T,FORM_DATE]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRESH,THRESH2,NEWFS,MINT,MAXT,PADDING,SONG_LEN,OFFSET,FILENAMES,METHOD)
+% Using Bill's new format, use the following command:
 %
 % [form_data,t]=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,roi_ave.RawTime);
 %
@@ -7,6 +7,10 @@ function [FORM_DATA,FORM_T,FORM_DATE]=stan_cadata_format_freedomscope_v2(CADATA,
 % and reformats for stan_cadata_sortmat
 %
 % returns a 3d matrix samples x rois x trials
+
+if nargin<11
+	METHOD=1;
+end
 
 if nargin<10
 	OFFSET=[];
@@ -72,7 +76,7 @@ to_del=[];
 for i=1:length(FORM_DATA)
 
 	% apply offset correction if it exists
-    
+
 	if ~isempty(OFFSET)
 		old_t{i}=old_t{i}-offset(i)/1e3;
 	end
@@ -105,11 +109,45 @@ newtime=[mintime:1/NEWFS:maxtime]';
 
 % spline interpolate with extrapolation, remove all data outside of pads
 
-for i=1:length(FORM_DATA)
-	old_t{i}=old_t{i}-PADDING(1);
-	FORM_DATA{i}=interp1(old_t{i}(:,1),FORM_DATA{i},newtime,'spline','extrap');
-end
+% two methods for stitching the data:
+% 1) interpolate within trials, average
+% 2) bin data, interpolate over empty bins
 
+if METHOD==1
+	for i=1:length(FORM_DATA)
+		old_t{i}=old_t{i}-PADDING(1);
+		FORM_DATA{i}=interp1(old_t{i}(:,1),FORM_DATA{i},newtime,'spline','extrap');
+	end
+else
+
+	bins_x=newtime;
+	bins_y=cell(1,length(bins));
+
+	for i=1:length(bins_y)
+		bins_y{i}=[];
+	end
+
+	% collect time points in bin
+
+	for i=1:length(FORM_DATA)
+
+		% map to closest time idx
+
+		ca_t=old_t{i}(:,1);
+
+		for j=1:length(ca_t)
+			[~,loc]=min(bins_x-ca_t(j));
+			bins_y{loc}(end+1)=FORM_DATA{i}(j,:);
+		end
+
+	end
+
+	% average non-empty bins, rest get NaNs, interpolate through the NaNs
+
+	bins_y
+	pause();
+
+end
 FORM_T=newtime;
 
 for i=1:length(FORM_DATA)

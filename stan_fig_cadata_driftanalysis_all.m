@@ -4,7 +4,7 @@
 %
 
 [options,dirs]=stan_preflight;
-fig=stan_plot_mu_ca_timecourse();
+[fig,fig_stats]=stan_plot_mu_ca_timecourse();
 names=fieldnames(fig);
 
 for i=1:length(names)
@@ -15,6 +15,6 @@ for i=1:length(names)
 	end
 
   set(fig.(names{i}),'paperpositionmode','auto');
-	markolab_multi_fig_save(fig.(names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),[ 'driftanalysis_' names{i} ],'eps,png,fig',...
-		'renderer','painters');
+	%markolab_multi_fig_save(fig.(names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),[ 'driftanalysis_' names{i} ],'eps,png,fig',...
+	%	'renderer','painters');
 end

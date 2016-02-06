@@ -81,8 +81,8 @@ for i=1:length(stats)
   figs_stats.mu_v_ca.pval(i)=ranksum(plotpoints{1},plotpoints{i+1},'tail','right')
 end
 
-figs_stats.mu_v_ca_all.pval=ranksum(plotpoints{1},cat(1,plotpoints{2:end}));
-
+[figs_stats.mu_v_ca_all.pval,~,tmp_stats]=ranksum(plotpoints{1},cat(1,plotpoints{2:end}));
+figs_stats.mu_v_ca_all.zval=tmp_stats.zval;
 % compare within a day
 % for statistical comparison?
 
@@ -158,15 +158,14 @@ scatter(variability,change)
 [r,p]=corr(variability(:),change(:),'type','spearman')
 [r2,p2]=corrcoef(variability,change)
 [r3,p3]=corr(variability(:),change(:),'type','pearson')
-
-figs_stats.drift.var_v_change.p=p;
-figs_stats.drift.var_v_change.r=r;
+figs_stats.drift.var_v_change.p=p3;
+figs_stats.drift.var_v_change.r=r3;
 
 % plot cum fraction of unstable cells for each bird (MC correction for number of ROIs)
 
 figs.frac_unstable=figure();
 frac=zeros(length(stats),ndays+1);
-fig_stats.surv_time=cell(1,length(stats));
+figs_stats.surv_time=cell(1,length(stats));
 for i=1:length(stats)
   nrois=size(stats(i).rmat_mu.lag.day{1},2);
   unstable=zeros(ndays+1,nrois);
@@ -217,3 +216,9 @@ end
 ylim([0 1])
 xlim([-.5 4.5])
 set(gca,'TickLength',[0 0],'YTick',[0:.5:1],'XTick',[0:4],'FontSize',7)
+
+fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_catimecourse.txt'),'w+');
+fprintf(fid,'Multi-unit stability vs calcium: p=%e z=%g\n',figs_stats.mu_v_ca_all.pval,figs_stats.mu_v_ca_all.zval);
+fprintf(fid,'Within day v between day variability: p=%e r=%g\n',figs_stats.drift.var_v_change.p,figs_stats.drift.var_v_change.r);
+fprintf(fid,'N(multi-unit): %i\nN(ROIS,1): %i\nN(ROIS,2): %i\nN(ROIS,3): %i',length(plotpoints{1}),length(plotpoints{2}),length(plotpoints{3}),length(plotpoints{4}));
+fclose(fid);

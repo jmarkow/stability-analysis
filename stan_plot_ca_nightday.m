@@ -5,6 +5,7 @@ function [figs figs_stats]=stan_plot_ca_nightdat(CASTATS)
 
 % stitch everything together appropriately, alternating first/last
 
+[options,dirs]=stan_preflight;
 nlags=length(CASTATS(1).rmat_mu.lag.day)-1; % first point is lag 0
 npoints=nlags*2; % nlags morning/evening
 nboots=1e4;
@@ -158,11 +159,14 @@ end
 
 figs_stats.overnight.roi_pval1.left=[pool_pval1_left];
 figs_stats.overnight.roi_pval1.right=[pool_pval1_right];
-figs_stats.overnight.all_pval1=signrank(poolz1,0,'tail','left')
+[figs_stats.overnight.all_pval1,~,tmpstats]=signrank(poolz1,0,'tail','left')
+figs_stats.overnight.all_zval1=tmpstats.zval;
 
 figs_stats.overnight.roi_pval2.left=[pool_pval2_left];
 figs_stats.overnight.roi_pval2.right=[pool_pval2_right];
-figs_stats.overnight.all_pval2=signrank(poolz2,poolz1,'tail','left')
+[figs_stats.overnight.all_pval2,~,tmpstats]=signrank(poolz2,poolz1,'tail','left')
+
+figs_stats.overnight.all_zval2=tmpstats.zval;
 figs_stats.overnight.all_pval2_raw=signrank(pool2,pool1,'tail','left');
 
 bins=[-15:1:5];
@@ -212,6 +216,10 @@ ax(1)=markolab_stairplot(est_raw,bins_raw,'facecolor',[.3 .3 .3],'edgecolor','k'
 hold on;
 plot([0 0],[0 50],'k--');
 xlim([-1 1]);
+
+fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_caovernight.txt'),'w+');
+fprintf(fid,'Within day v overnight corr: p=%e z=%g',figs_stats.overnight.all_pval2,figs_stats.overnight.all_zval2);
+fclose(fid);
 
 % figs.compareswarm=figure();
 % d{1}=poolz1;

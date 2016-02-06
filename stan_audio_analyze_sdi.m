@@ -92,27 +92,40 @@ for i=1:length(tfdensity)
 	end
 end
 
+% within_day=[];
+% within_night=[];
+%
+% for i=1:length(score_day2night)
+% 	for j=1:ndays-1
+% 		within_day=[within_day median(score_day2night{i}{j,j})];
+% 		within_night=[within_night median(score_night2night{i}{j,j+1})];
+% 	end
+% end
+%
+% % lag analysis
+%
+% between_day=[];
+% between_night=[];
+%
+% for i=1:length(score_day2night)
+% 	for j=1:ndays-1
+% 		between_day=[between_day median(score_day2night{i}{j,j+1})];
+% 		between_night=[between_night median(score_night2night{i}{j,j+1})];
+% 	end
+% end
+
 within_day=[];
-within_night=[];
-
-for i=1:length(score_day2night)
-	for j=1:ndays-1
-		within_day=[within_day mean(score_day2night{i}{j,j})];
-		within_night=[within_night mean(score_night2night{i}{j,j+1})];
-	end
-end
-
-% lag analysis
-
 between_day=[];
-between_night=[];
 
-for i=1:length(score_day2night)
-	for j=1:ndays-1
-		between_day=[between_day mean(score_day2night{i}{j,j+1})];
-		between_night=[between_night mean(score_night2night{i}{j,j+1})];
-	end
+for i=1:10
+	within_day(i)=mean(cat(2,score_day2night{i}{diag(ones(ndays,1),0)==1}));
+	between_day(i)=mean(cat(2,score_day2night{i}{diag(ones(ndays-1,1),1)==1}));
 end
+
+[p,h,stats]=signrank(within_day,between_day,'tail','right');
+fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'audio_overnight.txt'),'w+');
+fprintf(fid,'Between day v within day:  p=%e w=%g n=%i',p,stats.signedrank,length(within_day));
+fclose(fid);
 
 lag=[1:5];
 
