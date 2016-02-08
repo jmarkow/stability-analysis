@@ -1,0 +1,1 @@
+This is a set of scripts used for analysis of stability in calcium imaging and electrophysiological data.   The base directory contains scripts for generating various figures, and the ``helpers`` directory contains useful functions for analyzing various signal classes.
