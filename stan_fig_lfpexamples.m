@@ -1,4 +1,4 @@
-function stan_fig2a
+function stan_fig_lfpexamples()
 %
 %
 %
@@ -34,7 +34,7 @@ for i=1:length(ax)
 	pos=get(ax(i),'position');
 
 	% width change
-	
+
 	new_width=scaling_fun(xrange1);
 	width_change=new_width-pos(3);
 
@@ -57,7 +57,7 @@ for i=1:length(ax)
 	pos=get(ax(i),'position');
 
 	% width change
-	
+
 	new_width=scaling_fun(xrange2);
 	width_change=new_width-pos(3);
 
@@ -75,6 +75,3 @@ set(h2,'clipping','off');
 
 markolab_multi_fig_save(figs.lhp33,fullfile(dirs.agg_dir,dirs.fig_dir),['figure_5a_lfp33'],'eps,png,fig,pdf');
 markolab_multi_fig_save(figs.rm7,fullfile(dirs.agg_dir,dirs.fig_dir),['figure_5a_rm7'],'eps,png,fig,pdf');
-
-
-

@@ -1,4 +1,4 @@
-function stan_fig3b
+function stan_fig_nervecut_beeswarm()
 % REQUIRES plotSpread for beeswarm plot
 %
 %

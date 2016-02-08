@@ -1,4 +1,4 @@
-function stan_fig3a
+function stan_fig_nervecut_sonograms()
 %
 %
 %

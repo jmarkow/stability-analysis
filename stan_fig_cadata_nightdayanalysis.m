@@ -1,3 +1,5 @@
+function stan_fig_cadata_nightdayanalysis()
+%
 [options,dirs]=stan_preflight;
 
 load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats.mat'),'stats');

@@ -1,4 +1,4 @@
-function stan_fig6a
+function stan_fig_barecarbon_multiraster()
 %
 %
 %

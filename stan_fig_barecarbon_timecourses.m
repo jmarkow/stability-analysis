@@ -1,3 +1,4 @@
+function stan_fig_barecarbon_timecourses()
 %
 %
 %

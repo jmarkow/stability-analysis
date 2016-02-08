@@ -1,4 +1,4 @@
-function stan_fig1c
+function stan_fig_barecarbon_examplerasters()
 %
 %
 %

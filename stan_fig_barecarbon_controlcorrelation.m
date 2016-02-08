@@ -1,4 +1,4 @@
-function stan_fig2b
+function stan_fig_barecarbon_controlcorrelation()
 %
 %
 %

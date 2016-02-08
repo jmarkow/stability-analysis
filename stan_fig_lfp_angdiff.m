@@ -1,3 +1,4 @@
+function stan_fig_lfp_angdiff()
 %
 %
 %
@@ -18,6 +19,4 @@ set(fig,'position',[5 5 5 4])
 
 markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),'lfp_phase_diff','eps,png,fig,pdf','renderer','painters');
 
-% log-normal mle estimates, mode most intuitive here 
-
-
+% log-normal mle estimates, mode most intuitive here

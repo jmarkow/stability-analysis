@@ -1,4 +1,4 @@
-function stan_fig6a
+function stan_fig_singleunits_examplerasters()
 %
 %
 %
@@ -15,7 +15,7 @@ for i=1:length(cell_names)
 	set(fig.(cell_names{i}),'units','centimeters','position',[3 3 8 7],'paperpositionmode','auto');
 
 	% axes 3,4 are spikes, 5 sonogram
-	
+
 	ax=findall(fig.(cell_names{i}),'type','axes');
 
 	n=ceil(length(ax)/2);
@@ -39,7 +39,7 @@ for i=1:length(cell_names)
 		axis(ax(j),'off');
 		set(ax(j),'units','centimeters');
 		pos=get(ax(j),'position')
-		set(ax(j),'position',[ storepos+.15 pos(2) .75 pos(4) ]);	
+		set(ax(j),'position',[ storepos+.15 pos(2) .75 pos(4) ]);
 	end
 
 	ylimits=get(ax(1),'ylim');
@@ -59,4 +59,3 @@ end
 
 %h=line([xlimits(1) xlimits(1)+.2],[-10 -10]);
 %set(h,'clipping','off');
-
