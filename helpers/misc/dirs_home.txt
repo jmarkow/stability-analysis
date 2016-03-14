@@ -21,4 +21,5 @@ su_plot_dir=/single_units_display
 su_analyze_dir=/single_units_analysis
 lfp_mu_dir=/lfp_mu_data
 ca_dir=/cadata
-sdi_dir=/sdidata2
+sdi_dir=/sdidata
+stats_dir=/stats

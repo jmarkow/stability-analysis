@@ -5,7 +5,7 @@ function stan_fig_cadata_driftanalysis_all()
 %
 
 [options,dirs]=stan_preflight;
-[fig,fig_stats]=stan_plot_mu_ca_timecourse();
+[fig,fig_stats]=stan_mu_ca_timecourse();
 names=fieldnames(fig);
 
 for i=1:length(names)

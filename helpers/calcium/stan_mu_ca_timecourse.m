@@ -8,6 +8,7 @@ interp_factor=5;
 ndays=4;
 swarm_offset=1;
 nboots=1e2;
+filewrite=false;
 
 [options,dirs]=stan_preflight;
 
@@ -23,7 +24,11 @@ load(fullfile(dirs.agg_dir,dirs.datastore_dir,'mu_baseline_stability.mat'),'test
 
 
 figs.catime=figure();
-colors=paruly(3);
+if exist('parula')>0
+    colors=parula(3);
+else
+    colors=paruly(3);
+end
 x=0:ndays;
 
 for i=1:length(stats)
@@ -89,7 +94,12 @@ figs_stats.mu_v_ca_all.zval=tmp_stats.zval;
 npre=1;
 pos=[1 ones(1,npre)+swarm_offset ones(1,length(stats)-npre)];
 pos=cumsum(pos);
-cmap=paruly(length(plotpoints)-npre);
+
+if exist('parula')>0
+    cmap=parula(length(plotpoints)-npre);
+else
+    cmap=paruly(length(plotpoints)-npre);
+end
 swarm_colors=[repmat([.7 .7 .7],[npre 1]);cmap];
 
 % pairwise ranksum, Holm-Bonferonni stepdown
@@ -217,8 +227,10 @@ ylim([0 1])
 xlim([-.5 4.5])
 set(gca,'TickLength',[0 0],'YTick',[0:.5:1],'XTick',[0:4],'FontSize',7)
 
-fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_catimecourse.txt'),'w+');
-fprintf(fid,'Multi-unit stability vs calcium: p=%e z=%g\n',figs_stats.mu_v_ca_all.pval,figs_stats.mu_v_ca_all.zval);
-fprintf(fid,'Within day v between day variability: p=%e r=%g\n',figs_stats.drift.var_v_change.p,figs_stats.drift.var_v_change.r);
-fprintf(fid,'N(multi-unit): %i\nN(ROIS,1): %i\nN(ROIS,2): %i\nN(ROIS,3): %i',length(plotpoints{1}),length(plotpoints{2}),length(plotpoints{3}),length(plotpoints{4}));
-fclose(fid);
+if filewrite
+    fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_catimecourse.txt'),'w+');
+    fprintf(fid,'Multi-unit stability vs calcium: p=%e z=%g\n',figs_stats.mu_v_ca_all.pval,figs_stats.mu_v_ca_all.zval);
+    fprintf(fid,'Within day v between day variability: p=%e r=%g\n',figs_stats.drift.var_v_change.p,figs_stats.drift.var_v_change.r);
+    fprintf(fid,'N(multi-unit): %i\nN(ROIS,1): %i\nN(ROIS,2): %i\nN(ROIS,3): %i',length(plotpoints{1}),length(plotpoints{2}),length(plotpoints{3}),length(plotpoints{4}));
+    fclose(fid);
+end
