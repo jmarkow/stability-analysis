@@ -134,6 +134,8 @@ for i=1:ndays
 					end
 			end
 
+			% leave a flag to check if peak exists
+
 			if mindist<dist_thresh
 				peak_check(i,j)=1;
 			end
