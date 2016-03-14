@@ -20,7 +20,7 @@ date_number=datenum(tmp);
 tmp=regexp(listing(1).name,filesep,'split');
 birdid=tmp{end-7};
 
-storedir=fullfile(dirs.agg_dir,dirs.sdi_dir,[ birdid '_' datestr(date_number,'yyyy-mm-dd') ]);
+storedir=fullfile(dirs.agg_dir,dirs.sdi_dir,'analysis',[ birdid '_' datestr(date_number,'yyyy-mm-dd') ]);
 
 if ~exist(storedir,'dir')
 	mkdir(storedir);
