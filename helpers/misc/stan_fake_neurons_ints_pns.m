@@ -6,7 +6,7 @@
 
 % for figure 1 schematic
 
-[options,dirs]=stan_preflight;
+%[options,dirs]=stan_preflight;
 
 pulse_t=400;
 pulse_width=50;

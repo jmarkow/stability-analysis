@@ -33,7 +33,7 @@ for i=1:length(listing)
 	vars=whos('-file',listing(i).name);
 	varnames={vars(:).name};
 	if ~strcmp(varnames,'MIC_DATA')
-  	tmp=load(listing(i).name,'agg_file_datenum');
+        load(listing(i).name,'agg_file_datenum');
 		timestamps=[timestamps agg_file_datenum];
 	else
 		disp('Legacy...')
