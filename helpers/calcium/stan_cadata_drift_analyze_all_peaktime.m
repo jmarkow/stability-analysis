@@ -20,6 +20,7 @@ cadata.data(2)=load(fullfile(dirs.agg_dir,dirs.ca_dir,'lny13.mat'),'roi_data');
 % bird 3
 
 cadata.data(3)=load(fullfile(dirs.agg_dir,dirs.ca_dir,'lny18.mat'),'roi_data');
+
 cadata.fs=[22 100 100];
 
 % analyze data, leave out pads
