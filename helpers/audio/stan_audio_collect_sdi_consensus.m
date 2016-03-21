@@ -45,6 +45,8 @@ for i=1:length(birds)
 
 	load(contour_files{1},'sdi');
 
+
+
 	crop_f=[];
 	crop_t=[];
 
@@ -68,11 +70,16 @@ for i=1:length(birds)
 	for j=1:length(contour_files)
 
 		disp([contour_files{j}]);
+
+		[pathname,filename,ext]=fileparts(contour_files{j});
+
+		load(fullfile(pathname,'mic_data_timestamps.mat'),'timestamps');
 		load(contour_files{j},'sdi');
 
 		[ntrials]=size(sdi.consensus,3);
 		sdi.consensus=sdi.consensus>threshold;
 		tfdensity{i}.all{j}=sdi.consensus(crop_f,crop_t,:);
+		tfdensity{i}.timestamps{j}=timestamps;
 
 	end
 end

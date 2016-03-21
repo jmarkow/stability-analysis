@@ -3,6 +3,7 @@
 %
 
 [options,dirs]=stan_preflight;
+filewrite=false;
 
 % load in each mat file, make spectral density image, etc.
 
@@ -61,6 +62,8 @@ for i=1:length(tfdensity)
 
 			group_trials=length(group1);
 
+			% get average time difference?
+
 			for l=1:group_trials
 
 				% replace with ssim over average images?
@@ -94,19 +97,19 @@ end
 
 % within_day=[];
 % within_night=[];
-%
+% 
 % for i=1:length(score_day2night)
 % 	for j=1:ndays-1
-% 		within_day=[within_day median(score_day2night{i}{j,j})];
+% 		within_day=[within_day mean(score_day2night{i}{j,j})];
 % 		within_night=[within_night median(score_night2night{i}{j,j+1})];
 % 	end
 % end
-%
+% 
 % % lag analysis
-%
+% 
 % between_day=[];
 % between_night=[];
-%
+% 
 % for i=1:length(score_day2night)
 % 	for j=1:ndays-1
 % 		between_day=[between_day median(score_day2night{i}{j,j+1})];
@@ -117,43 +120,84 @@ end
 within_day=[];
 between_day=[];
 
-for i=1:10
-	within_day(i)=mean(cat(2,score_day2night{i}{diag(ones(ndays,1),0)==1}));
+for i=1:length(score_day2night)
+	within_day(i)=mean(cat(2,score_night2night{i}{diag(ones(ndays,1),0)==1}));
 	between_day(i)=mean(cat(2,score_day2night{i}{diag(ones(ndays-1,1),1)==1}));
 end
 
+morning=[];
+evening=[];
+
+for i=1:length(score_day2night)
+	for j=1:size(score_day2night{i},1)-1
+		% add to morning window if hr less than 8
+		tmp=datevec(tfdensity{i}.timestamps{j});
+		idx=tmp(:,4)>=19;
+		norm_mu=mean(score_all2all{i}{j,j}(idx));
+		norm_std=std(score_all2all{i}{j,j}(idx));
+		for k=j+1
+			tmp=datevec(tfdensity{i}.timestamps{k});
+			idx=tmp(:,4)<=10;
+			morning=[morning mean((score_all2all{i}{j,k}(idx)))];
+			idx=tmp(:,4)>=19;
+			evening=[evening mean((score_all2all{i}{j,k}(idx)))];
+		end
+	end
+end
+
+
 [p,h,stats]=signrank(within_day,between_day,'tail','right');
-fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'audio_overnight.txt'),'w+');
-fprintf(fid,'Between day v within day:  p=%e w=%g n=%i',p,stats.signedrank,length(within_day));
-fclose(fid);
 
-lag=[1:5];
+% analyze using evenly-spaced time windows
 
-for i=lag
+
+
+if filewrite
+	save(fullfile(dirs.agg_dir,dirs.datastore_dir,'sdi_scores.mat'),...
+		'score_day2night','score_night2night','score_day2day','score_all2all','-v7.3');
+	fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'audio_overnight.txt'),'w+');
+	fprintf(fid,'Between day v within day:  p=%e w=%g n=%i',p,stats.signedrank,length(within_day));
+	fclose(fid);
+end
+
+%%
+
+lags=[1:5];
+
+for i=lags
 	lag_day{i}=[];
 	lag_night{i}=[];
 	lag_all{i}=[];
 end
 
 for i=1:length(score_day2night)
-	for j=1:ndays
-		for k=j:ndays
-			cur_lag=(k-j)+1;
-			norm_mu=0;
-			norm_std=max(score_night2night{i}{j,j});
-			lag_day{cur_lag}=[lag_day{cur_lag} mean((score_day2night{i}{j,k}-norm_mu)./norm_std)];
-			lag_night{cur_lag}=[lag_night{cur_lag} mean((score_night2night{i}{j,k}-norm_mu)./norm_std)];
-			norm_mu=0;
-			norm_std=max(score_all2all{i}{j,j});
-			lag_all{cur_lag}=[lag_all{cur_lag} mean((score_all2all{i}{j,k}-norm_mu)./norm_std)];
-		end
+	for j=lags
+        for k=j:max(lags)
+            
+            lag=(k-j)+1;
+            
+            norm_mu=mean(score_night2night{i}{j,j});
+            norm_std=std(score_night2night{i}{j,j});
+            
+            tmp=datevec(tfdensity{i}.timestamps{k});
+			
+            idx=tmp(:,4)<=9;
+            idx2=tmp(:,4)>=19;
+            
+            lag_day{lag}=[lag_day{lag} mean(score_all2all{i}{j,k}(idx))];
+            lag_night{lag}=[lag_night{lag} mean(score_all2all{i}{j,k}(idx2))];
+            lag_all{lag}=[lag_all{lag} mean(score_all2all{i}{j,k})];
+        
+            % normalize??
+            
+        end
 	end
 end
 
 lag_day_night=cell(1,length(lag_day)*2);
 
 counter=1;
-for i=1:2:length(lag)*2
+for i=1:2:length(lags)*2
 	lag_day_night{i}=lag_day{counter};
 	lag_day_night{i+1}=lag_night{counter};
 	counter=counter+1;
