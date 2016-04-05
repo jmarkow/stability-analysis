@@ -8,7 +8,7 @@ function [FORM_DATA,FORM_T,FORM_DATE]=stan_cadata_format_freedomscope_v2(CADATA,
 %
 % returns a 3d matrix samples x rois x trials
 
-if nargin<11
+if nargin<12
 	METHOD=1;
 end
 
@@ -112,6 +112,7 @@ newtime=[mintime:1/NEWFS:maxtime]';
 % two methods for stitching the data:
 % 1) interpolate within trials, average
 % 2) bin data, interpolate over empty bins
+
 
 if METHOD==1
 	for i=1:length(FORM_DATA)

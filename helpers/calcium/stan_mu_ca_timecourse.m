@@ -53,6 +53,7 @@ for i=1:length(stats)
   hold on;
   plot(xx,mu_interp,'k--');
   plot(x,mu,'ko','markerfacecolor','w');
+
 end
 
 yh=ylabel('Correlation (R)')
@@ -206,9 +207,9 @@ ylim([0 1])
 xlim([-.5 4.5])
 set(gca,'TickLength',[0 0],'YTick',[0:.5:1],'XTick',[0:4],'FontSize',7)
 
-
 figs.frac_unstable_peaktime=figure();
 frac_peaktime=zeros(length(peakstats),ndays+1);
+
 for i=1:length(peakstats)
   nrois=size(peakstats(i).peak_stable,2);
   unstable=zeros(ndays+1,nrois);

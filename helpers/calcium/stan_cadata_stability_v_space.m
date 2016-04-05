@@ -22,8 +22,6 @@ vars={'stable','unstable','between'};
 
 % set i to 1:3 once we get the rest of the data
 
-
-
 for i=1:3
 
   % get centroid pairwise Euclidean distance

@@ -29,7 +29,7 @@ end
 
 frac=2;
 freq_use=[1e3 7e3];
-t_use=[.2 .2]
+t_use=[.2 .2];
 
 tfdensity=[];
 simscores=[];
@@ -42,6 +42,8 @@ for i=1:length(birds)
 
 	idx=strcmp(birdid,birds{i});
 	contour_files=filenames(idx);
+
+	% any timestamp files?
 
 	load(contour_files{1},'sdi');
 
@@ -68,6 +70,17 @@ for i=1:length(birds)
 	for j=1:length(contour_files)
 
 		disp([contour_files{j}]);
+
+		[pathname,filename,ext]=fileparts(contour_files{j});
+		if exist(fullfile(pathname,'mic_data_timestamps.mat'),'file')
+			disp([fullfile(pathname,'mic_data_timestamps.mat')]);
+			load(fullfile(pathname,'mic_data_timestamps.mat'),'timestamps');
+			tfdensity{i}.timestamps{j}=timestamps;
+			clear timestamps;
+		else
+			tfdensity{i}.timestamps{j}=[];
+		end
+
 		load(contour_files{j},'sdi');
 
 		[ntrials]=size(sdi.consensus,3);

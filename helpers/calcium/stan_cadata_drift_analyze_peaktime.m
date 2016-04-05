@@ -1,4 +1,4 @@
-function peak_check=stan_cadata_drift_analyze(DATA,varargin)
+function [peak_check,peak_ispeak,inc_rois]=stan_cadata_drift_analyze(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -80,7 +80,7 @@ if ~iscell(DATA)
 end
 
 ndays=length(DATA);
-[DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check_pad,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
+[DATA,phase_shift,inc_rois]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check_pad,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
 	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'maxlag',maxlag);
 
 % get the sort indices
@@ -119,6 +119,7 @@ end
 
 
 peak_check=zeros(ndays,nrois);
+peak_ispeak=zeros(ndays,nrois);
 
 for i=1:ndays
 	[tmp.peaks,tmp.vals]=fb_compute_peak_simple(ave_mat{i},...
@@ -138,6 +139,9 @@ for i=1:ndays
 
 			if mindist<dist_thresh
 				peak_check(i,j)=1;
+			end
+			if length(tmp.peaks{j})>0
+				peak_ispeak(i,j)=1;
 			end
 		end
 end

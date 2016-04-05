@@ -77,7 +77,7 @@ end
 ndays=length(DATA);
 [nsamples,nrois,ntrials]=size(DATA{1});
 
-[DATA,phase_shift,inc_rois]=stan_cadata_preprocess(DATA,'peak_check',peak_check,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
+[DATA,phase_shift,inc_rois]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
 	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'chk_day',chk_day);
 
 for i=1:ndays
