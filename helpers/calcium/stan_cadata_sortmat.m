@@ -105,7 +105,7 @@ pad_smps=round(padding*(movie_fs));
 del=(peakloc<pad_smps(1)|peakloc>nsamples-(pad_smps(2)));
 
 for i=1:ndays
-	ave_mat{i}(:,del)=[];
+	%ave_mat{i}(:,del)=[];
 end
 
 nrois=size(ave_mat,2);

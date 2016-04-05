@@ -84,11 +84,15 @@ for i=1:length(FORM_DATA)
 	% find the timepoint just past the pad, and the timepoint just to the left of the pad+songlen
 
 	left_edge=min(find(old_t{i}(:,1)>PADDING(1)));
-	right_edge=max(find(old_t{i}(:,1)<(PADDING(1)+SONG_LEN)));
+	right_edge=max(find(old_t{i}(:,1)<(SONG_LEN-PADDING(1))));
 
 	% check for gain shifts or LED off
 
-	flag1=any(any(abs(diff(FORM_DATA{i}(left_edge:right_edge,:)))>THRESH));
+    left_edge
+    right_edge
+    size(FORM_DATA{i})
+    
+    flag1=any(any(abs(diff(FORM_DATA{i}(left_edge:right_edge,:)))>THRESH));
 	flag2=any(any(FORM_DATA{i}(left_edge:right_edge,:)<THRESH2));
 
 	% add to trials for deletion if either flag trips
@@ -99,6 +103,7 @@ for i=1:length(FORM_DATA)
 
 end
 
+to_del
 FORM_DATA(to_del)=[];
 FORM_DATE(to_del)=[];
 old_t(to_del)=[];

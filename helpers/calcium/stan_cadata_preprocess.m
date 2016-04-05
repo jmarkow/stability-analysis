@@ -70,6 +70,7 @@ ndays=length(DATA);
 inc_rois=1:nrois;
 
 if peak_check_pad | peak_check_consistency
+	disp('test')
 	exclude=[];
 	sortca.peaks=cell(1,ntrials);
 	sortca.mergevals=cell(1,ntrials);
@@ -221,7 +222,7 @@ if realign
     if pad_smps(1)==0
         pad_smps(1)=1;
     end
-    
+
 	template=mean(zscore(DATA{sort_day}(pad_smps(1):end-pad_smps(2),:,:)),3);
 
 	for i=1:ndays

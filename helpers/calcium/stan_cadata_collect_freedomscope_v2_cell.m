@@ -13,6 +13,24 @@ MAXT=[];
 SONG_LEN=1.8; % .59 for lny13 .625 for lny18 (.8 for each then pad later?)
 
 % remove pad first here?
+max_time=inf;
+for i=1:length(RAW)
+    [~,ntrials]=size(RAW{i}.raw_dat);
+    time=cell(1,ntrials);
+
+    for j=1:ntrials
+        time{j}=cat(1,RAW{i}.raw_time{1,j});
+    end
+
+    tmp=min(cellfun(@max,time));
+
+		if tmp<max_time
+        max_time=tmp;
+    end
+
+end
+
+max_time
 
 for i=1:length(RAW)
 
@@ -32,17 +50,20 @@ for i=1:length(RAW)
 
 	if ~isfield(RAW{i},'padding')
 		RAW{i}.padding=[.25 .75];
-	end
+    end
+
+    % get max time for song
+
 
 	[COLLECT_DATA{i},TIME{i},COLLECT_DATES{i}]=stan_cadata_format_freedomscope_v2(RAW{i}.raw_dat,...
 		RAW{i}.raw_time,...
 		60,... % threshold on derivative (check for gain shift, in raw px values)
-		30,... % threshold for camera on (px values below this considered LED off)
+		20,... % threshold for camera on (px values below this considered LED off)
 		100,... % new sampling rate
 		MINT,... % minimum time point for new time frame
 		MAXT,... % maximum time point for new tie frame
 		RAW{i}.padding,... % padding for extraction
-		SONG_LEN,... % length of song
+		max_time,... % length of song
 		RAW{i}.Offset,... % offset
     RAW{i}.filename); % filename (for parsing trial times)
 
