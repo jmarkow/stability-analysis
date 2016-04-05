@@ -47,6 +47,8 @@ for i=1:length(birds)
 
 	load(contour_files{1},'sdi');
 
+
+
 	crop_f=[];
 	crop_t=[];
 
@@ -86,6 +88,7 @@ for i=1:length(birds)
 		[ntrials]=size(sdi.consensus,3);
 		sdi.consensus=sdi.consensus>threshold;
 		tfdensity{i}.all{j}=sdi.consensus(crop_f,crop_t,:);
+		tfdensity{i}.timestamps{j}=timestamps;
 
 	end
 end
