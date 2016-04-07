@@ -8,7 +8,7 @@ function [ave_mat,inc_rois]=stan_cadata_sortmat(DATA,varargin)
 %
 
 movie_fs=22; % sampling rate of camera
-upsample=10; % upsample factor (set to 1 for no upsampling)
+upsample=1; % upsample factor (set to 1 for no upsampling)
 upsample_method='spline'; % upsample method (spline and linear work fine)
 sort_day=1; % day to use for sorting
 peak_check=0; % check for peak consistency
