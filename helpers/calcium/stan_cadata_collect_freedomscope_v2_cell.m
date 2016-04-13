@@ -1,4 +1,4 @@
-function [COLLECT_DATA,COLLECT_DATES,TIME]=stan_cadata_collect_freedomscope_v2(RAW)
+function [COLLECT_DATA,COLLECT_DATES,TIME,MOTIFS,FILENAMES]=stan_cadata_collect_freedomscope_v2(RAW)
 % takes data where cell arrays correspond to separate songs, rows to samples, and columns to rois
 % and reformats for stan_cadata_sortmat
 %
@@ -29,6 +29,12 @@ for i=1:length(RAW)
 
 end
 
+COLLECT_DATA=cell(1,length(RAW));
+TIME=cell(1,length(RAW));
+COLLECT_DATES=cell(1,length(RAW));
+MOTIFS=cell(1,length(RAW));
+FILENAMES=cell(1,length(RAW));
+
 for i=1:length(RAW)
 
 	if ~isfield(RAW{i},'Offset')
@@ -51,7 +57,7 @@ for i=1:length(RAW)
 
     % get max time for song
 
-	[COLLECT_DATA{i},TIME{i},COLLECT_DATES{i}]=stan_cadata_format_freedomscope_v2(RAW{i}.raw_dat,...
+	[COLLECT_DATA{i},TIME{i},COLLECT_DATES{i},MOTIFS{i},FILENAMES{i}]=stan_cadata_format_freedomscope_v2(RAW{i}.raw_dat,...
 		RAW{i}.raw_time,...
 		60,... % threshold on derivative (check for gain shift, in raw px values)
 		20,... % threshold for camera on (px values below this considered LED off)

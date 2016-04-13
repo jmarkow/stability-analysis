@@ -25,6 +25,7 @@ bin_fluo=0; % discretize fluorescence
 nbins=10; % number of bins for discretization
 realign=1;
 
+
 nparams=length(varargin);
 
 if mod(nparams,2)>0

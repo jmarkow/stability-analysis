@@ -82,7 +82,7 @@ end
 scatter(X,Y,markersize,C,'markerfacecolor','flat');
 hold on;
 plot(pred_x,pred_y,'r-','linewidth',linewidth);
-colormap(paruly(ngrps));
+colormap(parula(ngrps));
 
 if ~shaded_conf
 	plot(pred_x,pred_y+conf,'r--','linewidth',linewidth);

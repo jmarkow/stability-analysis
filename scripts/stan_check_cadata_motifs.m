@@ -1,17 +1,17 @@
-script for analyzing new calcium data
-assumes data already loaded in from ROI_data_cleansed.mat
+% script for analyzing new calcium data
+% assumes data already loaded in from ROI_data_cleansed.mat
 
-%
+%%
 
-only for lw76
+% only for lw76
 
 bird_name='lny54rb';
 movie_fs=100;
-motif_selection=1;
+motif_selection=[1 2 3];
 plot_data=false;
 
 
-% arrange the data into a simpler format
+%% arrange the data into a simpler format
 
 if strcmpi(bird_name,'lw76');
   roi_data=cell(1,length(ROI_dat));
@@ -20,25 +20,30 @@ if strcmpi(bird_name,'lw76');
   end
 end
 
-if ~strcmpi(bird_name,'lw76')
-    [roi_data,roi_dates,roi_times,roi_motifs,roi_filenames]=...
-        stan_cadata_collect_freedomscope_v2_cell(ROI_data_cleansed);
-    
-    if ~isempty(motif_selection)
-        for i=1:length(roi_data)
-            roi_data=roi_data{i}(:,:,roi_motifs{i}==motif_selection);
+%%
+
+for ii=1:length(motif_selection)
+    if ~strcmpi(bird_name,'lw76')
+        
+        [roi_data,roi_dates,roi_times,roi_motifs,roi_filenames]=...
+            stan_cadata_collect_freedomscope_v2_cell(ROI_data_cleansed);
+        
+        if ~isempty(motif_selection)
+            for i=1:length(roi_data)
+                roi_data_motifs{ii}{i}=roi_data{i}(:,:,roi_motifs{i}==motif_selection(ii));
+            end
         end
     end
+       
+    figs.schnitzer=figure('position',[400 400 600 300],'paperpositionmode','auto');
+    [ave_mat{ii},inc_rois{ii}]=stan_cadata_sortmat(roi_data_motifs{ii},'scaling','l','sort_day',1,'smoothing',0,'smooth_kernel','g',...
+        'padding',[.25 .75],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
+    
 end
 
-%
-
-
-figs.schnitzer=figure('position',[400 400 600 300],'paperpositionmode','auto');
-ave_mat=stan_cadata_sortmat(roi_data,'scaling','l','sort_day',1,'smoothing',0,'smooth_kernel','g',...
-    'padding',[.25 .75],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
-stan_cadata_sortmat(roi_data,'scaling','l','sort_day',3,'smoothing',0,'smooth_kernel','g',...
- 'padding',[.25 0.75],'movie_fs',movie_fs,'chk_day',1,'fig_row',2,'fig_nrows',2,'realign',0);
+%%
+%stan_cadata_sortmat(roi_data,'scaling','l','sort_day',3,'smoothing',0,'smooth_kernel','g',...
+%  'padding',[.25 0.75],'movie_fs',movie_fs,'chk_day',1,'fig_row',2,'fig_nrows',2,'realign',0);
 
 ax=findall(figs.schnitzer,'type','axes')
 linkaxes(ax,'xy')
@@ -52,9 +57,9 @@ set(h,'clipping','off');
 load custom_colormaps;
 colormap(calcium_contrast);
 
-%
-get com for each day and plot to check for systematic shifts (indicative
-of a/v sync issues)
+%%
+% get com for each day and plot to check for systematic shifts (indicative
+% of a/v sync issues)
 
 ndays=length(ave_mat);
 
@@ -62,16 +67,16 @@ ndays=length(ave_mat);
 ind=repmat([1:nsamples]',[1 nrois]);
 com=zeros(nrois,ndays);
 
-get the sort indices
+% get the sort indices
 
 [~,loc]=max(ave_mat{1}); % get max
 [~,loc]=sort(loc); % sort max ascending
 
 for i=1:ndays
-    [~,loc]=max(ave_mat{i});
+    %[~,loc]=max(ave_mat{i});
     den=sum(ave_mat{i}(:,loc));
     com(:,i)=sum(ind.*ave_mat{i}(:,loc))./den;
-    com(:,i)=loc/movie_fs;
+    %com(:,i)=loc/movie_fs;
 end
 
 if plot_data
@@ -86,7 +91,7 @@ if plot_data
         legend_string_df{i}=sprintf('Day %i-%i',i,i+1);
     end
     
-    plot com for each day overlaid
+    % plot com for each day overlaid
     
     figs.com=figure('position',[400 400 300 300],'paperpositionmode','auto');
     h=plot(com./movie_fs,[1:nrois]);
