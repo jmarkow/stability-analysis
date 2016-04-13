@@ -61,9 +61,13 @@ for i=1:ntrials
 		offset=cat(1,OFFSET{:})';
 	end
 	if ~isempty(FILENAMES)
-		tmp=regexp(FILENAMES{i},'\d+-\d+-\d+ \d+ \d+ \d+','match');
+		if iscell(FILENAMES{i})
+			FILENAMES{i}=FILENAMES{i}{1};
+        end
+        [~,filename,ext]=fileparts(FILENAMES{i});
+		tmp=regexp(filename,'\d+-\d+-\d+ \d+ \d+ \d+','match');
 		FORM_DATE(i)=datenum(tmp{1},'yyyy-mm-dd HH MM SS');
-		tmp=regexp(FILENAMES{i},'\_(\d+)\.mat','tokens');
+		tmp=regexp(filename,'\_(\d+)','tokens');
 		FORM_MOTIF(i)=str2num(tmp{1}{1});
 	end
 end

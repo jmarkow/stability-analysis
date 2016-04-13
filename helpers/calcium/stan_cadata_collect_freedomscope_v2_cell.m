@@ -65,7 +65,7 @@ for i=1:length(RAW)
 		RAW{i}.padding,... % padding for extraction
 		max_time,... % length of song
 		RAW{i}.Offset,... % offset
-        RAW{i}.filename); % filename (for parsing trial times)
+        RAW{i}.filename(end,:)); % filename (for parsing trial times)
 
 	MINT=min(TIME{i});
 	MAXT=max(TIME{i});

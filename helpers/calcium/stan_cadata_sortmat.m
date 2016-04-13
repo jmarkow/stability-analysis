@@ -24,7 +24,7 @@ padding=[1 1]; % padding before and after song
 bin_fluo=0; % discretize fluorescence
 nbins=10; % number of bins for discretization
 realign=1;
-
+maxlag=.03;
 
 nparams=length(varargin);
 
@@ -79,7 +79,7 @@ ndays=length(DATA);
 [nsamples,nrois,ntrials]=size(DATA{1});
 
 [DATA,phase_shift,inc_rois]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
-	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'chk_day',chk_day);
+	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'chk_day',chk_day,'maxlag',maxlag);
 
 for i=1:ndays
 	ave_mat{i}=mean(DATA{i},3);

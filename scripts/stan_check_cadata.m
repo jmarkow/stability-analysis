@@ -33,7 +33,6 @@ end
 
 %
 
-
 figs.schnitzer=figure('position',[400 400 600 300],'paperpositionmode','auto');
 ave_mat=stan_cadata_sortmat(roi_data,'scaling','l','sort_day',1,'smoothing',0,'smooth_kernel','g',...
     'padding',[.25 .75],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
