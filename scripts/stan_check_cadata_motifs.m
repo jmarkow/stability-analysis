@@ -5,7 +5,7 @@
 
 % only for lw76
 
-bird_name='lw76';
+bird_name='lny54rb';
 movie_fs=100;
 motif_selection=[2];
 plot_data=true;
@@ -40,7 +40,7 @@ for ii=1:length(motif_selection)
 
     figs.schnitzer=figure('position',[400 400 600 300],'paperpositionmode','auto');
     [ave_mat{ii},inc_rois{ii}]=stan_cadata_sortmat(roi_data_motifs{ii},'scaling','l','sort_day',1,'smoothing',0,'smooth_kernel','g',...
-        'padding',[.25 .75],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
+        'padding',[.3 .7],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
 
 end
 
@@ -54,9 +54,8 @@ ylimits=ylim();
 set(ax(end),'YTick',ylim(),'YTickLabel',[ylim()-min(ylim())]+1,'FontSize',12);
 yh=ylabel(ax(end),'Cell');
 xlimits=xlim();
-h=line([xlimits(1) xlimits(1)+.1],[ylimits(2)+3 ylimits(2)+3],'color','k','parent',ax(1))
+h=line([xlimits(1) xlimits(1)+.1],[ylimits(2)+1 ylimits(2)+1],'color','k','parent',ax(1))
 set(h,'clipping','off');
-
 load custom_colormaps;
 colormap(calcium_contrast);
 
@@ -81,6 +80,8 @@ for i=1:ndays
     com(:,i)=sum(ind.*ave_mat{1}{i}(:,loc))./den;
     %com(:,i)=loc/movie_fs;
 end
+
+tdiff=diff(com/movie_fs,[],2);
 
 if plot_data
     
