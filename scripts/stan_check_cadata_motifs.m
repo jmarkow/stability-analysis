@@ -40,7 +40,7 @@ for ii=1:length(motif_selection)
 
     figs.schnitzer=figure('position',[400 400 600 300],'paperpositionmode','auto');
     [ave_mat{ii},inc_rois{ii}]=stan_cadata_sortmat(roi_data_motifs{ii},'scaling','l','sort_day',1,'smoothing',0,'smooth_kernel','g',...
-        'padding',[.3 .7],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
+        'padding',[.25 .75],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
 
 end
 
@@ -83,38 +83,43 @@ end
 
 tdiff=diff(com/movie_fs,[],2);
 
-if plot_data
-    
-    legend_string=cell(1,ndays);
-    for i=1:ndays
-        legend_string{i}=sprintf('Day %i',i);
-    end
+%%
 
-    legend_string_df=cell(1,ndays-1);
-    for i=1:ndays-1
-        legend_string_df{i}=sprintf('Day %i-%i',i,i+1);
-    end
+% now get peak times using the method from the paper
 
-    % plot com for each day overlaid
 
-    figs.com=figure('position',[400 400 300 300],'paperpositionmode','auto');
-    h=plot(com./movie_fs,[1:nrois]);
-    set(gca,'ydir','rev','ticklength',[0 0]);
-    box off;
-    L=legend(h,legend_string);
-    xlabel('Time (s)');
-    ylabel('ROI');
+[peak.times{1} peak.vals{1}]=fb_compute_peak_simple(ave_mat{1}{1},...
+	'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
+	'fs',movie_fs); % thresh_int previously
 
-    figs.com_residue=figure('position',[400 400 300 300],'paperpositionmode','auto');
-    h=plot(diff(com,[],2)./movie_fs,[1:nrois]);
-    set(gca,'ydir','rev','ticklength',[0 0]);
-    box off;
-    L=legend(h,legend_string_df);
-    xlabel('Time (s)');
-    ylabel('ROI');
+for i=2:ndays
+   [peak.times{i} peak.vals{i}]=fb_compute_peak_simple(ave_mat{1}{i},...
+	'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
+	'fs',movie_fs); % thresh_int previously
+end
 
-    all_figs=fieldnames(figs);
-    for i=1:length(all_figs)
-        %markolab_multi_fig_save(figs.(all_figs{i}),pwd,[ bird_name '_' all_figs{i}],'eps,png,fig');
+%%
+tdiff_peaks=nan(ndays-1,nrois);
+
+for i=2:ndays
+    for j=1:nrois
+        
+        mindist=inf;
+        
+        for k=1:length(peak.times{i}{j})
+           
+            tmp2=min(abs(peak.times{i}{j}(k)-peak.times{1}{j}))/movie_fs;
+            
+            if tmp2<mindist
+                mindist=tmp2;
+            end
+            
+            tdiff_peaks(i-1,j)=mindist;
+            
+        end
     end
 end
+
+tdiff_peaks(tdiff_peaks==inf)=nan;
+tdiff_peaks=tdiff_peaks';
+
