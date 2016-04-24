@@ -1,11 +1,11 @@
 % script for analyzing new calcium data
 % assumes data already loaded in from ROI_data_cleansed.mat
 
-%%
 
 % only for lw76
 
-bird_name='lny54rb';
+tokens=regexp(pwd,filesep,'split');
+bird_name=lower(tokens{end});
 movie_fs=100;
 motif_selection=[2];
 plot_data=true;
@@ -39,8 +39,8 @@ for ii=1:length(motif_selection)
     end
 
     figs.schnitzer=figure('position',[400 400 600 300],'paperpositionmode','auto');
-    [ave_mat{ii},inc_rois{ii}]=stan_cadata_sortmat(roi_data_motifs{ii},'scaling','l','sort_day',1,'smoothing',0,'smooth_kernel','g',...
-        'padding',[.25 .75],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
+    [ave_mat{ii},inc_rois{ii},sorting_idx{ii}]=stan_cadata_sortmat(roi_data_motifs{ii},'scaling','l','sort_day',1,'smoothing',0.05,'smooth_kernel','g',...
+        'padding',[.3 .7],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
 
 end
 
@@ -71,13 +71,11 @@ com=zeros(nrois,ndays);
 
 % get the sort indices
 
-[~,loc]=max(ave_mat{1}{1}); % get max
-[~,loc]=sort(loc); % sort max ascending
 
 for i=1:ndays
     %[~,loc]=max(ave_mat{i});
-    den=sum(ave_mat{1}{i}(:,loc));
-    com(:,i)=sum(ind.*ave_mat{1}{i}(:,loc))./den;
+    den=sum(ave_mat{1}{i}(:,sorting_idx{1}));
+    com(:,i)=sum(ind.*ave_mat{1}{i}(:,sorting_idx{1}))./den;
     %com(:,i)=loc/movie_fs;
 end
 
@@ -88,12 +86,12 @@ tdiff=diff(com/movie_fs,[],2);
 % now get peak times using the method from the paper
 
 
-[peak.times{1} peak.vals{1}]=fb_compute_peak_simple(ave_mat{1}{1},...
+[peak.times{1} peak.vals{1}]=fb_compute_peak_simple(ave_mat{1}{1}(:,sorting_idx{1}),...
 	'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
 	'fs',movie_fs); % thresh_int previously
 
 for i=2:ndays
-   [peak.times{i} peak.vals{i}]=fb_compute_peak_simple(ave_mat{1}{i},...
+   [peak.times{i} peak.vals{i}]=fb_compute_peak_simple(ave_mat{1}{i}(:,sorting_idx{1}),...
 	'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
 	'fs',movie_fs); % thresh_int previously
 end

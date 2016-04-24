@@ -1,4 +1,4 @@
-function [ave_mat,inc_rois]=stan_cadata_sortmat(DATA,varargin)
+function [ave_mat,inc_rois,sorting_idx]=stan_cadata_sortmat(DATA,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -214,7 +214,7 @@ end
 
 [~,peakloc]=max(ave_mat{sort_day});
 [~,idx]=sort(peakloc);
-
+sorting_idx=idx;
 % plot
 
 if bin_fluo
