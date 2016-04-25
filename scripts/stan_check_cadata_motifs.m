@@ -5,7 +5,7 @@
 
 % only for lw76
 
-bird_name='lny54rb';
+bird_name='lw76';
 movie_fs=100;
 motif_selection=[2];
 plot_data=true;
