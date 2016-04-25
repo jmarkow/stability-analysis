@@ -125,7 +125,8 @@ for i=1:ndays
 	[tmp.peaks,tmp.vals]=fb_compute_peak_simple(ave_mat{i},...
 		'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
 		'fs',movie_fs*upsample); % thresh_int previously
-		for j=1:nrois
+		
+        for j=1:nrois
 			% cycle through all peaks
 			mindist=inf;
 			for k=1:length(tmp.peaks{j})

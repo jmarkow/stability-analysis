@@ -16,6 +16,7 @@ for i=1:length(listing)
     roi_stats(counter).coords=ROI.coordinates;
     roi_stats(counter).bw_stats=ROI.stats;
     roi_stats(counter).weighted_com=stan_cadata_roi_com(ROI.coordinates,ROI.reference_image);
+    roi_stats(counter).max_proj=ROI.reference_image;
     counter=counter+1;
   end
 end
