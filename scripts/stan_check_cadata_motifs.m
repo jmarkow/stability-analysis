@@ -101,23 +101,22 @@ tdiff_peaks=nan(ndays-1,nrois);
 
 for i=2:ndays
     for j=1:nrois
-        
+
         mindist=inf;
-        
+
         for k=1:length(peak.times{i}{j})
-           
+
             tmp2=min(abs(peak.times{i}{j}(k)-peak.times{1}{j}))/movie_fs;
-            
+
             if tmp2<mindist
                 mindist=tmp2;
             end
-            
+
             tdiff_peaks(i-1,j)=mindist;
-            
+
         end
     end
 end
 
 tdiff_peaks(tdiff_peaks==inf)=nan;
 tdiff_peaks=tdiff_peaks';
-
