@@ -20,7 +20,7 @@ load(fullfile(dirs.agg_dir,dirs.datastore_dir,'mu_baseline_stability.mat'),'test
 
 % get baseline from ephys data
 
-% plot time-courses from cadata
+% lag correlation time-course
 
 figs.catime=figure();
 if exist('parula')>0
@@ -28,39 +28,8 @@ if exist('parula')>0
 else
     colors=paruly(length(stats));
 end
-x=0:ndays;
 
-for i=1:length(stats)
-
-
-  cur_data=stats(i).rmat_mu.lag.all;
-  x=0:length(cur_data)-1;
-  mu=ones(1,length(cur_data));
-  mu_ci=ones(2,length(cur_data));
-  % day one from bootstrap
-
-  for j=1:length(cur_data)-1
-    mu_ci(:,j+1)=bootci(nboots,{@mean,cur_data{j+1}(:)},'type','cper');
-    mu(:,j+1)=mean(cur_data{j+1}(:));
-  end
-
-  xx=0:1/interp_factor:length(cur_data)-1;
-
-  mu_interp=interp1(x(:),mu(:),xx(:),'spline');
-  mu_ci_interp=interp1(x(:),mu_ci',xx(:),'spline');
-
-  markolab_shadeplot(xx,mu_ci_interp',colors(i,:),'k');
-  hold on;
-  plot(xx,mu_interp,'k--');
-  plot(x,mu,'ko','markerfacecolor','w');
-
-end
-
-yh=ylabel('Correlation (R)')
-set(yh,'position',get(yh,'position')+[.16 0 0]);
-ylim([.5 1]);
-ylimits=ylim();
-set(gca,'YTick',ylimits,'TickLength',[0 0],'FontSize',7);
+stan_plot_cacorr_timecourse(stats,colors,nboots);
 
 % plotspread version??
 
@@ -81,8 +50,11 @@ end
 figs_stats.mu_v_ca.pval=ones(1,length(stats))*NaN;
 
 for i=1:length(stats)
-  tmp=cat(1,stats(i).rmat_mu.lag.all{2:5});
-  tmp=mean(tmp);
+  tot_lags=length(stats(i).rmat_mu.lag.all);
+  tmp=cat(1,stats(i).rmat_mu.lag.all{2:min(tot_lags,5)});
+  if size(tmp,1)>1
+    tmp=mean(tmp);
+  end
   plotpoints{i+1}=tmp(:);
   figs_stats.mu_v_ca.pval(i)=ranksum(plotpoints{1},plotpoints{i+1},'tail','right')
 end
@@ -128,18 +100,21 @@ set(yh,'position',get(yh,'position')+[.16 0 0],'FontSize',7);
 % monte carlo permutation test for fraction of unstable cells
 
 figs_stats.drift.pval=cell(1,length(stats));
+
 for i=1:length(stats)
 
   % get pvals for each lag
+
   nrois=size(stats(i).rmat_mu.lag.all{1},2);
-  figs_stats.drift.pval{i}=zeros(ndays,nrois);
+  figs_stats.drift.pval{i}=nan(ndays,nrois);
 
   for j=1:ndays
     cur_data=stats(i).rmat_mu.lag.all{j+1};
     boot_data=stats(i).rmat_mu.bootstrap.lag.all{j+1};
-
+    j
     boot_data=mean(cat(3,boot_data{:}),3);
 
+    %x=find(cellfun(@length,cur_data)>0);
     if size(cur_data,1)>1
       cur_data=mean(cur_data);
     end
@@ -147,6 +122,7 @@ for i=1:length(stats)
     cur_data=repmat(cur_data,[size(boot_data,1) 1]);
     pval=mean(cur_data>boot_data)+1/size(boot_data,1)
     figs_stats.drift.pval{i}(j,:)=pval;
+
   end
 
 end

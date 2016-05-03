@@ -47,16 +47,21 @@ for i=1:length(listing)
 
   % use only the selected motif
   listing(i).name
-  load(fullfile(dirs.agg_dir,dirs.ca_dir,listing(i).name),'roi_data','roi_motifs','roi_params');
+  load(fullfile(dirs.agg_dir,dirs.ca_dir,listing(i).name),'roi_data','roi_motifs','roi_params','roi_dates');
+
+  lag_idx=zeros(1,length(roi_data));
 
   for j=1:length(roi_data)
     roi_data{j}=roi_data{j}(:,:,roi_motifs{j}==motif_select);
+    lag_idx(j)=round(roi_dates{j}(1)-roi_dates{1}(1));
   end
 
+  % easy to assign lag indices, round off day difference between two datenumbers
+
   [stats(i).rmat_mu stats(i).pmat]=stan_cadata_drift_analyze(...
-    roi_data,'padding',roi_params(1).padding,...
+    roi_data,lag_idx,'padding',roi_params(1).padding,...
     'movie_fs',roi_params(1).fs,'lag_corr',1,...
-    'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',1e4);
+    'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',1e2);
 
 end
 
