@@ -55,8 +55,8 @@ for i=1:2:nparams
 			smooth_kernel=varargin{i+1};
 		case 'compare_day'
 			compare_day=varargin{i+1};
-    case 'padding'
-      padding=varargin{i+1};
+        case 'padding'
+            padding=varargin{i+1};
 		case 'tail'
 			tail=varargin{i+1};
 		case 'method'
@@ -67,6 +67,8 @@ for i=1:2:nparams
 			realign=varargin{i+1};
 		case 'maxlag'
 			maxlag=varargin{i+1};
+        case 'nboots'
+            nboots=varargin{i+1};
 	end
 end
 

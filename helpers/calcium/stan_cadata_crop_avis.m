@@ -62,15 +62,15 @@ for i=1:nrois
           newx=round(ROIS.coordinates{i}(:,1)-min(ROIS.coordinates{i}(:,1))+PAD);
           newy=round(ROIS.coordinates{i}(:,2)-min(ROIS.coordinates{i}(:,2))+PAD);
 
-          for k=1:ndays
-              % set new left and bottom edges
-              
-              cur_edge=(k-1)*(width);
-              
-              for l=1:length(newx)
-                frame(newy(l),newx(l)+cur_edge,:)=[1 0 1];
-              end
-          end
+%           for k=1:ndays
+%               % set new left and bottom edges
+%               
+%               cur_edge=(k-1)*(width);
+%               
+%               for l=1:length(newx)
+%                 frame(newy(l),newx(l)+cur_edge,:)=[1 0 1];
+%               end
+%           end
         end
 
         %writeVideo(v,medfilt2(montage_movie(:,:,j),[11 11]));

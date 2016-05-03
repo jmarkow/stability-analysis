@@ -14,9 +14,9 @@ plot_data=true;
 %% arrange the data into a simpler format
 
 if strcmpi(bird_name,'lw76');
-  roi_data=cell(1,length(ROI_dat));
-  for i=1:length(ROI_dat)
-    roi_data{i}=cat(3,ROI_dat{i}.align_detrended{:});
+  roi_data=cell(1,length(ROI_A));
+  for i=1:length(ROI_A)
+    roi_data{i}=cat(3,ROI_A{i}.align_detrended{:});
   end
   movie_fs=22;
 end
@@ -39,8 +39,8 @@ for ii=1:length(motif_selection)
     end
 
     figs.schnitzer=figure('position',[400 400 600 300],'paperpositionmode','auto');
-    [ave_mat{ii},inc_rois{ii},sorting_idx{ii}]=stan_cadata_sortmat(roi_data_motifs{ii},'scaling','l','sort_day',1,'smoothing',0.05,'smooth_kernel','g',...
-        'padding',[.3 .7],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
+    [ave_mat{ii},inc_rois{ii},sorting_idx{ii}]=stan_cadata_sortmat(roi_data_motifs{ii},'scaling','l','sort_day',1,'smoothing',0,'smooth_kernel','g',...
+        'padding',[.3 .65],'movie_fs',movie_fs,'chk_day',1,'fig_row',1,'fig_nrows',1,'realign',1);
 
 end
 
