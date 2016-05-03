@@ -32,9 +32,9 @@ x=0:ndays;
 
 for i=1:length(stats)
 
- 
+
   cur_data=stats(i).rmat_mu.lag.all;
-  x=0:length(cur_data)-1; 
+  x=0:length(cur_data)-1;
   mu=ones(1,length(cur_data));
   mu_ci=ones(2,length(cur_data));
   % day one from bootstrap
@@ -105,10 +105,6 @@ swarm_colors=[repmat([.7 .7 .7],[npre 1]);cmap];
 
 % pairwise ranksum, Holm-Bonferonni stepdown
 
-length(plotpoints{1})
-length(plotpoints{2})
-length(plotpoints{3})
-length(plotpoints{4})
 
 figs.beeswarm=figure();
 h=plotSpread(plotpoints,'xValues',pos,'binWidth',.6,'distributionColors',swarm_colors,'spreadFcn',{'xp',[]});
@@ -149,7 +145,7 @@ for i=1:length(stats)
     end
 
     cur_data=repmat(cur_data,[size(boot_data,1) 1]);
-    pval=mean(cur_data>boot_data)+1/size(boot_data,1);
+    pval=mean(cur_data>boot_data)+1/size(boot_data,1)
     figs_stats.drift.pval{i}(j,:)=pval;
   end
 
@@ -166,9 +162,9 @@ end
 
 figs.var_v_change=figure();
 scatter(variability,change)
-[r,p]=corr(variability(:),change(:),'type','spearman')
-[r2,p2]=corrcoef(variability,change)
-[r3,p3]=corr(variability(:),change(:),'type','pearson')
+[r,p]=corr(variability(:),change(:),'type','spearman');
+[r2,p2]=corrcoef(variability,change);
+[r3,p3]=corr(variability(:),change(:),'type','pearson');
 figs_stats.drift.var_v_change.p=p3;
 figs_stats.drift.var_v_change.r=r3;
 
