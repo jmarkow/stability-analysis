@@ -95,8 +95,9 @@ for i=1:length(FORM_DATA)
   %  right_edge
   %  size(FORM_DATA{i})
 
-  flag1=any(any(abs(diff(FORM_DATA{i}(left_edge:right_edge,:)))>THRESH));
+    flag1=any(any(abs(diff(FORM_DATA{i}(left_edge:right_edge,:)))>THRESH));
 	flag2=any(any(FORM_DATA{i}(left_edge:right_edge,:)<THRESH2));
+
 
 	% add to trials for deletion if either flag trips
 
@@ -106,6 +107,7 @@ for i=1:length(FORM_DATA)
 
 end
 
+to_del
 FORM_DATA(to_del)=[];
 FORM_DATE(to_del)=[];
 FORM_MOTIF(to_del)=[];

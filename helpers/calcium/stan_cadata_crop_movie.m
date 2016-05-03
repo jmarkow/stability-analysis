@@ -13,16 +13,14 @@ bbox_pad=round(bbox+[-PAD PAD;-PAD PAD]);
 
 [height,width,nframes]=size(FRAMES);
 
-if any(bbox_pad(1,:)<0|bbox_pad(1,:)>width)
-  disp('Out of movie bounds...');
-  MOVIE=[];
-  return;
+bbox_pad(bbox_pad<0)=1;
+
+if bbox_pad(1,2)>width
+    bbox_pad(1,2)=width;
 end
 
-if any(bbox_pad(2,:)<0|bbox_pad(2,:)>height)
-  disp('Out of movie bounds...');
-  MOVIE=[];
-  return;
+if bbox_pad(2,2)>height
+    bbox_pad(2,2)=height;
 end
 
 % if we clear the checks extract here...
