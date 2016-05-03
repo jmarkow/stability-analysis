@@ -12,7 +12,7 @@ filewrite=false;
 
 [options,dirs]=stan_preflight;
 
-load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats.mat'),'stats');
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_new.mat'),'stats');
 peakstats=load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_peaktime.mat'),'stats');
 peakstats=peakstats.stats;
 
