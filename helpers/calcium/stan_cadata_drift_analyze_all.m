@@ -41,9 +41,9 @@ function stan_cadata_drift_analyze_all()
 [options,dirs]=stan_preflight;
 motif_select=2;
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,'*.mat'));
-maxlag=.0165;
+maxlag=.05;
 
-parfor i=1:length(listing)
+for i=1:length(listing)
 
   % use only the selected motif
   disp([listing(i).name]);
@@ -54,11 +54,12 @@ parfor i=1:length(listing)
 
   if strcmp(listing(i).name,'lw76.mat')
     tmp_motif_select=1;
+    lag_corr=0;
   else
     tmp_motif_select=motif_select;
+    lag_corr=0;
   end
 
-  tmp_motif_select
   for j=1:length(cur.roi_data)
     cur.roi_data{j}=cur.roi_data{j}(:,:,cur.roi_motifs{j}==tmp_motif_select);
     lag_idx(j)=round(cur.roi_dates{j}(1)-cur.roi_dates{1}(1));
@@ -66,10 +67,11 @@ parfor i=1:length(listing)
 
   % easy to assign lag indices, round off day difference between two datenumbers
 
+  cur.roi_params(1).fs
   [stats(i).rmat_mu stats(i).pmat]=stan_cadata_drift_analyze(...
     cur.roi_data,lag_idx,'padding',cur.roi_params(1).padding,...
-    'movie_fs',cur.roi_params(1).fs,'lag_corr',1,...
-    'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',1e4);
+    'movie_fs',cur.roi_params(1).fs,'lag_corr',lag_corr,...
+    'realign',0,'smoothing',0.05,'smooth_kernel','b','maxlag',maxlag,'nboots',1e3);
 
 end
 

@@ -119,11 +119,11 @@ corrvals=zeros(npairs,nrois);
 % get the correlation difference using means (probably the most reliable here,
 % jitter should average out assuming it's symmetric)
 
-mu1=mean(zscore(DATA{compare_day}),3);
+mu1=mean(DATA{compare_day},3);
 
 for i=1:ndays
 
-	mu2=mean(zscore(DATA{i}),3);
+	mu2=mean(DATA{i},3);
 	corrmat=zeros(nrois,nrois);
 
 	if lag_corr
@@ -161,8 +161,8 @@ for i=1:ndays
 	ntrials1=size(DATA{i},3);
 	pool_compare=(ntrials1-(round(ntrials1/frac)-1)):ntrials1;
 
-	compare=mean(zscore(DATA{i}(:,:,pool_compare)),3);
-	compare_all=mean(zscore(DATA{i}),3);
+	compare=mean(DATA{i}(:,:,pool_compare),3);
+	compare_all=mean(DATA{i},3);
 
 	for j=i:ndays
 
@@ -171,9 +171,9 @@ for i=1:ndays
 		pool1=1:round(ntrials2/frac);
 		pool2=(ntrials2-(round(ntrials2/frac)-1)):ntrials2;
 
-		mu_day=mean(zscore(DATA{j}(:,:,pool1)),3);
-		mu_night=mean(zscore(DATA{j}(:,:,pool2)),3);
-		mu_all=mean(zscore(DATA{j}),3);
+		mu_day=mean(DATA{j}(:,:,pool1),3);
+		mu_night=mean(DATA{j}(:,:,pool2),3);
+		mu_all=mean(DATA{j},3);
 
 		corrmat_day=zeros(nrois,nrois);
 		corrmat_night=zeros(nrois,nrois);
@@ -217,9 +217,9 @@ for i=1:ndays
 			pool1=1:floor(ntrials2/frac);
 			pool2=ntrials2-(floor(ntrials2/frac)-1):ntrials2;
 
-			all_stitch=zscore(cat(3,DATA{i},DATA{j}));
-			day_stitch=zscore(cat(3,DATA{i}(:,:,compare1),DATA{j}(:,:,pool1)));
-			night_stitch=zscore(cat(3,DATA{i}(:,:,compare1),DATA{j}(:,:,pool2)));
+			all_stitch=(cat(3,DATA{i},DATA{j}));
+			day_stitch=(cat(3,DATA{i}(:,:,compare1),DATA{j}(:,:,pool1)));
+			night_stitch=(cat(3,DATA{i}(:,:,compare1),DATA{j}(:,:,pool2)));
 
 			% get random permutations
 

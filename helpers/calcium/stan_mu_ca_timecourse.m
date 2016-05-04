@@ -121,6 +121,7 @@ for i=1:length(stats)
   plot(x,frac{i},'ko-','color',colors(i,:),'markersize',8,'markerfacecolor',[1 1 1]);
   hold on;
 
+  frac{i}=unstable;
 end
 
 figs_stats.drift.unstable=frac;
