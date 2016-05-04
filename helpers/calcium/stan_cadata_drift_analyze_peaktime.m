@@ -1,4 +1,4 @@
-function [peak_check,peak_ispeak,inc_rois]=stan_cadata_drift_analyze(DATA,varargin)
+function [peak_check,peak_ispeak,inc_rois]=stan_cadata_drift_analyze(DATA,IDX,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -117,34 +117,37 @@ end
 	'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
 	'fs',movie_fs*upsample); % thresh_int previously
 
+maxlag=max(IDX)-min(IDX);
 
-peak_check=zeros(ndays,nrois);
-peak_ispeak=zeros(ndays,nrois);
+peak_check=cell(1,maxlag);
+peak_ispeak=cell(1,maxlag);
 
 for i=1:ndays
 	[tmp.peaks,tmp.vals]=fb_compute_peak_simple(ave_mat{i},...
-		'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
-		'fs',movie_fs*upsample); % thresh_int previously
-		
-        for j=1:nrois
-			% cycle through all peaks
-			mindist=inf;
-			for k=1:length(tmp.peaks{j})
-					tmp2=min(abs(tmp.peaks{j}(k)-template.peaks{j}))/(movie_fs*upsample);
-					if tmp2<mindist
-						mindist=tmp2;
-					end
-			end
+	'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
+	'fs',movie_fs*upsample); % thresh_int previously
 
-			% leave a flag to check if peak exists
-
-			if mindist<dist_thresh
-				peak_check(i,j)=1;
-			end
-			if length(tmp.peaks{j})>0
-				peak_ispeak(i,j)=1;
+	for j=1:nrois
+		% cycle through all peaks
+		mindist=inf;
+		for k=1:length(tmp.peaks{j})
+			tmp2=min(abs(tmp.peaks{j}(k)-template.peaks{j}))/(movie_fs*upsample);
+			if tmp2<mindist
+				mindist=tmp2;
 			end
 		end
+
+		% leave a flag to check if peak exists
+
+		lag=IDX(i)-IDX(compare_day);
+
+		if mindist<dist_thresh
+			peak_check{lag}(j)=1;
+		end
+		if length(tmp.peaks{j})>0
+			peak_ispeak{lag}(j)=1;
+		end
+	end
 end
 
 % rifle through remaining days, is there an ROI within n msec of peak time

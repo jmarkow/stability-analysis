@@ -22,7 +22,6 @@ smoothing=0; % smooth ca trace (not working yet)
 smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
 padding=1; % padding before and after song
 compare_day=1; % day to use as basis for comparison
-method='r'; % (r)anksum, (t)test, (p)ermutation (note that permutation is dog slow)
 nparams=length(varargin);
 tail='right';
 maxlag=.02;
@@ -57,8 +56,6 @@ for i=1:2:nparams
       padding=varargin{i+1};
 		case 'tail'
 			tail=varargin{i+1};
-		case 'method'
-			method=varargin{i+1};
 		case 'lag_corr'
 			lag_corr=varargin{i+1};
 		case 'realign'
@@ -162,8 +159,6 @@ rmat_mu.bootstrap.lag.all=cell(1,maxlag);
 for i=1:ndays
 
 	ntrials1=size(DATA{i},3);
-
-	i
 	pool_compare=(ntrials1-(round(ntrials1/frac)-1)):ntrials1;
 
 	compare=mean(zscore(DATA{i}(:,:,pool_compare)),3);

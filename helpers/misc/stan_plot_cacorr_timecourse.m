@@ -1,8 +1,9 @@
-function stan_plot_corr_timecourse(STATS,COLORS,NBOOTS)
+function FIG=stan_plot_corr_timecourse(STATS,COLORS,NBOOTS)
 %
 %
 %
 
+FIG=figure();
 
 for i=1:length(STATS)
 
@@ -40,6 +41,6 @@ end
 
 yh=ylabel('Correlation (R)')
 set(yh,'position',get(yh,'position')+[.16 0 0]);
-ylim([.5 1]);
+ylim([0 1]);
 ylimits=ylim();
 set(gca,'YTick',ylimits,'TickLength',[0 0],'FontSize',7);

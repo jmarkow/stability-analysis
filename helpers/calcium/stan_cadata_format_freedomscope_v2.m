@@ -63,8 +63,8 @@ for i=1:ntrials
 	if ~isempty(FILENAMES)
 		if iscell(FILENAMES{i})
 			FILENAMES{i}=FILENAMES{i}{1};
-        end
-        [~,filename,ext]=fileparts(FILENAMES{i});
+		end
+		[~,filename,ext]=fileparts(FILENAMES{i});
 		tmp=regexp(filename,'\d+-\d+-\d+ \d+ \d+ \d+','match');
 		FORM_DATE(i)=datenum(tmp{1},'yyyy-mm-dd HH MM SS');
 		tmp=regexp(filename,'\_(\d+)','tokens');
@@ -91,11 +91,11 @@ for i=1:length(FORM_DATA)
 
 	% check for gain shifts or LED off
 
-  %  left_edge
-  %  right_edge
-  %  size(FORM_DATA{i})
+	%  left_edge
+	%  right_edge
+	%  size(FORM_DATA{i})
 
-    flag1=any(any(abs(diff(FORM_DATA{i}(left_edge:right_edge,:)))>THRESH));
+	flag1=any(any(abs(diff(FORM_DATA{i}(left_edge:right_edge,:)))>THRESH));
 	flag2=any(any(FORM_DATA{i}(left_edge:right_edge,:)<THRESH2));
 
 
