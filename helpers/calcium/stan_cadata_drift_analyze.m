@@ -23,7 +23,6 @@ smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
 padding=1; % padding before and after song
 compare_day=1; % day to use as basis for comparison
 nparams=length(varargin);
-tail='right';
 maxlag=.02;
 lag_corr=0;
 realign=1;
@@ -54,8 +53,6 @@ for i=1:2:nparams
 			compare_day=varargin{i+1};
     case 'padding'
       padding=varargin{i+1};
-		case 'tail'
-			tail=varargin{i+1};
 		case 'lag_corr'
 			lag_corr=varargin{i+1};
 		case 'realign'
@@ -96,9 +93,11 @@ end
 [~,peakloc]=max(ave_mat{compare_day});
 del=(peakloc<pad_smps(1)|peakloc>nsamples-(pad_smps(2)));
 
-%for i=1:ndays
-%	DATA{i}(:,del,:)=[];
-%end
+for i=1:ndays
+	DATA{i}(:,del,:)=[];
+end
+
+nrois=size(DATA{1},2);
 
 %inc_rois=find(any(ave_mat{chk_day}(pad_smps(1):end-pad_smps(2),:)>dff_check))
 %pad_smps=round(padding*movie_fs);
@@ -108,6 +107,18 @@ del=(peakloc<pad_smps(1)|peakloc>nsamples-(pad_smps(2)));
 for i=1:ndays
 	DATA{i}=zscore(DATA{i}(pad_smps(1):end-pad_smps(2),:,:));
 end
+
+[~,idx]=max(mean(DATA{1},3));
+[~,loc]=sort(idx);
+figure();
+for i=1:ndays
+	ax(i)=subplot(ndays,1,i);
+	mu=mean(DATA{i},3);
+	imagesc(mu(:,loc)');
+end
+
+linkaxes(ax,'x');
+pause();
 
 % get corr values from the comparison day
 
