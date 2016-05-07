@@ -54,8 +54,9 @@ for i=1:length(RAW)
 
 	if ~isfield(RAW{i},'padding')
 		RAW{i}.padding=[.25 .75];
-  end
+    end
 
+  RAW{i}.padding
     % get max time for song
 
 	[COLLECT_DATA{i},TIME{i},COLLECT_DATES{i},MOTIFS{i},FILENAMES{i}]=stan_cadata_format_freedomscope_v2(RAW{i}.raw_dat,...
