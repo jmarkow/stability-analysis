@@ -73,8 +73,14 @@ change=[];
 
 for i=1:length(stats)
   x=find(cellfun(@length,stats(i).rmat_mu.lag.day)>0);
-  variability=[variability mean(stats(i).rmat_mu.lag.day{1})];
-  change=[change mean(stats(i).rmat_mu.lag.day{x(end)})-mean(stats(i).rmat_mu.lag.day{1})];
+  variability=[variability mean(stats(i).rmat_mu.lag.day{x(1)})];
+
+  if size(stats(i).rmat_mu.lag.day{x(2)},1)>0
+    comparison=mean(stats(i).rmat_mu.lag.day{x(2)});
+  else
+    comparison=stats(i).rmat_mu.lag.day{x(2)};
+  end
+  change=[change mean(stats(i).rmat_mu.lag.day{x(1)})-comparison];
 end
 
 figs.var_v_change=figure();
@@ -112,13 +118,12 @@ for i=1:length(stats)
 
   count=cumsum(unstable);
   n=sum(count>0,2);
-  %n=sum(any(unstable>0));
 
   frac{i}=n./nrois;
 
   figs_stats.surv_time{i}=tmp;
   figs_stats.drift.unstable_n(i)=size(stats(i).rmat_mu.lag.all{1},2);
-  plot(x,frac{i},'ko-','color',colors(i,:),'markersize',8,'markerfacecolor',[1 1 1]);
+  plot(x-1,frac{i},'ko-','color',colors(i,:),'markersize',8,'markerfacecolor',[1 1 1]);
   hold on;
 
   frac{i}=unstable;
