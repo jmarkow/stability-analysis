@@ -23,6 +23,7 @@ smooth_kernel='g'; % gauss smoothing kernel (b for boxcar)
 padding=1; % padding before and after song
 compare_day=1; % day to use as basis for comparison
 nparams=length(varargin);
+global_correction=.1;
 maxlag=.02;
 lag_corr=0;
 realign=1;
@@ -61,6 +62,8 @@ for i=1:2:nparams
 			maxlag=varargin{i+1};
   	case 'nboots'
       nboots=varargin{i+1};
+		case 'global_correction'
+			global_correction=varargin{i+1};
 	end
 end
 
@@ -72,17 +75,6 @@ if ~iscell(DATA)
 	error('Wrong data format...');
 end
 
-ndays=length(DATA);
-
-[DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check_pad,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
-	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'maxlag',maxlag);
-
-% get the sort indices
-
-for i=1:ndays
-	ave_mat{i}=mean(DATA{i},3);
-end
-
 [nsamples,nrois,ntrials]=size(DATA{1});
 pad_smps=round(padding*movie_fs);
 
@@ -90,12 +82,62 @@ if pad_smps(1)==0;
 	pad_smps(1)=1;
 end
 
+ndays=length(DATA);
+nrois=size(DATA{1},2);
+
+if global_correction>0
+
+	template=zscore(mean(DATA{compare_day}(pad_smps(1):end-pad_smps(2),:,:),3));
+	global_shift=nan(1,ndays);
+
+	for i=1:ndays
+
+		roi_shifts=nan(1,nrois);
+		mu=zscore(mean(DATA{i}(pad_smps(1):end-pad_smps(2),:,:),3));
+
+		for j=1:nrois
+			[r,lags]=xcorr(template(:,j),mu(:,j));
+			[~,idx]=max(r);
+			roi_shifts(j)=lags(idx);
+		end
+
+		global_shift(i)=median(roi_shifts);
+
+	end
+
+	% take max shift, we'll need to crop out that data...
+
+	crop=max(global_shift)
+
+	% crop cuts in from left and right, adjust pads if necessary...
+
+	if crop>0
+		for i=1:ndays
+			DATA{i}=circshift(DATA{i},global_shift(i),1);
+			DATA{i}=DATA{i}(crop:end-crop,:,:);
+		end
+	end
+
+	pad_smps=pad_smps-crop;
+
+end
+
+[DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check_pad,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
+'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'maxlag',maxlag);
+
+% get the sort indices
+
+for i=1:ndays
+	ave_mat{i}=mean(DATA{i},3);
+end
+
+
 [~,peakloc]=max(ave_mat{compare_day});
 del=(peakloc<pad_smps(1)|peakloc>nsamples-(pad_smps(2)));
 
-for i=1:ndays
-	DATA{i}(:,del,:)=[];
-end
+% for i=1:ndays
+% 	DATA{i}(:,del,:)=[];
+% end
 
 nrois=size(DATA{1},2);
 
@@ -108,17 +150,20 @@ for i=1:ndays
 	DATA{i}=zscore(DATA{i}(pad_smps(1):end-pad_smps(2),:,:));
 end
 
-[~,idx]=max(mean(DATA{1},3));
-[~,loc]=sort(idx);
-figure();
-for i=1:ndays
-	ax(i)=subplot(ndays,1,i);
-	mu=mean(DATA{i},3);
-	imagesc(mu(:,loc)');
-end
+% global correction means we take median xcorr across *all* rois
 
-linkaxes(ax,'x');
-pause();
+% [~,idx]=max(mean(DATA{1},3));
+% [~,loc]=sort(idx);
+% figure();
+% for i=1:ndays
+% 	ax(i)=subplot(ndays,1,i);
+% 	mu=mean(DATA{i},3);
+% 	imagesc(mu(:,loc)');
+% end
+%
+% pause();
+
+% linkaxes(ax,'x');
 
 % get corr values from the comparison day
 
@@ -130,11 +175,11 @@ corrvals=zeros(npairs,nrois);
 % get the correlation difference using means (probably the most reliable here,
 % jitter should average out assuming it's symmetric)
 
-mu1=mean(DATA{compare_day},3);
+mu1=zscore(mean(DATA{compare_day},3));
 
 for i=1:ndays
 
-	mu2=mean(DATA{i},3);
+	mu2=zscore(mean(DATA{i},3));
 	corrmat=zeros(nrois,nrois);
 
 	if lag_corr
@@ -172,8 +217,8 @@ for i=1:ndays
 	ntrials1=size(DATA{i},3);
 	pool_compare=(ntrials1-(round(ntrials1/frac)-1)):ntrials1;
 
-	compare=mean(DATA{i}(:,:,pool_compare),3);
-	compare_all=mean(DATA{i},3);
+	compare=zscore(mean(DATA{i}(:,:,pool_compare),3));
+	compare_all=zscore(mean(DATA{i},3));
 
 	for j=i:ndays
 
@@ -182,9 +227,9 @@ for i=1:ndays
 		pool1=1:round(ntrials2/frac);
 		pool2=(ntrials2-(round(ntrials2/frac)-1)):ntrials2;
 
-		mu_day=mean(DATA{j}(:,:,pool1),3);
-		mu_night=mean(DATA{j}(:,:,pool2),3);
-		mu_all=mean(DATA{j},3);
+		mu_day=zscore(mean(DATA{j}(:,:,pool1),3));
+		mu_night=zscore(mean(DATA{j}(:,:,pool2),3));
+		mu_all=zscore(mean(DATA{j},3));
 
 		corrmat_day=zeros(nrois,nrois);
 		corrmat_night=zeros(nrois,nrois);
@@ -249,14 +294,14 @@ for i=1:ndays
 			tic
 			for k=1:nboots
 
-				mu_all1=mean(all_stitch(:,:,rndidx_all(1:all_split,k)),3);
-				mu_all2=mean(all_stitch(:,:,rndidx_all(all_split+1:end,k)),3);
+				mu_all1=zscore(mean(all_stitch(:,:,rndidx_all(1:all_split,k)),3));
+				mu_all2=zscore(mean(all_stitch(:,:,rndidx_all(all_split+1:end,k)),3));
 
-				mu_day1=mean(day_stitch(:,:,rndidx_day(1:day_split,k)),3);
-				mu_day2=mean(day_stitch(:,:,rndidx_day(day_split+1:end,k)),3);
+				mu_day1=zscore(mean(day_stitch(:,:,rndidx_day(1:day_split,k)),3));
+				mu_day2=zscore(mean(day_stitch(:,:,rndidx_day(day_split+1:end,k)),3));
 
-				mu_night1=mean(night_stitch(:,:,rndidx_night(1:night_split,k)),3);
-				mu_night2=mean(night_stitch(:,:,rndidx_night(night_split+1:end,k)),3);
+				mu_night1=zscore(mean(night_stitch(:,:,rndidx_night(1:night_split,k)),3));
+				mu_night2=zscore(mean(night_stitch(:,:,rndidx_night(night_split+1:end,k)),3));
 
 				corrmat_day=zeros(nrois,nrois);
 				corrmat_night=zeros(nrois,nrois);

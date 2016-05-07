@@ -41,9 +41,9 @@ function stan_cadata_drift_analyze_all()
 [options,dirs]=stan_preflight;
 motif_select=2;
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,'*.mat'));
-maxlag=.05;
+maxlag=.1;
 
-for i=1:length(listing)
+parfor i=1:length(listing)
 
   % use only the selected motif
   disp([listing(i).name]);
@@ -52,12 +52,28 @@ for i=1:length(listing)
 
   lag_idx=zeros(1,length(cur.roi_data));
 
+  len=cellfun(@length,cur.roi_data);
+
+  to_del=len==0;
+  cur.roi_data(to_del)=[];
+  cur.roi_motifs(to_del)=[];
+  cur.roi_params(to_del)=[];
+  cur.roi_dates(to_del)=[];
+
   if strcmp(listing(i).name,'lw76.mat')
     tmp_motif_select=1;
     lag_corr=0;
   else
     tmp_motif_select=motif_select;
     lag_corr=0;
+  end
+
+  if strcmp(listing(i).name,'lny13.mat')
+    cur.roi_params(1).padding=[.7 .5];
+  end
+
+  if strcmp(listing(i).name,'lny18.mat')
+    cur.roi_params(1).padding=[.7 .5];
   end
 
   for j=1:length(cur.roi_data)
@@ -71,7 +87,7 @@ for i=1:length(listing)
   [stats(i).rmat_mu stats(i).pmat]=stan_cadata_drift_analyze(...
     cur.roi_data,lag_idx,'padding',cur.roi_params(1).padding,...
     'movie_fs',cur.roi_params(1).fs,'lag_corr',lag_corr,...
-    'realign',1,'smoothing',0.05,'smooth_kernel','b','maxlag',maxlag,'nboots',1e2);
+    'realign',0,'smoothing',0.1,'smooth_kernel','b','maxlag',maxlag,'nboots',1e4);
 
 end
 
