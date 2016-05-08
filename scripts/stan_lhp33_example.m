@@ -14,7 +14,7 @@ rms_smps=round(rms_tau.*ephys.fs);
 rms_filter=ones(rms_smps,1)./rms_smps;
 
 ephys_use=ephys_filtered(:,motif_number==1);
-ephys_rms=sqrt(filter(rms_filter,1,ephys_use.^2));
+ephys_rms=(filter(rms_filter,1,ephys_use.^2));
 
 trials_to_use=[80 140];
 
@@ -25,18 +25,20 @@ xlabel('Time (s)');
 ylabel('Trial');
 colormap(fee_map);
 c=colorbar();
-c.Label.String='RMS (uV)';
+c.Label.String='Mean Squared Voltage (uV)';
+xlim([0 .8]);
 
 figure();
 nplots=length(trials_to_use);
 ax=[];
 for i=1:length(trials_to_use)
   ax(i)=subplot(nplots,1,i);
-  plot(ephys.t,ephys_use(:,trials_to_use(i)));
+  plot(ephys.t,ephys_use(:,trials_to_use(i)),'k-');
   box off;
   title([sprintf('Trial %i',trials_to_use(i))]);
 end
 linkaxes(ax,'xy');
+xlim([0 .8]);
 set(ax(1),'XTick',[])
 xlabel('Time (s)');
 ylabel('V (uV)');
@@ -53,7 +55,7 @@ ax=[];
 
 for i=1:length(motifs)
   ax(i)=subplot(length(motifs),1,i);
-  imagesc(ephys.t,[],sqrt(filter(rms_filter,1,ephys_filtered(:,motif_number==motifs(i)).^2))');
+  imagesc(ephys.t,[],(filter(rms_filter,1,ephys_filtered(:,motif_number==motifs(i)).^2))');
   title(sprintf('Motif %i',motifs(i)));
 end
 

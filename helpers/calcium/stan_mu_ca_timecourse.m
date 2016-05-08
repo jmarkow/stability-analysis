@@ -104,7 +104,7 @@ for i=1:length(stats)
   unstable=nan(length(x),nrois);
 
   for j=1:length(x)
-    unstable(j,:)=markolab_bonf_holm(figs_stats.drift.pval{i}{x(j)},.05)<0.01;
+    unstable(j,:)=markolab_bonf_holm(figs_stats.drift.pval{i}{x(j)},.05)<0.05;
     %unstable(j,:)=figs_stats.drift.pval{i}{x(j)}<=.001;
   end
 
