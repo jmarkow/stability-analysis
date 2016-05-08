@@ -41,7 +41,7 @@ function stan_cadata_drift_analyze_all()
 [options,dirs]=stan_preflight;
 motif_select=2;
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,'*.mat'));
-maxlag=.1;
+maxlag=.02;
 
 parfor i=1:length(listing)
 
@@ -65,7 +65,7 @@ parfor i=1:length(listing)
     lag_corr=0;
   else
     tmp_motif_select=motif_select;
-    lag_corr=0;
+    lag_corr=1;
   end
 
   if strcmp(listing(i).name,'lny13.mat')
@@ -87,7 +87,7 @@ parfor i=1:length(listing)
   [stats(i).rmat_mu stats(i).pmat]=stan_cadata_drift_analyze(...
     cur.roi_data,lag_idx,'padding',cur.roi_params(1).padding,...
     'movie_fs',cur.roi_params(1).fs,'lag_corr',lag_corr,...
-    'realign',0,'smoothing',0.1,'smooth_kernel','b','maxlag',maxlag,'nboots',1e4);
+    'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',1e4);
 
 end
 

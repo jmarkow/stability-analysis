@@ -29,6 +29,7 @@ lag_corr=0;
 realign=1;
 nboots=1e4;
 dist_thresh=.1;
+global_correction=.1;
 
 if mod(nparams,2)>0
 	error('Parameters must be specified as parameter/value pairs');
@@ -70,6 +71,8 @@ for i=1:2:nparams
 			maxlag=varargin{i+1};
 		case 'dist_thresh'
 			dist_thresh=varargin{i+1};
+		case 'global_correction'
+			global_correction=varargin{i+1};
 	end
 end
 
@@ -80,17 +83,57 @@ if ~iscell(DATA)
 end
 
 ndays=length(DATA);
+nrois=size(DATA{1},2);
+
+pad_smps=round(padding*movie_fs);
+
+if pad_smps(1)==0;
+	pad_smps(1)=1;
+end
+
+if global_correction>0
+
+	template=zscore(mean(DATA{compare_day}(pad_smps(1):end-pad_smps(2),:,:),3));
+	global_shift=nan(1,ndays);
+
+	for i=1:ndays
+
+		roi_shifts=nan(1,nrois);
+		mu=zscore(mean(DATA{i}(pad_smps(1):end-pad_smps(2),:,:),3));
+
+		for j=1:nrois
+			[r,lags]=xcorr(template(:,j),mu(:,j));
+			[~,idx]=max(r);
+			roi_shifts(j)=lags(idx);
+		end
+
+		global_shift(i)=median(roi_shifts);
+
+	end
+
+	% take max shift, we'll need to crop out that data...
+
+	crop=max(global_shift)
+
+	% crop cuts in from left and right, adjust pads if necessary...
+
+	if crop>0
+		for i=1:ndays
+			DATA{i}=circshift(DATA{i},global_shift(i),1);
+			DATA{i}=DATA{i}(crop:end-crop,:,:);
+		end
+	end
+
+	pad_smps=pad_smps-crop;
+
+end
+
 [DATA,phase_shift,inc_rois]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check_pad,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
 	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'maxlag',maxlag);
 
 % get the sort indices
 
 [nsamples,nrois,ntrials]=size(DATA{1});
-pad_smps=round(padding*movie_fs);
-
-if pad_smps(1)==0;
-	pad_smps(1)=1;
-end
 
 % not necessary here, but left in just in case
 % upsample ave_mat, get peak times, yadda yadda
@@ -107,25 +150,24 @@ if upsample>1
 	phase_shift=round((phase_shift/movie_fs)*(movie_fs*upsample));
 
 end
-pad_smps
+
 for i=1:ndays
 	ave_mat{i}=mean(DATA{i}(pad_smps(1):end-pad_smps(2),:,:),3);
 end
 
-
+template=[];
 [template.peaks,template.vals]=fb_compute_peak_simple(ave_mat{compare_day},...
 	'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
 	'fs',movie_fs*upsample); % thresh_int previously
 
 maxlag=max(IDX)-min(IDX);
-
 peak_check=cell(1,maxlag);
 peak_ispeak=cell(1,maxlag);
 
 for i=1:ndays
 	[tmp.peaks,tmp.vals]=fb_compute_peak_simple(ave_mat{i},...
-	'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
-	'fs',movie_fs*upsample); % thresh_int previously
+		'thresh_t',.1,'debug',0,'onset_only',0,'thresh_hi',.5,'thresh_int',5,'thresh_dist',.2,...
+		'fs',movie_fs*upsample); % thresh_int previously
 
 	for j=1:nrois
 		% cycle through all peaks
@@ -139,13 +181,17 @@ for i=1:ndays
 
 		% leave a flag to check if peak exists
 
-		lag=IDX(i)-IDX(compare_day);
+		lag=(IDX(i)-IDX(compare_day))+1;
 
 		if mindist<dist_thresh
 			peak_check{lag}(j)=1;
+		else
+			peak_check{lag}(j)=0;
 		end
 		if length(tmp.peaks{j})>0
 			peak_ispeak{lag}(j)=1;
+		else
+			peak_ispeak{lag}(j)=0;
 		end
 	end
 end
