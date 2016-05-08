@@ -62,7 +62,7 @@ for i=1:length(RAW)
 	[COLLECT_DATA{i},TIME{i},COLLECT_DATES{i},MOTIFS{i},FILENAMES{i}]=stan_cadata_format_freedomscope_v2(RAW{i}.raw_dat,...
 		RAW{i}.raw_time,...
 		50,... % threshold on derivative (check for gain shift, in raw px values)
-		30,... % threshold for camera on (px values below this considered LED off)
+		15,... % threshold for camera on (px values below this considered LED off)
 		100,... % new sampling rate
 		RAW{i}.padding,... % padding for extraction
 		max_time,... % length of song
