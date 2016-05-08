@@ -39,7 +39,7 @@ function stan_cadata_drift_analyze_all()
 % save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats.mat']),'stats','cadata');
 
 [options,dirs]=stan_preflight;
-motif_select=2;
+motif_select=3;
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,'*.mat'));
 maxlag=.1;
 
@@ -94,8 +94,8 @@ parfor i=1:length(listing)
   [stats(i).rmat_mu stats(i).pmat]=stan_cadata_drift_analyze(...
     cur.roi_data,lag_idx,'padding',cur.roi_params(1).padding,...
     'movie_fs',cur.roi_params(1).fs,'lag_corr',lag_corr,...
-    'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',1e4);
+    'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',1e2);
 
 end
 
-save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new.mat']),'stats');
+save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new_motif3.mat']),'stats');

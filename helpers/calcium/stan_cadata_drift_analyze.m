@@ -168,6 +168,7 @@ end
 % get corr values from the comparison day
 
 ntrials=size(DATA{compare_day},3);
+ntrials
 pairs=nchoosek(1:ntrials,2);
 npairs=size(pairs,1);
 corrvals=zeros(npairs,nrois);

@@ -6,11 +6,13 @@ function [figs figs_stats]=stan_plot_ca_nightdat(CASTATS)
 % stitch everything together appropriately, alternating first/last
 
 [options,dirs]=stan_preflight;
-nlags=length(CASTATS(1).rmat_mu.lag.day)-1; % first point is lag 0
-npoints=nlags*2; % nlags morning/evening
-nboots=1e4;
+%nlags=length(CASTATS(1).rmat_mu.lag.day)-1; % first point is lag 0
+%npoints=nlags*2; % nlags morning/evening
+nlags=4;
+npoints=nlags*2;
+nboots=1e3;
 
-agg=cell(1,npoints);
+agg={};
 counter=1;
 
 for i=1:nlags
@@ -19,8 +21,12 @@ for i=1:nlags
   tmp2=[];
 
   for j=1:length(CASTATS)
-    tmp=[tmp;CASTATS(j).rmat_mu.lag.day{i+1}(:)];
-    tmp2=[tmp2;CASTATS(j).rmat_mu.lag.night{i+1}(:)];
+    if length(CASTATS(j).rmat_mu.lag.all)>=i+1
+      if ~isempty(CASTATS(j).rmat_mu.lag.all{i+1})
+        tmp=[tmp;CASTATS(j).rmat_mu.lag.day{i+1}(:)];
+        tmp2=[tmp2;CASTATS(j).rmat_mu.lag.night{i+1}(:)];
+      end
+    end
   end
 
   agg{counter}=tmp;
@@ -129,7 +135,12 @@ dprime=[];
 for i=1:length(CASTATS)
 
   mu1=mean(CASTATS(i).rmat_mu.lag.day{1});
-  mu2=mean(CASTATS(i).rmat_mu.lag.day{2});
+
+  if size(CASTATS(i).rmat_mu.lag.day{2},1)>1
+    mu2=mean(CASTATS(i).rmat_mu.lag.day{2});
+  else
+    mu2=CASTATS(i).rmat_mu.lag.day{2};
+  end
 
   tmp1=CASTATS(i).rmat_mu.lag.day{1};
   tmp2=CASTATS(i).rmat_mu.lag.day{2};
@@ -174,14 +185,16 @@ est1=histc(poolz1,bins);
 est2=histc(poolz1(pool_pval1_right<.05),bins);
 est3=histc(poolz1(pool_pval1_left<.05),bins);
 
+maxval=100;
+
 figs.roihist1=figure();
 ax(1)=markolab_stairplot(est1,bins,'facecolor',[.5 .5 .5],'edgecolor','k','method','p');
 hold on;
 ax(2)=markolab_stairplot(est2,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
 ax(3)=markolab_stairplot(est3,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
-plot([0 0],[0 40],'k--');
+plot([0 0],[0 maxval],'k--');
 xlim([-15 5]);
-set(gca,'YTick',[0:10:40],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
+set(gca,'YTick',[0:20:maxval],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
 
 est12=histc(poolz2,bins);
 est22=histc(poolz2(pool_pval2_right<.05),bins);
@@ -192,18 +205,18 @@ ax(1)=markolab_stairplot(est12,bins,'facecolor',[.5 .5 .5],'edgecolor','k','meth
 hold on;
 ax(2)=markolab_stairplot(est22,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
 ax(3)=markolab_stairplot(est32,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
-plot([0 0],[0 40],'k--');
+plot([0 0],[0 maxval],'k--');
 xlim([-15 5]);
-set(gca,'YTick',[0:10:40],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
+set(gca,'YTick',[0:20:maxval],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
 
 ax=[];
 figs.comparehist=figure();
 ax(1)=markolab_stairplot(est1,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
 hold on;
 ax(2)=markolab_stairplot(est12,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
-plot([0 0],[0 40],'k--');
+plot([0 0],[0 maxval],'k--');
 xlim([-15 5]);
-set(gca,'YTick',[0:10:40],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
+set(gca,'YTick',[0:20:maxval],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
 L=legend(ax,{'Night','Day'});
 legend boxoff;
 set(L,'FontSize',5,'Location','Northwest')
@@ -214,7 +227,7 @@ est_raw=histc(pool2-pool1,bins_raw);
 figs.rawhist=figure();
 ax(1)=markolab_stairplot(est_raw,bins_raw,'facecolor',[.3 .3 .3],'edgecolor','k','method','p');
 hold on;
-plot([0 0],[0 50],'k--');
+plot([0 0],[0 maxval],'k--');
 xlim([-1 1]);
 
 fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_caovernight.txt'),'w+');

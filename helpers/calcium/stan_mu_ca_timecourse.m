@@ -6,8 +6,8 @@ function [figs,figs_stats]=stan_plot_barecarbon_ca_timecourse()
 % upsample?
 interp_factor=5;
 ndays=4;
-nboots=1e2;
-filewrite=false;
+nboots=1e4;
+filewrite=true;
 
 [options,dirs]=stan_preflight;
 
@@ -33,7 +33,7 @@ figs.catimecourse=stan_plot_cacorr_timecourse(stats,colors,nboots);
 
 % collect points for each day
 
-figs.beeswarm=stan_plot_mu_ca_compare(stats,teststats);
+[figs.beeswarm,figs_stats.mu_v_ca,plotpoints]=stan_plot_mu_ca_compare(stats,teststats);
 
 % monte carlo permutation test for fraction of unstable cells
 
@@ -72,20 +72,23 @@ variability=[];
 change=[];
 
 for i=1:length(stats)
+  
   x=find(cellfun(@length,stats(i).rmat_mu.lag.day)>0);
-  variability=[variability mean(stats(i).rmat_mu.lag.day{x(1)})];
+  variability=[variability var(stats(i).rmat_mu.lag.day{x(1)})];
 
-  if size(stats(i).rmat_mu.lag.day{x(2)},1)>0
-    comparison=mean(stats(i).rmat_mu.lag.day{x(2)});
+  if size(stats(i).rmat_mu.lag.day{x(end)},1)>0
+    comparison=mean(stats(i).rmat_mu.lag.day{x(end)});
   else
-    comparison=stats(i).rmat_mu.lag.day{x(2)};
+    comparison=stats(i).rmat_mu.lag.day{x(end)};
   end
+  
   change=[change mean(stats(i).rmat_mu.lag.day{x(1)})-comparison];
+  
 end
 
 figs.var_v_change=figure();
 scatter(variability,change)
-[r3,p3]=corr(variability(:),change(:),'type','pearson');
+[r3,p3]=corr(variability(:),change(:),'type','pearson')
 figs_stats.drift.var_v_change.p=p3;
 figs_stats.drift.var_v_change.r=r3;
 
@@ -104,7 +107,7 @@ for i=1:length(stats)
   unstable=nan(length(x),nrois);
 
   for j=1:length(x)
-    unstable(j,:)=markolab_bonf_holm(figs_stats.drift.pval{i}{x(j)},.05)<0.05;
+    unstable(j,:)=markolab_bonf_holm(figs_stats.drift.pval{i}{x(j)},.05)<0.01;
     %unstable(j,:)=figs_stats.drift.pval{i}{x(j)}<=.001;
   end
 
@@ -161,8 +164,11 @@ set(gca,'TickLength',[0 0],'YTick',[0:.5:1],'XTick',[0:4],'FontSize',7)
 
 if filewrite
     fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_catimecourse.txt'),'w+');
-    fprintf(fid,'Multi-unit stability vs calcium: p=%e z=%g\n',figs_stats.mu_v_ca_all.pval,figs_stats.mu_v_ca_all.zval);
+    fprintf(fid,'Multi-unit stability vs calcium: p=%e z=%g\n',figs_stats.mu_v_ca.all.pval,figs_stats.mu_v_ca.all.zval);
     fprintf(fid,'Within day v between day variability: p=%e r=%g\n',figs_stats.drift.var_v_change.p,figs_stats.drift.var_v_change.r);
-    fprintf(fid,'N(multi-unit): %i\nN(ROIS,1): %i\nN(ROIS,2): %i\nN(ROIS,3): %i',length(plotpoints{1}),length(plotpoints{2}),length(plotpoints{3}),length(plotpoints{4}));
+    fprintf(fid,'N(multi-unit): %i\n',length(plotpoints{1}));
+    for j=1:length(plotpoints)-1
+       fprintf(fid,'N(ROIs): %i\n',length(plotpoints{j+1}));
+    end
     fclose(fid);
 end

@@ -51,32 +51,39 @@ for i=1:length(listing)
 
   len=cellfun(@length,cur.roi_data);
 
-  to_del=len==0;
-  cur.roi_data(to_del)=[];
-  cur.roi_motifs(to_del)=[];
-  cur.roi_params(to_del)=[];
-  cur.roi_dates(to_del)=[];
+
 
   if strcmp(listing(i).name,'lw76.mat')
     tmp_motif_select=1;
     lag_corr=0;
   else
     tmp_motif_select=motif_select;
-    lag_corr=0;
+    lag_corr=1;
   end
 
-  if strcmp(listing(i).name,'lny13.mat')
-    cur.roi_params(1).padding=[.7 .5];
+   if strcmp(listing(i).name,'lny13.mat')
+    cur.roi_params(1).padding=[.7 .677];
+    %to_del(5)=true; % something strange happened on day 5
   end
 
   if strcmp(listing(i).name,'lny18.mat')
-    cur.roi_params(1).padding=[.7 .5];
+    cur.roi_params(1).padding=[.5 .95];
+  end
+
+  if strcmp(listing(i).name,'lny54rb.mat')
+    cur.roi_params(1).padding=[.3 .85];
   end
 
   for j=1:length(cur.roi_data)
     cur.roi_data{j}=cur.roi_data{j}(:,:,cur.roi_motifs{j}==tmp_motif_select);
     lag_idx(j)=round(cur.roi_dates{j}(1)-cur.roi_dates{1}(1));
   end
+
+  to_del=len==0;
+  cur.roi_data(to_del)=[];
+  cur.roi_motifs(to_del)=[];
+  cur.roi_params(to_del)=[];
+  cur.roi_dates(to_del)=[];
 
   % easy to assign lag indices, round off day difference between two datenumbers
 

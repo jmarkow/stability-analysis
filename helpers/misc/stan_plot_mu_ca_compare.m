@@ -1,4 +1,4 @@
-function [FIG_SWARM,FIG_STATS]=stan_fig_mu_ca_compare(CADATA,MUDATA)
+function [FIG_SWARM,FIG_STATS,plotpoints]=stan_fig_mu_ca_compare(CADATA,MUDATA)
 %
 %
 
