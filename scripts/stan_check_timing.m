@@ -2,8 +2,8 @@
 % quick check of calcium data
 
 roi_times{1}=roi_times{1}-min(roi_times{1});
-left_edge=max(find(roi_times{1}<.7));
-right_edge=min(find(roi_times{1}>max(roi_times{1})-.67));
+left_edge=max(find(roi_times{1}<.2));
+right_edge=min(find(roi_times{1}>max(roi_times{1})-.7));
 
 motif_selection=2;
 

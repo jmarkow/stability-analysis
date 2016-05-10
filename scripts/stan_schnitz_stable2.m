@@ -25,10 +25,27 @@ end
 
 figs.schnitz_stable=figure();
 
-ave_mat=stan_cadata_sortmat(unstable_roi_data,'scaling','s','sort_day',1,'smoothing',0,'smooth_kernel','g',...
-    'padding',padding,'movie_fs',roi_params(1).fs,'fig_row',2,'fig_nrows',2,'realign',0,'maxlag',.1,'threshold',.5);
-stan_cadata_sortmat(stable_roi_data,'scaling','s','sort_day',1,'smoothing',0,'smooth_kernel','g',...
-    'padding',padding,'movie_fs',roi_params(1).fs,'fig_row',1,'fig_nrows',2,'realign',0,'maxlag',.1,'threshold',.5);
+% ave_mat=stan_cadata_sortmat(unstable_roi_data,'scaling','l','sort_day',1,'smoothing',0,'smooth_kernel','g',...
+%     'padding',padding,'movie_fs',roi_params(1).fs,'fig_row',2,'fig_nrows',2,'realign',0,'maxlag',.1);
+% stan_cadata_sortmat(stable_roi_data,'scaling','l','sort_day',1,'smoothing',0,'smooth_kernel','g',...
+%     'padding',padding,'movie_fs',roi_params(1).fs,'fig_row',1,'fig_nrows',2,'realign',0,'maxlag',.1);
+
+
+ave_mat=stan_cadata_sortmat(roi_data2,'scaling','l','sort_day',1,'smoothing',0,'smooth_kernel','g',...
+    'padding',padding,'movie_fs',roi_params(1).fs,'fig_row',2,'fig_nrows',2,'realign',0,'maxlag',.1);
+
+ax=findall(gcf,'type','axes')
+for i=1:length(ax)
+    caxis(ax(i),[clims]);
+end
+
+stan_cadata_sortmat(roi_data2,'scaling','z','sort_day',1,'smoothing',0,'smooth_kernel','g',...
+    'padding',padding,'movie_fs',roi_params(1).fs,'fig_row',1,'fig_nrows',2,'realign',0,'maxlag',.1);
+
+ax=findall(gcf,'type','axes')
+for i=1:length(ax)
+  caxis(ax(i),[0 6]);
+end
 
 
 colormap(jet);
@@ -48,10 +65,10 @@ h=line([xlimits(1) xlimits(1)+.2],[ylimits(2)+3 ylimits(2)+3],'color','k','paren
 set(h,'clipping','off');
 colormap(hot)
 set(figs.schnitz_stable,'PaperPositionMode','auto','position',[200 200 280 160]);
-
-for i=1:length(ax)
-    caxis(ax(i),[clims]);
-end
+%
+% for i=1:length(ax)
+%     caxis(ax(i),[clims]);
+% end
 
 figs.schnitz_colorbar=figure();
 imagesc([0:1/1e3:1],[],[0:1/1e3:1]);

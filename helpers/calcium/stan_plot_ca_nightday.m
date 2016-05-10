@@ -11,11 +11,13 @@ function [figs figs_stats]=stan_plot_ca_nightdat(CASTATS)
 nlags=4;
 npoints=nlags*2;
 nboots=1e3;
-
+filewrite=false;
 agg={};
 counter=1;
 
 for i=1:nlags
+
+  % TODO: normalize
 
   tmp=[];
   tmp2=[];
@@ -23,8 +25,18 @@ for i=1:nlags
   for j=1:length(CASTATS)
     if length(CASTATS(j).rmat_mu.lag.all)>=i+1
       if ~isempty(CASTATS(j).rmat_mu.lag.all{i+1})
-        tmp=[tmp;CASTATS(j).rmat_mu.lag.day{i+1}(:)];
-        tmp2=[tmp2;CASTATS(j).rmat_mu.lag.night{i+1}(:)];
+        for k=1:size(CASTATS(j).rmat_mu.lag.day{i+1},1)
+            tmp=[tmp CASTATS(j).rmat_mu.lag.day{i+1}(k,:)-mean(CASTATS(j).rmat_mu.bootstrap.lag.day{1}{1})];
+        end
+
+        %tmp=[tmp;CASTATS(j).rmat_mu.lag.day{i+1}(:)];
+
+        for k=1:size(CASTATS(j).rmat_mu.lag.night{i+1},1)
+            tmp2=[tmp2 CASTATS(j).rmat_mu.lag.night{i+1}(k,:)-mean(CASTATS(j).rmat_mu.bootstrap.lag.day{1}{1})];
+        end
+
+
+        %tmp2=[tmp2;CASTATS(j).rmat_mu.lag.night{i+1}(:)];
       end
     end
   end
@@ -34,6 +46,7 @@ for i=1:nlags
   counter=counter+2;
 
 end
+
 
 mu=cellfun(@mean,agg);
 mu_ci=zeros(2,length(agg));
@@ -93,8 +106,8 @@ for i=1:length(days)
   plot_mu_ci(:,counter)=bootci(nboots,{@mean,norm_day{i}},'type','cper');
   plot_mu_ci(:,counter+1)=bootci(nboots,{@mean,norm_night{i}},'type','cper');
 
-  figs_stats.circadian.lagtest(i)=ranksum(norm_night{i},norm_night{1});
-  figs_stats.circadian.pairtest(i)=signrank(days{i},nights{i});
+  %figs_stats.circadian.lagtest(i)=ranksum(norm_night{i},norm_night{1});
+  %figs_stats.circadian.pairtest(i)=signrank(days{i},nights{i});
   counter=counter+2;
 
 end
@@ -124,26 +137,60 @@ pool_pval1_left=[];
 pool_pval1_right=[];
 pool_pval2_left=[];
 pool_pval2_right=[];
+
 poolz1=[];
 poolz2=[];
-
 pool1=[];
 pool2=[];
 
 dprime=[];
+%
+% for i=1:length(CASTATS)
+%
+%   poolz1=[];
+%   poolz2=[];
+%
+%   pool1=[];
+%   pool2=[];
+%
+%   bootmu=mean(cat(3,CASTATS(i).rmat_mu.bootstrap.lag.day{1}{:}),3);
+%   bootmu_mu=mean(bootmu);
+%   bootmu_var=std(bootmu);
+%
+%   for j=1:size(CASTATS(i).rmat_mu.lag.day{1},1)
+%     tmp1=CASTATS(i).rmat_mu.lag.day{1}(j,:);
+%     pool1=[pool1;tmp1];
+%     poolz1=[poolz1;(tmp1-bootmu_mu)./bootmu_var];
+%   end
+%
+%   for j=1:size(CASTATS(i).rmat_mu.lag.day{2},1)
+%     tmp2=CASTATS(i).rmat_mu.lag.day{2}(j,:);
+%     pool2=[pool2;tmp2];
+%     poolz2=[poolz2;(tmp2-bootmu_mu)./bootmu_var];
+%   end
+%
+%   mean(poolz1)
+%   mean(poolz2)
+%
+% end
 
 for i=1:length(CASTATS)
 
-  mu1=mean(CASTATS(i).rmat_mu.lag.day{1});
-
   if size(CASTATS(i).rmat_mu.lag.day{2},1)>1
-    mu2=mean(CASTATS(i).rmat_mu.lag.day{2});
+    mu1=mean(CASTATS(i).rmat_mu.lag.day{2});
   else
-    mu2=CASTATS(i).rmat_mu.lag.day{2};
+    mu1=CASTATS(i).rmat_mu.lag.day{2};
   end
 
-  tmp1=CASTATS(i).rmat_mu.lag.day{1};
-  tmp2=CASTATS(i).rmat_mu.lag.day{2};
+  if size(CASTATS(i).rmat_mu.lag.night{2},1)>1
+    mu2=mean(CASTATS(i).rmat_mu.lag.night{2});
+  else
+    mu2=CASTATS(i).rmat_mu.lag.night{2};
+  end
+
+  tmp1=CASTATS(i).rmat_mu.lag.day{2};
+  tmp2=CASTATS(i).rmat_mu.lag.night{2};
+
   pool1=[pool1 mu1];
   pool2=[pool2 mu2];
 
@@ -166,7 +213,7 @@ for i=1:length(CASTATS)
 
 end
 
-% significant pool
+%significant pool
 
 figs_stats.overnight.roi_pval1.left=[pool_pval1_left];
 figs_stats.overnight.roi_pval1.right=[pool_pval1_right];
@@ -176,9 +223,9 @@ figs_stats.overnight.all_zval1=tmpstats.zval;
 figs_stats.overnight.roi_pval2.left=[pool_pval2_left];
 figs_stats.overnight.roi_pval2.right=[pool_pval2_right];
 [figs_stats.overnight.all_pval2,~,tmpstats]=signrank(poolz2,poolz1,'tail','left')
-
 figs_stats.overnight.all_zval2=tmpstats.zval;
 figs_stats.overnight.all_pval2_raw=signrank(pool2,pool1,'tail','left');
+
 
 bins=[-15:1:5];
 est1=histc(poolz1,bins);
@@ -230,9 +277,11 @@ hold on;
 plot([0 0],[0 maxval],'k--');
 xlim([-1 1]);
 
-fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_caovernight.txt'),'w+');
-fprintf(fid,'Within day v overnight corr: p=%e z=%g',figs_stats.overnight.all_pval2,figs_stats.overnight.all_zval2);
-fclose(fid);
+if filewrite
+  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_caovernight.txt'),'w+');
+  fprintf(fid,'Within day v overnight corr: p=%e z=%g',figs_stats.overnight.all_pval2,figs_stats.overnight.all_zval2);
+  fclose(fid);
+end
 
 % figs.compareswarm=figure();
 % d{1}=poolz1;
