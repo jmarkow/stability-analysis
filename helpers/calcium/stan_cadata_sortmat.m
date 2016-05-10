@@ -66,6 +66,8 @@ for i=1:2:nparams
 			padding=varargin{i+1};
 		case 'realign'
 			realign=varargin{i+1};
+        case 'maxlag'
+            maxlag=varargin{i+1};
 	end
 end
 

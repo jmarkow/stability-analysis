@@ -18,4 +18,5 @@ for i=1:length(names)
   set(fig.(names{i}),'paperpositionmode','auto');
 	markolab_multi_fig_save(fig.(names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),[ 'driftanalysis_revision' names{i} ],'eps,png,fig',...
 		'renderer','painters');
+    save(fullfile(dirs.agg_dir,dirs.datastore_dir,'mu_ca_timecourse.mat'),'fig_stats');
 end
