@@ -1,4 +1,4 @@
-function [rmat_mu,pmat]=stan_cadata_drift_analyze(DATA,IDX,varargin)
+function [rmat_mu,pmat,vmat]=stan_cadata_drift_analyze(DATA,IDX,varargin)
 % takes data from stan_format_cadata and generates a series of panels for each time point
 %
 %
@@ -28,7 +28,7 @@ maxlag=.02;
 lag_corr=0;
 realign=1;
 nboots=1e4;
-frac=2;
+frac=5;
 
 if mod(nparams,2)>0
 	error('Parameters must be specified as parameter/value pairs');
@@ -123,7 +123,7 @@ if global_correction>0
 end
 
 [DATA,phase_shift]=stan_cadata_preprocess(DATA,'peak_check_pad',peak_check_pad,'peak_thresh',peak_thresh,'movie_fs',movie_fs,...
-'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'maxlag',maxlag);
+	'smoothing',smoothing,'smooth_kernel',smooth_kernel,'padding',padding,'realign',realign,'maxlag',maxlag);
 
 % get the sort indices
 
@@ -148,6 +148,17 @@ nrois=size(DATA{1},2);
 
 for i=1:ndays
 	DATA{i}=zscore(DATA{i}(pad_smps(1):end-pad_smps(2),:,:));
+end
+
+vmat=cell(1,ndays);
+
+for i=1:ndays
+	ntrials=size(DATA{i},3);
+	vmat{i}=zeros(ntrials,ntrials,nrois);
+	for j=1:nrois
+		tmp=squeeze(DATA{i}(:,j,:));
+		vmat{i}(:,:,j)=1-squareform(pdist(tmp','correlation'));
+	end
 end
 
 % global correction means we take median xcorr across *all* rois
@@ -218,7 +229,7 @@ for i=1:ndays
 	ntrials1=size(DATA{i},3);
 	pool_compare=(ntrials1-(round(ntrials1/frac)-1)):ntrials1;
 
-	compare=zscore(mean(DATA{i}(:,:,pool_compare),3));
+	compare=zscore(mean(DATA{i}(:,:,:),3));
 	compare_all=zscore(mean(DATA{i},3));
 
 	for j=i:ndays

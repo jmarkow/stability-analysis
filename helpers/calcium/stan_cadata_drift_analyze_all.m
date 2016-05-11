@@ -39,11 +39,11 @@ function stan_cadata_drift_analyze_all()
 % save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats.mat']),'stats','cadata');
 
 [options,dirs]=stan_preflight;
-motif_select=3;
+motif_select=2;
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,'*.mat'));
 maxlag=.1;
 
-parfor i=1:length(listing)
+for i=1:length(listing)
 
   % use only the selected motif
   disp([listing(i).name]);
@@ -81,7 +81,8 @@ parfor i=1:length(listing)
 
   for j=1:length(cur.roi_data)
     cur.roi_data{j}=cur.roi_data{j}(:,:,cur.roi_motifs{j}==tmp_motif_select);
-    lag_idx(j)=round(cur.roi_dates{j}(1)-cur.roi_dates{1}(1));
+    cur.roi_dates{j}=cur.roi_dates{j}(cur.roi_motifs{j}==tmp_motif_select);
+    lag_idx(j)=round(min(cur.roi_dates{j})-min(cur.roi_dates{1}));
   end
 
   cur.roi_data(to_del)=[];
@@ -89,13 +90,23 @@ parfor i=1:length(listing)
   cur.roi_params(to_del)=[];
   cur.roi_dates(to_del)=[];
 
+  for j=1:length(cur.roi_data)
+
+    % re-sort by day/night
+
+    [~,idx]=sort(cur.roi_dates{i},'ascend');
+    cur.roi_data{i}=cur.roi_data{i}(:,:,idx);
+    cur.roi_dates{i}=cur.roi_dates{i}(idx);
+  end
+
   % easy to assign lag indices, round off day difference between two datenumbers
 
-  [stats(i).rmat_mu stats(i).pmat]=stan_cadata_drift_analyze(...
+  [stats(i).rmat_mu stats(i).pmat stats(i).vmat]=stan_cadata_drift_analyze(...
     cur.roi_data,lag_idx,'padding',cur.roi_params(1).padding,...
     'movie_fs',cur.roi_params(1).fs,'lag_corr',lag_corr,...
-    'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',1e2);
+    'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',0);
+  stats(i).trial_dates=cur.roi_dates;
 
 end
 
-save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new_motif3.mat']),'stats');
+save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new_daynight.mat']),'stats');

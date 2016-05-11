@@ -25,6 +25,7 @@ bin_fluo=0; % discretize fluorescence
 nbins=10; % number of bins for discretization
 realign=1;
 maxlag=.03;
+threshold=.5;
 
 nparams=length(varargin);
 
@@ -66,8 +67,10 @@ for i=1:2:nparams
 			padding=varargin{i+1};
 		case 'realign'
 			realign=varargin{i+1};
-        case 'maxlag'
-            maxlag=varargin{i+1};
+    case 'maxlag'
+      maxlag=varargin{i+1};
+		case 'threshold'
+			threshold=varargin{i+1};
 	end
 end
 
@@ -127,7 +130,7 @@ else
 end
 
 [nsamples,nrois,~]=size(ave_mat{1});
-
+ave_mat_raw=ave_mat;
 
 if strcmp(lower(scaling(1)),'l')
 
@@ -137,6 +140,7 @@ if strcmp(lower(scaling(1)),'l')
 		minca=repmat(min(ave_mat{i}),[nsamples 1]);
 		maxca=repmat(max(ave_mat{i}),[nsamples 1]);
 		ave_mat{i}=(ave_mat{i}-minca)./(maxca-minca);
+    %    ave_mat{i}=normc(ave_mat{i});
 	end
 
 elseif strcmp(lower(scaling(1)),'r')
@@ -188,8 +192,29 @@ elseif strcmp(lower(scaling(1)),'s')
 
 	end
 
-else
+elseif strcmp(lower(scaling(1)),'a')
 
+	disp('ROI sort day');
+
+	% use sort day min/max for normalization
+
+	tmp=ave_mat{sort_day};
+
+	minca=min(tmp(:));
+	maxca=max(tmp(:));
+
+	mincamat=repmat(minca,[nsamples nrois]);
+	maxcamat=repmat(maxca,[nsamples nrois]);
+
+	% requires clipping in case other days exceed limits
+
+	for i=1:ndays
+		ave_mat{i}(ave_mat{i}<minca)=0;
+		ave_mat{i}(ave_mat{i}>maxca)=maxca;
+		ave_mat{i}=(ave_mat{i}-mincamat)./(maxcamat-mincamat);
+	end
+else
+	ave_mat=ave_mat_raw;
 end
 
 
@@ -228,6 +253,13 @@ end
 
 for i=1:ndays
 	ax(i)=subplot(fig_nrows,ndays,(fig_row-1)*ndays+i);
+
+    if threshold>0
+        blank_rois=max(ave_mat_raw{i})<threshold;
+        find(blank_rois)
+        ave_mat{i}(:,blank_rois)=0;
+    end
+
 	imagesc(interp_x,[],ave_mat{i}(:,idx)');
 
 	if bin_fluo

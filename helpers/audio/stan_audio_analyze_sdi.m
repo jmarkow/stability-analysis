@@ -97,19 +97,19 @@ end
 
 % within_day=[];
 % within_night=[];
-% 
+%
 % for i=1:length(score_day2night)
 % 	for j=1:ndays-1
 % 		within_day=[within_day mean(score_day2night{i}{j,j})];
 % 		within_night=[within_night median(score_night2night{i}{j,j+1})];
 % 	end
 % end
-% 
+%
 % % lag analysis
-% 
+%
 % between_day=[];
 % between_night=[];
-% 
+%
 % for i=1:length(score_day2night)
 % 	for j=1:ndays-1
 % 		between_day=[between_day median(score_day2night{i}{j,j+1})];
@@ -132,14 +132,14 @@ for i=1:length(score_day2night)
 	for j=1:size(score_day2night{i},1)-1
 		% add to morning window if hr less than 8
 		tmp=datevec(tfdensity{i}.timestamps{j});
-		idx=tmp(:,4)>=19;
+		idx=tmp(:,4)>12;
 		norm_mu=mean(score_all2all{i}{j,j}(idx));
 		norm_std=std(score_all2all{i}{j,j}(idx));
 		for k=j+1
 			tmp=datevec(tfdensity{i}.timestamps{k});
-			idx=tmp(:,4)<=10;
+			idx=tmp(:,4)<12;
 			morning=[morning mean((score_all2all{i}{j,k}(idx)))];
-			idx=tmp(:,4)>=19;
+			idx=tmp(:,4)>12;
 			evening=[evening mean((score_all2all{i}{j,k}(idx)))];
 		end
 	end
@@ -173,23 +173,23 @@ end
 for i=1:length(score_day2night)
 	for j=lags
         for k=j:max(lags)
-            
+
             lag=(k-j)+1;
-            
+
             norm_mu=mean(score_night2night{i}{j,j});
             norm_std=std(score_night2night{i}{j,j});
-            
+
             tmp=datevec(tfdensity{i}.timestamps{k});
-			
-            idx=tmp(:,4)<=9;
-            idx2=tmp(:,4)>=19;
-            
+
+            idx=tmp(:,4)<12;
+            idx2=tmp(:,4)>12;
+
             lag_day{lag}=[lag_day{lag} mean(score_all2all{i}{j,k}(idx))];
             lag_night{lag}=[lag_night{lag} mean(score_all2all{i}{j,k}(idx2))];
             lag_all{lag}=[lag_all{lag} mean(score_all2all{i}{j,k})];
-        
+
             % normalize??
-            
+
         end
 	end
 end
@@ -205,7 +205,7 @@ end
 
 % all day shifts and night shifts?
 
-plot_mu=cellfun(@mean,lag_day_night);
+plot_mu=cellfun(@nanmean,lag_day_night);
 plot_ci=zeros(2,length(plot_mu));
 
 for i=1:length(plot_mu)

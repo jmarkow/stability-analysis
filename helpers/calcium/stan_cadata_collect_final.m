@@ -51,7 +51,7 @@ for i=1:length(A)
   for j=1:ntrials
       tmp=A{i}.Filenames{j};
       tokens=regexp(tmp,'\_(\d+)\_','tokens');
-      roi_dates{i}(j)=datenum(tokens{1}{1},'yyyymmdd');
+      roi_dates{i}(j)=datenum([ tokens{1}{1} tokens{2}{1} ],'yyyymmddHHMMSS');
       tokens2=regexp(tmp,'\_(\d+)$','tokens');
       roi_motifs{i}(j)=str2num(tokens2{1}{1});
   end
