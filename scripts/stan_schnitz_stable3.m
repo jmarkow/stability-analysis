@@ -1,28 +1,19 @@
 %%% assumes the calcium data and the peaktime starts are all loaded in
 
 [options,dirs]=stan_preflight;
-load(fullfile(dirs.agg_dir,dirs.ca_dir,'lw76.mat'));
-load(fullfile(dirs.agg_dir,dirs.datastore_dir,'mu_ca_timecourse.mat'));
+%load(fullfile(dirs.agg_dir,dirs.ca_dir,'lw76.mat'));
+%load(fullfile(dirs.agg_dir,dirs.datastore_dir,'mu_ca_timecourse.mat'));
 idx=4;
-clims=[.25 2.5];
+clims=[.25 3];
 clims2=[0 6];
 motif_select=1;
 %unstable_mat=cat(1,stats(idx).peak_stable{:});
-unstable_mat=~(fig_stats.drift.unstable{idx}>0);
 % we can define stability using xcorr or peak timing...
 scaling='s';
-smoothing=0.05;
-stable_rois=all(unstable_mat==1);
-unstable_rois=unstable_mat(1,:)==1&any(unstable_mat(2:end,:)==0);
+
+smoothing=0.1;
 padding=[.25 .75];
 
-stable_roi_data=cell(size(roi_data));
-unstable_roi_data=cell(size(roi_data));
-
-for i=1:length(roi_data)
-  stable_roi_data{i}=roi_data{i}(:,stable_rois,roi_motifs{i}==motif_select);
-  unstable_roi_data{i}=roi_data{i}(:,unstable_rois,roi_motifs{i}==motif_select);
-end
 
 for i=1:length(roi_data)
     roi_data2{i}=roi_data{i}(:,:,roi_motifs{i}==motif_select);
@@ -83,5 +74,5 @@ set(gca,'XTick',[0 .5 1]);
 set(gca,'YTick',[]);
 set(figs.schnitz_colorbar,'PaperPositionMode','auto','position',[200 200 80 30]);
 
-markolab_multi_fig_save(figs.schnitz_stable,pwd,['lw76_combined' sprintf('%g-%g_scale-%s_smoothing-%g',clims(1),clims(2),scaling,smoothing) ],'eps,png,fig','renderer','painters');
-markolab_multi_fig_save(figs.schnitz_colorbar,pwd,['lw76_' sprintf('%g-%g',clims(1),clims(2)) '_colorbar' ],'eps,png,fig','renderer','painters');
+markolab_multi_fig_save(figs.schnitz_stable,pwd,['lw76_combined_stable' sprintf('%g-%g_scale-%s_smoothing-%g',clims(1),clims(2),scaling,smoothing) ],'eps,png,fig','renderer','painters');
+%markolab_multi_fig_save(figs.schnitz_colorbar,pwd,['lw76_' sprintf('%g-%g',clims(1),clims(2)) '_colorbar' ],'eps,png,fig','renderer','painters');

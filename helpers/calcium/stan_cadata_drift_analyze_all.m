@@ -40,14 +40,15 @@ function stan_cadata_drift_analyze_all()
 
 [options,dirs]=stan_preflight;
 motif_select=2;
-listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,'*.mat'));
+ext='lib';
+listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,ext,'*.mat'));
 maxlag=.1;
 
-for i=1:length(listing)
+parfor i=1:length(listing)
 
   % use only the selected motif
   disp([listing(i).name]);
-  cur=load(fullfile(dirs.agg_dir,dirs.ca_dir,listing(i).name),...
+  cur=load(fullfile(dirs.agg_dir,dirs.ca_dir,ext,listing(i).name),...
     'roi_data','roi_motifs','roi_params','roi_dates');
 
   lag_idx=zeros(1,length(cur.roi_data));
@@ -56,7 +57,7 @@ for i=1:length(listing)
 
   to_del=len==0;
 
-  if strcmp(listing(i).name,'lw76.mat')
+  if length(strfind(listing(i).name,'lw76'))>0
     tmp_motif_select=1;
     lag_corr=0;
   else
@@ -66,16 +67,16 @@ for i=1:length(listing)
 
   % pretty much all of the pads are incorrect, fun...
 
-  if strcmp(listing(i).name,'lny13.mat')
+  if length(strfind(listing(i).name,'lny13'))>0
     cur.roi_params(1).padding=[.7 .677];
     %to_del(5)=true; % something strange happened on day 5
   end
 
-  if strcmp(listing(i).name,'lny18.mat')
+  if length(strfind(listing(i).name,'lny18'))>0
     cur.roi_params(1).padding=[.5 .95];
   end
 
-  if strcmp(listing(i).name,'lny54rb.mat')
+  if length(strfind(listing(i).name,'lny54rb'))>0
     cur.roi_params(1).padding=[.3 .85];
   end
 
@@ -97,6 +98,7 @@ for i=1:length(listing)
     [~,idx]=sort(cur.roi_dates{i},'ascend');
     cur.roi_data{i}=cur.roi_data{i}(:,:,idx);
     cur.roi_dates{i}=cur.roi_dates{i}(idx);
+
   end
 
   % easy to assign lag indices, round off day difference between two datenumbers
@@ -104,9 +106,10 @@ for i=1:length(listing)
   [stats(i).rmat_mu stats(i).pmat stats(i).vmat]=stan_cadata_drift_analyze(...
     cur.roi_data,lag_idx,'padding',cur.roi_params(1).padding,...
     'movie_fs',cur.roi_params(1).fs,'lag_corr',lag_corr,...
-    'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',0);
+    'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',1e4);
+    
   stats(i).trial_dates=cur.roi_dates;
 
 end
 
-save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new_daynight.mat']),'stats');
+save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new-' ext '.mat']),'stats');

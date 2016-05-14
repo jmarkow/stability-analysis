@@ -37,40 +37,41 @@ function stan_cadata_drift_analyze_all()
 
 [options,dirs]=stan_preflight;
 motif_select=2;
-listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,'*.mat'));
+ext='lib';
+listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,ext,'*.mat'));
 maxlag=.02;
 
 for i=1:length(listing)
 
   % use only the selected motif
   disp([listing(i).name]);
-  cur=load(fullfile(dirs.agg_dir,dirs.ca_dir,listing(i).name),...
+  cur=load(fullfile(dirs.agg_dir,dirs.ca_dir,ext,listing(i).name),...
     'roi_data','roi_motifs','roi_params','roi_dates');
 
   lag_idx=zeros(1,length(cur.roi_data));
 
   len=cellfun(@length,cur.roi_data);
 
-
-
-  if strcmp(listing(i).name,'lw76.mat')
+  if length(strfind(listing(i).name,'lw76'))>0
     tmp_motif_select=1;
     lag_corr=0;
+    realign=0;
   else
     tmp_motif_select=motif_select;
     lag_corr=1;
+    realign=1;
   end
 
-   if strcmp(listing(i).name,'lny13.mat')
+   if length(strfind(listing(i).name,'lny13'))>0
     cur.roi_params(1).padding=[.7 .677];
     %to_del(5)=true; % something strange happened on day 5
   end
 
-  if strcmp(listing(i).name,'lny18.mat')
+  if length(strfind(listing(i).name,'lny18'))>0
     cur.roi_params(1).padding=[.5 .95];
   end
 
-  if strcmp(listing(i).name,'lny54rb.mat')
+  if length(strfind(listing(i).name,'lny54'))>0
     cur.roi_params(1).padding=[.3 .85];
   end
 
@@ -89,8 +90,8 @@ for i=1:length(listing)
 
   [stats(i).peak_stable stats(i).peak_ispeak]=stan_cadata_drift_analyze_peaktime(...
     cur.roi_data,lag_idx,'padding',cur.roi_params(1).padding,...
-    'movie_fs',cur.roi_params(1).fs,'smoothing',0,'realign',1,'dist_thresh',.1,'maxlag',maxlag);
+    'movie_fs',cur.roi_params(1).fs,'smoothing',0,'realign',realign,'dist_thresh',.1,'maxlag',maxlag);
 
 end
 
-save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_peaktime_new.mat']),'stats');
+save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_peaktime_new-' ext '.mat']),'stats');

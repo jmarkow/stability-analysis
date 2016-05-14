@@ -11,8 +11,8 @@ filewrite=true;
 
 [options,dirs]=stan_preflight;
 
-load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_new.mat'),'stats');
-peakstats=load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_peaktime_new.mat'),'stats');
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_new-con.mat'),'stats');
+peakstats=load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_peaktime_new-con.mat'),'stats');
 peakstats=peakstats.stats;
 
 load(fullfile(dirs.agg_dir,dirs.datastore_dir,'mu_baseline_stability.mat'),'teststats');
