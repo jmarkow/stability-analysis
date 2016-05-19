@@ -2,7 +2,7 @@ function FIG=stan_plot_corr_timecourse(STATS,COLORS,NBOOTS)
 %
 %
 %
-
+interp_factor=2;
 FIG=figure();
 
 for i=1:length(STATS)
@@ -22,25 +22,26 @@ for i=1:length(STATS)
   end
 
   x=x-1;
+  xx=x(1):1/interp_factor:x(end);
 
   %xx=0:1/interp_factor:length(x);
 
-  % mu_interp=interp1(x(:),mu(:),xx(:),'spline');
-  % mu_ci_interp=interp1(x(:),mu_ci',xx(:),'spline');
+  mu_interp=interp1(x(:),mu(:),xx(:),'spline');
+  mu_ci_interp=interp1(x(:),mu_ci',xx(:),'spline');
   %
-  % markolab_shadeplot(xx,mu_ci_interp',COLORS(i,:),'k');
-  % hold on;
-  % plot(xx,mu_interp,'k--');
-
-  markolab_shadeplot(x,mu_ci,COLORS(i,:),'k');
+  markolab_shadeplot(xx,mu_ci_interp',COLORS(i,:),'k');
   hold on;
-  plot(x,mu,'k--');
+  plot(xx,mu_interp,'k--');
+
+  %markolab_shadeplot(x,mu_ci,COLORS(i,:),'k');
+  %hold on;
+  %plot(x,mu,'k--');
   plot(x,mu,'ko','markerfacecolor','w');
 
 end
 
 yh=ylabel('Correlation (R)')
 set(yh,'position',get(yh,'position')+[.16 0 0]);
-ylim([0 1]);
+ylim([.5 1]);
 ylimits=ylim();
 set(gca,'YTick',ylimits,'TickLength',[0 0],'FontSize',7);

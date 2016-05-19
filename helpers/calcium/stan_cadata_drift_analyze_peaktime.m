@@ -172,22 +172,39 @@ for i=1:ndays
 	for j=1:nrois
 		% cycle through all peaks
 		mindist=inf;
-		for k=1:length(tmp.peaks{j})
-			tmp2=min(abs(tmp.peaks{j}(k)-template.peaks{j}))/(movie_fs*upsample);
-			if tmp2<mindist
-				mindist=tmp2;
-			end
-		end
+        distances=[];
+		for k=1:length(template.peaks{j})
+            for l=1:length(tmp.peaks{j})
+                tmp2=abs(tmp.peaks{j}(l)-template.peaks{j}(k))/(movie_fs*upsample);
+                distances=[distances tmp2];
+            end
+% 			tmp2=min(abs(tmp.peaks{j}-template.peaks{j}(k)))/(movie_fs*upsample);
+%             if ~isempty(tmp2)
+%                 distances(k)=tmp2;
+%             end
+% 			if tmp2<mindist
+% 				mindist=tmp2;
+% 			end
+        end
 
 		% leave a flag to check if peak exists
 
 		lag=(IDX(i)-IDX(compare_day))+1;
 
-		if mindist<dist_thresh
-			peak_check{lag}(j)=1;
-		else
-			peak_check{lag}(j)=0;
-		end
+% 		if mindist<dist_thresh
+% 			peak_check{lag}(j)=1;
+% 		else
+% 			peak_check{lag}(j)=0;
+% 		end
+
+        if max(distances)>dist_thresh
+            peak_check{lag}(j)=0;
+        elseif length(tmp.peaks{j})<length(template.peaks{j})
+            peak_check{lag}(j)=0;
+        else
+            peak_check{lag}(j)=1;
+        end
+        
 		if length(tmp.peaks{j})>0
 			peak_ispeak{lag}(j)=1;
 		else

@@ -1,18 +1,18 @@
-function [figs,figs_stats]=stan_plot_barecarbon_ca_timecourse()
+function [figs,figs_stats]=stan_plot_barecarbon_ca_timecourse(EXT)
 %
 %
 %
 
 % upsample?
-interp_factor=5;
-ndays=4;
+%interp_factor=5;
+%ndays=4;
 nboots=1e4;
 filewrite=true;
 
 [options,dirs]=stan_preflight;
 
-load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_new-con.mat'),'stats');
-peakstats=load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_peaktime_new-con.mat'),'stats');
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new-' EXT '.mat']),'stats');
+peakstats=load(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_peaktime_new-' EXT '.mat']),'stats');
 peakstats=peakstats.stats;
 
 load(fullfile(dirs.agg_dir,dirs.datastore_dir,'mu_baseline_stability.mat'),'teststats');
@@ -74,7 +74,15 @@ change=[];
 for i=1:length(stats)
   
   x=find(cellfun(@length,stats(i).rmat_mu.lag.day)>0);
-  variability=[variability var(stats(i).rmat_mu.lag.day{x(1)})];
+  
+  idx=find(triu(ones(size(stats(i).vmat{1}(:,:,1))),1));
+  varstore=zeros(1,size(stats(i).vmat{1},3));
+  for j=1:size(stats(i).vmat{1},3)
+      tmp=stats(i).vmat{1}(:,:,j);
+      varstore(j)=mean(tmp(idx));
+  end
+  
+  variability=[variability varstore];
 
   if size(stats(i).rmat_mu.lag.day{x(end)},1)>0
     comparison=mean(stats(i).rmat_mu.lag.day{x(end)});
@@ -86,11 +94,11 @@ for i=1:length(stats)
   
 end
 
-figs.var_v_change=figure();
-scatter(variability,change)
-[r3,p3]=corr(variability(:),change(:),'type','pearson')
-figs_stats.drift.var_v_change.p=p3;
-figs_stats.drift.var_v_change.r=r3;
+% figs.var_v_change=figure();
+% scatter(variability,change)
+% [r3,p3]=corr(variability(:),change(:),'type','pearson')
+% figs_stats.drift.var_v_change.p=p3;
+% figs_stats.drift.var_v_change.r=r3;
 
 % plot cum fraction of unstable cells for each bird (MC correction for number of ROIs)
 
@@ -155,17 +163,19 @@ for i=1:length(peakstats)
   frac_peaktime{i}=n./nrois;
   plot(x-1,frac_peaktime{i},'ko-','color',colors(i,:),'markersize',8,'markerfacecolor',[1 1 1]);
   hold on;
+  figs_stats.unstable_peak{i}=unstable;
 
 end
+
 
 ylim([0 1])
 xlim([-.5 4.5])
 set(gca,'TickLength',[0 0],'YTick',[0:.5:1],'XTick',[0:4],'FontSize',7)
 
 if filewrite
-    fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_catimecourse.txt'),'w+');
+    fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,['fig5_catimecourse-' EXT '.txt']),'w+');
     fprintf(fid,'Multi-unit stability vs calcium: p=%e z=%g\n',figs_stats.mu_v_ca.all.pval,figs_stats.mu_v_ca.all.zval);
-    fprintf(fid,'Within day v between day variability: p=%e r=%g\n',figs_stats.drift.var_v_change.p,figs_stats.drift.var_v_change.r);
+    %fprintf(fid,'Within day v between day variability: p=%e r=%g\n',figs_stats.drift.var_v_change.p,figs_stats.drift.var_v_change.r);
     fprintf(fid,'N(multi-unit): %i\n',length(plotpoints{1}));
     for j=1:length(plotpoints)-1
        fprintf(fid,'N(ROIs): %i\n',length(plotpoints{j+1}));
