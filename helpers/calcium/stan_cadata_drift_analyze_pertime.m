@@ -148,7 +148,7 @@ all_time=[];
 all_id=[];
 
 for i=1:length(corrmat)
-  idx=find(triu(true(size(corrmat{i}(:,:,1)))));
+  idx=find(triu(true(size(corrmat{i}(:,:,1))),1));
   for j=1
     tmp=median(corrmat{i},3);
     all_ca=[all_ca;tmp(idx)];
