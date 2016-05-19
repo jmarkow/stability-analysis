@@ -1,4 +1,4 @@
-function [COLLECT_DATA,COLLECT_DATES,TIME,MOTIFS,FILENAMES,PARAMS]=stan_cadata_collect_freedomscope_v2(RAW)
+function [COLLECT_DATA,COLLECT_DATES,TIME,MOTIFS,TRIALS,FILENAMES,PARAMS]=stan_cadata_collect_freedomscope_v2(RAW)
 % takes data where cell arrays correspond to separate songs, rows to samples, and columns to rois
 % and reformats for stan_cadata_sortmat
 %
@@ -34,6 +34,7 @@ TIME=cell(1,length(RAW));
 COLLECT_DATES=cell(1,length(RAW));
 MOTIFS=cell(1,length(RAW));
 FILENAMES=cell(1,length(RAW));
+TRIALS=cell(1,length(RAW));
 PARAMS=[];
 
 for i=1:length(RAW)
@@ -59,7 +60,7 @@ for i=1:length(RAW)
   RAW{i}.padding
     % get max time for song
 
-	[COLLECT_DATA{i},TIME{i},COLLECT_DATES{i},MOTIFS{i},FILENAMES{i}]=stan_cadata_format_freedomscope_v2(RAW{i}.raw_dat,...
+	[COLLECT_DATA{i},TIME{i},COLLECT_DATES{i},MOTIFS{i},TRIALS{i},FILENAMES{i}]=stan_cadata_format_freedomscope_v2(RAW{i}.raw_dat,...
 		RAW{i}.raw_time,...
 		50,... % threshold on derivative (check for gain shift, in raw px values)
 		15,... % threshold for camera on (px values below this considered LED off)
@@ -67,7 +68,7 @@ for i=1:length(RAW)
 		RAW{i}.padding,... % padding for extraction
 		max_time,... % length of song
 		RAW{i}.Offset,... % offset
-        RAW{i}.filename(end,:)); % filename (for parsing trial times)
+    RAW{i}.filename(end,:)); % filename (for parsing trial times)
 
     PARAMS(i).padding=RAW{i}.padding;
     PARAMS(i).fs=100;

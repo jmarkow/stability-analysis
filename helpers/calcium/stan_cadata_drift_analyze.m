@@ -28,7 +28,7 @@ maxlag=.02;
 lag_corr=0;
 realign=1;
 nboots=1e4;
-frac=5;
+frac=2;
 
 if mod(nparams,2)>0
 	error('Parameters must be specified as parameter/value pairs');
@@ -64,6 +64,8 @@ for i=1:2:nparams
       nboots=varargin{i+1};
 		case 'global_correction'
 			global_correction=varargin{i+1};
+		case 'frac'
+			frac=varargin{i+1};
 	end
 end
 
@@ -217,7 +219,9 @@ diag_idx=find(diag(ones(nrois,1),0));
 maxlag=(max(IDX)-min(IDX))+1;
 
 rmat_mu.lag.day=cell(1,maxlag);
+rmat_mu.lag.day_telapsed=cell(1,maxlag);
 rmat_mu.lag.night=cell(1,maxlag);
+rmat_mu.lag.night_telapsed=cell(1,maxlag);
 rmat_mu.lag.all=cell(1,maxlag);
 
 rmat_mu.bootstrap.lag.day=cell(1,maxlag);

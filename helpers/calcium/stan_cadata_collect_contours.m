@@ -50,23 +50,12 @@ for i=1:length(listing)-1
   end
 
 
-  [roi_data,roi_dates,roi_times,roi_motifs,roi_trials,roi_filenames,roi_params]=...
+  [roi_data,roi_dates,roi_times,roi_motifs,roi_filenames,roi_params]=...
               stan_cadata_collect_freedomscope_v2_cell(ROI_data_cleansed);
-  roi_audio=cell(1,length(roi_data));
-
-  for j=1:length(roi_data)
-
-    % get mic data
-
-    roi_audio{j}=cat(2,ROI_data_cleansed{j}.analogIO_dat{:});
-    roi_audio{j}=roi_audio{j}(:,roi_trials{j});
-    roi_params(j).audio_fs=48e3;
-
-  end
 
   save(fullfile(datapath,[datafile '-badremoved.mat']),'ROI_data_cleansed','-v7.3');
   save(fullfile(dirs.agg_dir,dirs.ca_dir,[lower(tokens{end-1}) '-' ext '.mat']),'roi_data',...
-    'roi_dates','roi_times','roi_motifs','roi_filenames','roi_params','roi_audio','roi_trials');
+    'roi_dates','roi_times','roi_motifs','roi_filenames','roi_params');
 end
 
 % now collect lw76
@@ -84,8 +73,6 @@ roi_motifs=cell(1,ndays);
 roi_dates=cell(1,ndays);
 roi_filenames=cell(1,ndays);
 roi_times=cell(1,ndays);
-roi_audio=cell(1,ndays);
-roi_trials=cell(1,ndays);
 roi_params=[];
 
 [datapath,datafile,~]=fileparts(listing(end).name);
@@ -123,15 +110,12 @@ for i=1:length(ROI_data_cleansed)
 
   roi_data{i}=cat(3,ROI_data_cleansed{i}.align_detrended{:});
   roi_motifs{i}=zeros(1,ntrials);
-  roi_trials{i}=1:ntrials;
   roi_dates{i}=zeros(1,ntrials);
-  roi_audio{i}=cat(1,ROI_data_cleansed{i}.mic_data{:})';
 
   roi_filenames{i}=ROI_data_cleansed{i}.filename;
   roi_times{i}=ROI_data_cleansed{i}.frame_idx{1}./24.414e3;
 
-  roi_params(i).fs=ROI_data_cleansed{i}.movie_fs;
-  roi_params(i).audio_fs=24.414e3;
+  roi_params(i).fs=22.0144;
   roi_params(i).padding=[.25 .75];
 
   for j=1:ntrials
@@ -146,4 +130,4 @@ end
 
 save(fullfile(datapath,[datafile '-badremoved.mat']),'ROI_data_cleansed','-v7.3');
 save(fullfile(dirs.agg_dir,dirs.ca_dir,['lw76-' ext '.mat']),'roi_data',...
-  'roi_dates','roi_times','roi_motifs','roi_filenames','roi_params','roi_audio','roi_trials');
+  'roi_dates','roi_times','roi_motifs','roi_filenames','roi_params');

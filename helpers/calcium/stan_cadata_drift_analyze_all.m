@@ -40,7 +40,7 @@ function stan_cadata_drift_analyze_all()
 
 [options,dirs]=stan_preflight;
 motif_select=2;
-ext='lib';
+ext='con';
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,ext,'*.mat'));
 maxlag=.1;
 
@@ -90,14 +90,15 @@ parfor i=1:length(listing)
   cur.roi_motifs(to_del)=[];
   cur.roi_params(to_del)=[];
   cur.roi_dates(to_del)=[];
+  lag_idx(to_del)=[];
 
   for j=1:length(cur.roi_data)
 
     % re-sort by day/night
 
-    [~,idx]=sort(cur.roi_dates{i},'ascend');
-    cur.roi_data{i}=cur.roi_data{i}(:,:,idx);
-    cur.roi_dates{i}=cur.roi_dates{i}(idx);
+    [~,idx]=sort(cur.roi_dates{j},'ascend');
+    cur.roi_data{j}=cur.roi_data{j}(:,:,idx);
+    cur.roi_dates{j}=cur.roi_dates{j}(idx);
 
   end
 
@@ -107,7 +108,7 @@ parfor i=1:length(listing)
     cur.roi_data,lag_idx,'padding',cur.roi_params(1).padding,...
     'movie_fs',cur.roi_params(1).fs,'lag_corr',lag_corr,...
     'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',1e4);
-    
+
   stats(i).trial_dates=cur.roi_dates;
 
 end

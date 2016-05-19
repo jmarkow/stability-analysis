@@ -37,7 +37,7 @@ function stan_cadata_drift_analyze_all()
 
 [options,dirs]=stan_preflight;
 motif_select=2;
-ext='lib';
+ext='con';
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,ext,'*.mat'));
 maxlag=.02;
 

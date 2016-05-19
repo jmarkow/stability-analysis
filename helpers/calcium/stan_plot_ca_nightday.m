@@ -177,19 +177,19 @@ dprime=[];
 for i=1:length(CASTATS)
 
   if size(CASTATS(i).rmat_mu.lag.day{2},1)>1
-    mu1=mean(CASTATS(i).rmat_mu.lag.day{2});
+    mu2=mean(CASTATS(i).rmat_mu.lag.day{2});
   else
-    mu1=CASTATS(i).rmat_mu.lag.day{2};
+    mu2=CASTATS(i).rmat_mu.lag.day{2};
   end
 
-  if size(CASTATS(i).rmat_mu.lag.night{2},1)>1
-    mu2=mean(CASTATS(i).rmat_mu.lag.night{2});
+  if size(CASTATS(i).rmat_mu.lag.day{1},1)>1
+    mu1=mean(CASTATS(i).rmat_mu.lag.day{1});
   else
-    mu2=CASTATS(i).rmat_mu.lag.night{2};
+    mu1=CASTATS(i).rmat_mu.lag.day{1};
   end
 
-  tmp1=CASTATS(i).rmat_mu.lag.day{2};
-  tmp2=CASTATS(i).rmat_mu.lag.night{2};
+  tmp2=CASTATS(i).rmat_mu.lag.day{2};
+  tmp1=CASTATS(i).rmat_mu.lag.day{1};
 
   pool1=[pool1 mu1];
   pool2=[pool2 mu2];
@@ -227,7 +227,7 @@ figs_stats.overnight.all_zval2=tmpstats.zval;
 figs_stats.overnight.all_pval2_raw=signrank(pool2,pool1,'tail','left');
 
 
-bins=[-15:1:5];
+bins=[-15:1:15];
 est1=histc(poolz1,bins);
 est2=histc(poolz1(pool_pval1_right<.05),bins);
 est3=histc(poolz1(pool_pval1_left<.05),bins);

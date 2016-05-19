@@ -1,4 +1,5 @@
-function [FORM_DATA,FORM_T,FORM_DATE,FORM_MOTIF,FILENAMES]=stan_cadata_format_freedomscope_v2(CADATA,TIME,THRESH,THRESH2,NEWFS,PADDING,SONG_LEN,OFFSET,FILENAMES,METHOD)
+function [FORM_DATA,FORM_T,FORM_DATE,FORM_MOTIF,FORM_TRIALS,FILENAMES]=stan_cadata_format_freedomscope_v2(...
+	CADATA,TIME,THRESH,THRESH2,NEWFS,PADDING,SONG_LEN,OFFSET,FILENAMES,METHOD)
 % Using Bill's new format, use the following command:
 %
 % [form_data,t]=stan_cadata_format_freedomscope_v2(roi_ave.RAWdat,roi_ave.RawTime);
@@ -13,7 +14,7 @@ if nargin<10
 end
 
 if nargin<9
-    FILENAMES=[];
+  FILENAMES=[];
 end
 
 if nargin<8
@@ -52,6 +53,7 @@ sig_t=6;
 FORM_DATA=cell(1,ntrials);
 FORM_DATE=zeros(1,ntrials);
 FORM_MOTIF=zeros(1,ntrials);
+FORM_TRIALS=1:ntrials;
 old_t=cell(1,ntrials);
 
 for i=1:ntrials
@@ -107,11 +109,11 @@ for i=1:length(FORM_DATA)
 
 end
 
-to_del
 FORM_DATA(to_del)=[];
 FORM_DATE(to_del)=[];
 FORM_MOTIF(to_del)=[];
 FILENAMES(to_del)=[];
+FORM_TRIALS(to_del)=[];
 old_t(to_del)=[];
 
 mintime=0;
@@ -175,6 +177,7 @@ FORM_DATA=cat(3,FORM_DATA{:});
 [nsamples,nrois,ntrials]=size(FORM_DATA);
 
 to_del=[];
+
 for i=1:nsamples
 	tmp=squeeze(FORM_DATA(i,:,:));
 	tmp=mean(tmp);
@@ -189,3 +192,4 @@ FORM_DATA(:,:,to_del)=[];
 FORM_DATE(to_del)=[];
 FORM_MOTIF(to_del)=[];
 FILENAMES(to_del)=[];
+FORM_TRIALS(to_del)=[];
