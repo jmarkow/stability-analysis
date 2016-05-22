@@ -13,7 +13,9 @@ compare_day=1;
 corrmat=[];
 timemat=[];
 
-for i=1:2
+% TODO make sure we account for actual lag!!!
+
+for i=1:3
 
   % use only the selected motif
   disp([listing(i).name]);
@@ -126,6 +128,11 @@ for i=1:2
       template=squeeze(mean(zscore(cur.roi_data{j-1}(pad_smps(1):end-pad_smps(2),k,:)),3));
       for l=1:size(cur.roi_data{j},3)
         ca_data=zscore(cur.roi_data{j}(pad_smps(1):end-pad_smps(2),k,l));
+        lag_idx=round(min(cur.roi_dates{j-1})-min(cur.roi_dates{j}));
+        lag_idx
+        if abs(lag_idx)>1
+          continue;
+        end
         corrmat{i,j-1}(k,l)=max(xcorr(template(:),ca_data(:),max_smps,'coeff'));
         timemat{i,j-1}(k,l)=cur.roi_dates{j}(l)-floor(cur.roi_dates{j}(l));
       end
