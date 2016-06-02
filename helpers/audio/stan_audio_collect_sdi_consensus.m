@@ -47,8 +47,6 @@ for i=1:length(birds)
 
 	load(contour_files{1},'sdi');
 
-
-
 	crop_f=[];
 	crop_t=[];
 

@@ -10,6 +10,10 @@ ext='con';
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,ext,'*.mat'));
 maxlag=.1;
 compare_day=1;
+corrmat=[];
+timemat=[];
+
+% TODO make sure we account for actual lag!!!
 
 for i=1:3
 
@@ -119,23 +123,20 @@ for i=1:3
 
   max_smps=round(maxlag*cur.roi_params(1).fs);
 
-  corrmat{i}=zeros(ntrials,ntrials,nrois);
-  timemat{i}=zeros(ntrials,ntrials);
-
-  for k=1:nrois
-
-    ca_data=zscore(squeeze(all_ca(pad_smps(1):end-pad_smps(2),k,:)));
-    k
-    %corrmat{i}(:,:,k)=1-squareform(pdist(ca_data','correlation'));
-    for l=1:ntrials
-      for m=1:ntrials
-        corrmat{i}(l,m,k)=max(xcorr(ca_data(:,l),ca_data(:,m),max_smps,'coeff'));
-        if k==1
-          timemat{i}(l,m)=all_dates(l)-all_dates(m);
+  for j=2:length(cur.roi_data)
+    for k=1:nrois
+      template=squeeze(mean(zscore(cur.roi_data{j-1}(pad_smps(1):end-pad_smps(2),k,:)),3));
+      for l=1:size(cur.roi_data{j},3)
+        ca_data=zscore(cur.roi_data{j}(pad_smps(1):end-pad_smps(2),k,l));
+        lag_idx=round(min(cur.roi_dates{j-1})-min(cur.roi_dates{j}));
+        lag_idx
+        if abs(lag_idx)>1
+          continue;
         end
+        corrmat{i,j-1}(k,l)=max(xcorr(template(:),ca_data(:),max_smps,'coeff'));
+        timemat{i,j-1}(k,l)=cur.roi_dates{j}(l)-floor(cur.roi_dates{j}(l));
       end
     end
-
   end
 
   clear cur;
@@ -148,14 +149,13 @@ all_ca=[];
 all_time=[];
 all_id=[];
 
-for i=1:length(corrmat)
-  idx=find(tril(true(size(corrmat{i}(:,:,1))),-1));
-  for j=1
-    tmp=median(corrmat{i},3);
-    all_ca=[all_ca;tmp(idx)];
-    tmp=timemat{i};
-    all_time=[all_time;tmp(idx)];
-    all_id=[all_id;ones(size(tmp(idx)))*i];
+for i=1:size(corrmat,1)
+  for j=1:size(corrmat,2)
+    if ~isempty(corrmat{i,j})
+      all_ca=[all_ca;median(corrmat{i,j})'];
+      all_time=[all_time;timemat{i,j}(1,:)'];
+      all_id=[all_id;ones(size(mean(corrmat{i,j})'))*i];
+    end
   end
 end
 

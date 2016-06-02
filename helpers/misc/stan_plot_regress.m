@@ -69,25 +69,26 @@ conf=t_stat*sqrt(((1/(npoints-2))*sse)*...
 
 % interval is predicted values +/- confidence 
 
-
 %fig=figure();
 
-ngrps=length(unique(C))
+ngrps=length(unique(C));
+
+scatter(X,Y,markersize,C,'markerfacecolor','flat');
+hold on;
+
+colormap(parula(ngrps));
 
 if shaded_conf
 	markolab_shadeplot(pred_x(:)',[pred_y(:)'+conf;pred_y(:)'-conf],[.85 .85 .85],'none');
 	hold on;
 end
 
-scatter(X,Y,markersize,C,'markerfacecolor','flat');
-hold on;
-plot(pred_x,pred_y,'r-','linewidth',linewidth);
-colormap(parula(ngrps));
-
 if ~shaded_conf
 	plot(pred_x,pred_y+conf,'r--','linewidth',linewidth);
 	plot(pred_x,pred_y-conf,'r--','linewidth',linewidth);
 end
+
+plot(pred_x,pred_y,'r-','linewidth',linewidth);
 
 ylimits=ylim()
 ylimits=round(ylimits/ylimit_rounding)*ylimit_rounding;
