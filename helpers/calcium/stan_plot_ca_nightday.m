@@ -11,7 +11,7 @@ function [figs figs_stats]=stan_plot_ca_nightdat(CASTATS)
 nlags=4;
 npoints=nlags*2;
 nboots=1e3;
-filewrite=false;
+filewrite=true;
 agg={};
 counter=1;
 
@@ -188,8 +188,8 @@ for i=1:length(CASTATS)
     mu1=CASTATS(i).rmat_mu.lag.day{1};
   end
 
-  tmp2=CASTATS(i).rmat_mu.lag.day{2};
   tmp1=CASTATS(i).rmat_mu.lag.day{1};
+  tmp2=CASTATS(i).rmat_mu.lag.day{2};
 
   pool1=[pool1 mu1];
   pool2=[pool2 mu2];
@@ -232,29 +232,29 @@ est1=histc(poolz1,bins);
 est2=histc(poolz1(pool_pval1_right<.05),bins);
 est3=histc(poolz1(pool_pval1_left<.05),bins);
 
-maxval=100;
-
-figs.roihist1=figure();
-ax(1)=markolab_stairplot(est1,bins,'facecolor',[.5 .5 .5],'edgecolor','k','method','p');
-hold on;
-ax(2)=markolab_stairplot(est2,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
-ax(3)=markolab_stairplot(est3,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
-plot([0 0],[0 maxval],'k--');
-xlim([-15 5]);
-set(gca,'YTick',[0:20:maxval],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
+maxval=150;
+%
+% figs.roihist1=figure();
+% ax(1)=markolab_stairplot(est1,bins,'facecolor',[.5 .5 .5],'edgecolor','k','method','p');
+% hold on;
+% ax(2)=markolab_stairplot(est2,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
+% ax(3)=markolab_stairplot(est3,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
+% plot([0 0],[0 maxval],'k--');
+% xlim([-15 5]);
+% set(gca,'YTick',[0:20:maxval],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
 
 est12=histc(poolz2,bins);
 est22=histc(poolz2(pool_pval2_right<.05),bins);
 est32=histc(poolz2(pool_pval2_left<.05),bins);
 
-figs.roihist1=figure();
-ax(1)=markolab_stairplot(est12,bins,'facecolor',[.5 .5 .5],'edgecolor','k','method','p');
-hold on;
-ax(2)=markolab_stairplot(est22,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
-ax(3)=markolab_stairplot(est32,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
-plot([0 0],[0 maxval],'k--');
-xlim([-15 5]);
-set(gca,'YTick',[0:20:maxval],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
+% figs.roihist1=figure();
+% ax(1)=markolab_stairplot(est12,bins,'facecolor',[.5 .5 .5],'edgecolor','k','method','p');
+% hold on;
+% ax(2)=markolab_stairplot(est22,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
+% ax(3)=markolab_stairplot(est32,bins,'facecolor',[1 0 0],'edgecolor','k','method','p');
+% plot([0 0],[0 maxval],'k--');
+% xlim([-15 5]);
+% set(gca,'YTick',[0:20:maxval],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
 
 ax=[];
 figs.comparehist=figure();
@@ -263,19 +263,20 @@ hold on;
 ax(2)=markolab_stairplot(est12,bins,'facecolor',[0 0 1],'edgecolor','k','method','p');
 plot([0 0],[0 maxval],'k--');
 xlim([-15 5]);
-set(gca,'YTick',[0:20:maxval],'xtick',[-15:5:5],'TickLength',[0 0],'FontSize',7,'layer','top');
-L=legend(ax,{'Night','Day'});
+set(gca,'YTick',[0:50:maxval],'xtick',[-15:5:10],'TickLength',[0 0],'FontSize',7,'layer','top');
+L=legend(ax,{'Day','Night'});
 legend boxoff;
 set(L,'FontSize',5,'Location','Northwest')
 
-bins_raw=[-1:.01:1];
-est_raw=histc(pool2-pool1,bins_raw);
-
-figs.rawhist=figure();
-ax(1)=markolab_stairplot(est_raw,bins_raw,'facecolor',[.3 .3 .3],'edgecolor','k','method','p');
-hold on;
-plot([0 0],[0 maxval],'k--');
-xlim([-1 1]);
+%
+% bins_raw=[-1:.01:1];
+% est_raw=histc(pool2-pool1,bins_raw);
+%
+% figs.rawhist=figure();
+% ax(1)=markolab_stairplot(est_raw,bins_raw,'facecolor',[.3 .3 .3],'edgecolor','k','method','p');
+% hold on;
+% plot([0 0],[0 maxval],'k--');
+% xlim([-1 1]);
 
 if filewrite
   fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_caovernight.txt'),'w+');

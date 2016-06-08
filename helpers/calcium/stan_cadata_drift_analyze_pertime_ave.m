@@ -1,3 +1,4 @@
+function [fig,fig_stats]=stan_cadata_drift_analyze_pertime_ave(ext)
 %
 %
 %
@@ -6,12 +7,17 @@
 
 [options,dirs]=stan_preflight;
 motif_select=2;
-ext='con';
+if nargin<1
+  ext='con';
+end
+
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,ext,'*.mat'));
 maxlag=.1;
 compare_day=1;
 corrmat=[];
 timemat=[];
+trialmat=[];
+filewrite=true;
 
 % TODO make sure we account for actual lag!!!
 
@@ -19,6 +25,7 @@ for i=1:3
 
   % use only the selected motif
   disp([listing(i).name]);
+  cur=[];
   cur=load(fullfile(dirs.agg_dir,dirs.ca_dir,ext,listing(i).name),...
     'roi_data','roi_motifs','roi_params','roi_dates');
 
@@ -50,8 +57,13 @@ for i=1:3
   end
 
   for j=1:length(cur.roi_data)
+      cur.trial_idx{j}=1:size(cur.roi_data{j},3);
+  end
+
+  for j=1:length(cur.roi_data)
     cur.roi_data{j}=cur.roi_data{j}(:,:,cur.roi_motifs{j}==tmp_motif_select);
     cur.roi_dates{j}=cur.roi_dates{j}(cur.roi_motifs{j}==tmp_motif_select);
+    cur.trial_idx{j}=cur.trial_idx{j}(cur.roi_motifs{j}==tmp_motif_select);
     lag_idx(j)=round(min(cur.roi_dates{j})-min(cur.roi_dates{1}));
   end
 
@@ -59,6 +71,7 @@ for i=1:3
   cur.roi_motifs(to_del)=[];
   cur.roi_params(to_del)=[];
   cur.roi_dates(to_del)=[];
+  cur.trial_idx(to_del)=[];
   lag_idx(to_del)=[];
 
   for j=1:length(cur.roi_data)
@@ -68,6 +81,7 @@ for i=1:3
     [~,idx]=sort(cur.roi_dates{j},'ascend');
     cur.roi_data{j}=cur.roi_data{j}(:,:,idx);
     cur.roi_dates{j}=cur.roi_dates{j}(idx);
+    cur.trial_idx{j}=cur.trial_idx{j}(idx);
 
   end
 
@@ -117,43 +131,107 @@ for i=1:3
 
   all_ca=cat(3,cur.roi_data{:});
   all_dates=cat(2,cur.roi_dates{:});
+  all_trial_idx=cat(2,cur.trial_idx{:});
+  all_hrs=hour(all_dates);
 
-  ntrials=size(all_ca,3);
   nrois=size(all_ca,2);
 
   max_smps=round(maxlag*cur.roi_params(1).fs);
 
-  for j=2:length(cur.roi_data)
+  % normalize by averaging peak value in traces nearby in time (bin first)
+
+  for j=1:length(cur.roi_data)
+
+    hrs=hour(cur.roi_dates{j});
+    bins=[min(hrs):2:max(hrs)];
+    [~,binidx]=histc(hrs,bins);
+    ntrials=size(cur.roi_data{j},3);
+
     for k=1:nrois
-      template=squeeze(mean(zscore(cur.roi_data{j-1}(pad_smps(1):end-pad_smps(2),k,:)),3));
-      for l=1:size(cur.roi_data{j},3)
-        ca_data=zscore(cur.roi_data{j}(pad_smps(1):end-pad_smps(2),k,l));
-        lag_idx=round(min(cur.roi_dates{j-1})-min(cur.roi_dates{j}));
-        lag_idx
-        if abs(lag_idx)>1
-          continue;
-        end
-        corrmat{i,j-1}(k,l)=max(xcorr(template(:),ca_data(:),max_smps,'coeff'));
-        timemat{i,j-1}(k,l)=cur.roi_dates{j}(l)-floor(cur.roi_dates{j}(l));
+      for l=1:ntrials
+        cur_hrs=hrs(l);
+        hr_diffs=abs(cur_hrs-hrs);
+        [~,idx]=sort(hr_diffs,'ascend');
+
+        % take the first 5 (or something)
+
+        peak_norm=median(max(cur.roi_data{j}(pad_smps(1):end-pad_smps(2),k,idx(1:min(10,ntrials)))));
+        cur.roi_data{j}(:,k,l)=cur.roi_data{j}(:,k,l)./peak_norm;
+
       end
     end
   end
+
+  for j=2:length(cur.roi_data)
+    for k=1:nrois
+      template=squeeze(mean((cur.roi_data{j-1}(pad_smps(1):end-pad_smps(2),k,:)),3));
+      template=template-mean(template);
+
+      for l=1:size(cur.roi_data{j},3)
+
+        ca_data=(cur.roi_data{j}(pad_smps(1):end-pad_smps(2),k,l));
+        ca_data=ca_data-mean(ca_data);
+
+        lag_idx=round(min(cur.roi_dates{j-1})-min(cur.roi_dates{j}));
+        if abs(lag_idx)>1
+          continue;
+        end
+
+        corrmat{i,j-1}(k,l)=max(xcorr(template(:),ca_data(:),max_smps,'coeff'));
+        %corrmat{i,j-1}(k,l)=max(xcorr(template(:),ca_data(:),max_smps,'coeff'));
+
+        %[r,lags]=xcorr(template(:),ca_data(:),max_smps,'coeff');
+        %[~,loc]=max(r);
+        % scan over max_smps in both directions
+
+        % shifts=-max_smps:max_smps;
+        % dist=nan(1,length(shifts));
+        %
+        % for m=1:length(shifts)
+        %   %dist(m)=sqrt(mean((template(:)-circshift(ca_data(:)-mean(ca_data(:)),[shifts(m) 1])).^2));
+        %
+        %   if shifts(m)>0
+        %     shifted_copy=ca_data(1:end-(shifts(m)-1));
+        %     template_copy=template(shifts(m):end);
+        %   elseif shifts(m)<0
+        %     shifted_copy=ca_data(-shifts(m):end);
+        %     template_copy=template(1:end-(-shifts(m)-1));
+        %   else
+        %     shifted_copy=ca_data(:);
+        %     template_copy=template(:);
+        %   end
+        %
+        %
+        %   dist(m)=mean(abs(template_copy(:)-shifted_copy(:)));
+        %
+        % end
+        %
+        % corrmat{i,j-1}(k,l)=min(dist);
+        timemat{i,j-1}(k,l)=cur.roi_dates{j}(l)-floor(cur.roi_dates{j}(l));
+        trialmat{i,j-1}(k,l)=cur.trial_idx{j}(l); % trial idx for the day
+      end
+    end
+  end
+
 
   clear cur;
 
 end
 
 % now for each bird take the upper triangle of the correlation matrix
+%%
 
 all_ca=[];
 all_time=[];
 all_id=[];
+all_trial=[];
 
 for i=1:size(corrmat,1)
   for j=1:size(corrmat,2)
     if ~isempty(corrmat{i,j})
-      all_ca=[all_ca;median(corrmat{i,j})'];
+      all_ca=[all_ca;mean(corrmat{i,j})'];
       all_time=[all_time;timemat{i,j}(1,:)'];
+      all_trial=[all_trial;trialmat{i,j}(1,:)'];
       all_id=[all_id;ones(size(mean(corrmat{i,j})'))*i];
     end
   end
@@ -161,5 +239,23 @@ end
 
 % plot all points with smoothing line???
 
+[~,idx]=sort(all_time);
+fig.nminus1_regress=figure();
+stan_plot_regress(all_time*24,all_ca,ones(size(all_id)));
+colormap(bone);
+xlim([7 17])
+%ylabel('Correlation to n-1 ave (r)')
+%xlabel('Time (hr)')
+set(gca,'TickLength',[0 0],'YTick',[.2 .9],'FontSize',7);
+title('')
+ylim([.2 .9])
+set(fig.nminus1_regress,'position',[300 700 230 210]);
+[fig_stats.timevca.r,fig_stats.timevca.p]=corr(all_time,all_ca,'type','spearman');
+
+if filewrite
+  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_unittimevca.txt'),'w+');
+  fprintf(fid,'Unit time v n-1 ave corr: r=%g p=%e',fig_stats.timevca.r,fig_stats.timevca.p);
+  fclose(fid);
+end
 
 %save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new-' ext '.mat']),'stats');

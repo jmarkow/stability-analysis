@@ -2,14 +2,14 @@ function stan_fig_cadata_nightdayanalysis()
 %
 [options,dirs]=stan_preflight;
 
-load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_new.mat'),'stats');
-fig=stan_plot_ca_nightday(stats);
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_new-lib.mat'),'stats');
+[fig,overnight_stats]=stan_plot_ca_nightday(stats);
 names=fieldnames(fig);
 
 for i=1:length(names)
 
 	if strcmp(names{i},'daynightcompare')
-		width=5.2;
+		width=4.5;
 	elseif strfind(names{i},'overnight')
 		width=2.8;
 	else
@@ -19,6 +19,6 @@ for i=1:length(names)
 	set(fig.(names{i}),'units','centimeters','position',[10 10 width 4],'paperpositionmode','auto');
   set(fig.(names{i}),'paperpositionmode','auto');
 
-	%markolab_multi_fig_save(fig.(names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),[ 'cadata_analysis_revision' names{i} ],'eps,png,fig',...
-	%	'renderer','painters');
+	markolab_multi_fig_save(fig.(names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),[ 'cadata_analysis_revision' names{i} ],'eps,png,fig',...
+		'renderer','painters');
 end

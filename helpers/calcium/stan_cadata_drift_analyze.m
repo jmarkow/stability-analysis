@@ -285,13 +285,25 @@ for i=1:ndays
 			ntrials1=size(DATA{i},3);
 			ntrials2=size(DATA{j},3);
 
-			compare1=ntrials1-(floor(ntrials1/frac)-1):ntrials1;
+			%compare1=ntrials1-(floor(ntrials1/frac)-1):ntrials1;
+			compare1=1:ntrials1;
+
 			pool1=1:floor(ntrials2/frac);
 			pool2=ntrials2-(floor(ntrials2/frac)-1):ntrials2;
 
 			all_stitch=(cat(3,DATA{i},DATA{j}));
+
 			day_stitch=(cat(3,DATA{i}(:,:,compare1),DATA{j}(:,:,pool1)));
 			night_stitch=(cat(3,DATA{i}(:,:,compare1),DATA{j}(:,:,pool2)));
+
+			% 
+			% if lag>1
+			% 	day_stitch=(cat(3,DATA{i}(:,:,compare1),DATA{j}(:,:,pool1)));
+			% 	night_stitch=(cat(3,DATA{i}(:,:,compare1),DATA{j}(:,:,pool2)));
+			% else
+			% 	day_stitch=DATA{i}(:,:,compare1);
+			% 	night_stitch=DATA{i}(:,:,compare1);
+			% end
 
 			% get random permutations
 

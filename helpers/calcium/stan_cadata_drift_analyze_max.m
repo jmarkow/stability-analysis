@@ -1,3 +1,4 @@
+function [fig,fig_stats]=stan_cadata_drift_analyze_max(ext)
 %
 %
 %
@@ -6,10 +7,20 @@
 
 [options,dirs]=stan_preflight;
 motif_select=2;
-ext='con';
+if nargin<1
+  ext='con';
+end
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,ext,'*.mat'));
 maxlag=.1;
 compare_day=1;
+filewrite=true;
+
+all_ca=[];
+all_ca_mu=[];
+all_hrs=[];
+all_id=[];
+all_trials=[];
+smoothing_tau=.1;
 
 for i=1:3
 
@@ -49,11 +60,11 @@ for i=1:3
   for j=1:length(cur.roi_data)
       cur.trial_idx{j}=1:size(cur.roi_data{j},3);
   end
-  
+
   for j=1:length(cur.roi_data)
     cur.roi_data{j}=cur.roi_data{j}(:,:,cur.roi_motifs{j}==tmp_motif_select);
     cur.roi_dates{j}=cur.roi_dates{j}(cur.roi_motifs{j}==tmp_motif_select);
-    
+
     lag_idx(j)=round(min(cur.roi_dates{j})-min(cur.roi_dates{1}));
   end
 
@@ -118,56 +129,55 @@ for i=1:3
   end
 
   pad_smps=pad_smps-crop;
+  nrois=size(cur.roi_data{1},2);
 
-  all_ca=cat(3,cur.roi_data{:});
-  all_dates=cat(2,cur.roi_dates{:});
-  all_trial_idx=cat(2,cur.trial_idx{:});
-  ntrials=size(all_ca,3);
-  nrois=size(all_ca,2);
+  % get max variability when binning by TIME
 
-  max_smps=round(maxlag*cur.roi_params(1).fs);
+  % in hrs
 
-  corrmat{i}=zeros(ntrials,ntrials,nrois);
-  timemat{i}=zeros(ntrials,ntrials);
+  min_n=3;
+  bin_size=1;
+  bin_c=0:bin_size:24;
 
-  for k=1:nrois
+  for j=1:ndays
 
-    ca_data=zscore(squeeze(all_ca(pad_smps(1):end-pad_smps(2),k,:)));
-    k
-    %corrmat{i}(:,:,k)=1-squareform(pdist(ca_data','correlation'));
-    for l=1:ntrials
-      for m=1:ntrials
-        corrmat{i}(l,m,k)=max(xcorr(ca_data(:,l),ca_data(:,m),max_smps,'coeff'));
-        if k==1
-          timemat{i}(l,m)=all_dates(l)-all_dates(m);
-        end
+    hrs=(cur.roi_dates{j}-floor(cur.roi_dates{j}))*24;
+    [~,bin_idx]=histc(hrs,bin_c);
+    bins=unique(bin_idx);
+
+    for k=1:length(bins)
+      idx=bin_idx==bins(k);
+      if sum(idx)>=min_n
+        tmp=squeeze(max(cur.roi_data{j}));
+        all_ca=[all_ca;std(tmp(:,idx),[],2)];
+        all_ca_mu=[all_ca_mu;mean(tmp(:,idx),2)];
+        all_hrs=[all_hrs;ones(size(tmp,1),1).*bins(k)];
+        all_id=[all_id;ones(size(tmp,1),1)*i];
+        all_trials=[all_trials;ones(size(tmp,1),1)*sum(hrs<=bins(k))];
+        %all_trials=[all_trials;cur.trial_idx{j}(idx)'];
       end
     end
-
   end
 
-  clear cur;
 
 end
 
-% now for each bird take the upper triangle of the correlation matrix
+fig.camax_v_time=figure();
+stan_plot_regress(all_hrs,all_ca,ones(size(all_id)));
+colormap(bone);
+xlim([7 17])
+%ylabel('Peak dF/F_0 SD')
+%xlabel('Time (hr)')
+set(gca,'TickLength',[0 0],'YTick',[0 15],'FontSize',7);
+title('')
+ylim([0 15])
+set(fig.camax_v_time,'position',[300 700 230 210]);
+[fig_stats.timevcamax.r,fig_stats.timevcamax.p]=corr(all_hrs,all_ca,'type','spearman');
+[fig_stats.timevcamax_partial.r,fig_stats.timevcamax_partial.p]=partialcorr(all_hrs,all_ca,all_ca_mu,'type','spearman');
 
-all_ca=[];
-all_time=[];
-all_id=[];
-
-for i=1:length(corrmat)
-  idx=find(tril(true(size(corrmat{i}(:,:,1))),-1));
-  for j=1
-    tmp=median(corrmat{i},3);
-    all_ca=[all_ca;tmp(idx)];
-    tmp=timemat{i};
-    all_time=[all_time;tmp(idx)];
-    all_id=[all_id;ones(size(tmp(idx)))*i];
-  end
+if filewrite
+  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_camaxvtime.txt'),'w+');
+  fprintf(fid,'Unit time v dF/F peak SD: r=%g p=%e\n',fig_stats.timevcamax.r,fig_stats.timevcamax.p);
+  fprintf(fid,'Unit time v dF/F peak SD partial: r=%g p=%e\n',fig_stats.timevcamax_partial.r,fig_stats.timevcamax_partial.p);
+  fclose(fid);
 end
-
-% plot all points with smoothing line???
-
-
-%save(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new-' ext '.mat']),'stats');

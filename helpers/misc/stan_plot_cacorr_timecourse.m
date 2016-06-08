@@ -2,7 +2,7 @@ function FIG=stan_plot_corr_timecourse(STATS,COLORS,NBOOTS)
 %
 %
 %
-interp_factor=2;
+interp_factor=8;
 FIG=figure();
 
 for i=1:length(STATS)
