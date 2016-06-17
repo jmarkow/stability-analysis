@@ -105,7 +105,7 @@ set(fig.song_variability,'position',[300 700 230 210]);
 [fig_stats.songvar.r,fig_stats.songvar.p]=corr(all_time,all_score,'type','spearman');
 
 if filewrite
-  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_songvar.txt'),'w+');
+  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig6_songvar.txt'),'w+');
   fprintf(fid,'Song variability v time: r=%g p=%e',fig_stats.songvar.r,fig_stats.songvar.p);
   fclose(fid);
 end

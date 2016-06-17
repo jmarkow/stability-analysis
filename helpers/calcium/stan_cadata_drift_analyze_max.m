@@ -162,21 +162,35 @@ for i=1:3
 
 end
 
+all_ca=1./all_ca;
+
+% uniq_hrs=unique(all_hrs)
+% mu=[];
+% for i=1:length(uniq_hrs)
+%     mu(i)=mean(all_ca(all_hrs==uniq_hrs(i)));
+%     ci(:,i)=bootci(10e3,{@mean,all_ca(all_hrs==uniq_hrs(i))},'type','cper');
+% end
+% 
+% fig.shaded_plot=figure();
+% x=uniq_hrs;
+% markolab_shadeplot(x,ci,[1 0 0],'none');
+
 fig.camax_v_time=figure();
-stan_plot_regress(all_hrs,all_ca,ones(size(all_id)));
+clip=1;
+stan_plot_regress(all_hrs,all_ca,ones(size(all_id)),'clip',clip);
 colormap(bone);
 xlim([7 17])
 %ylabel('Peak dF/F_0 SD')
 %xlabel('Time (hr)')
-set(gca,'TickLength',[0 0],'YTick',[0 15],'FontSize',7);
+set(gca,'TickLength',[0 0],'YTick',[0 clip],'FontSize',7);
 title('')
-ylim([0 15])
+ylim([-.15 clip+.11])
 set(fig.camax_v_time,'position',[300 700 230 210]);
 [fig_stats.timevcamax.r,fig_stats.timevcamax.p]=corr(all_hrs,all_ca,'type','spearman');
 [fig_stats.timevcamax_partial.r,fig_stats.timevcamax_partial.p]=partialcorr(all_hrs,all_ca,all_ca_mu,'type','spearman');
 
 if filewrite
-  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_camaxvtime.txt'),'w+');
+  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,['fig6_camaxvtime-' ext '.txt']),'w+');
   fprintf(fid,'Unit time v dF/F peak SD: r=%g p=%e\n',fig_stats.timevcamax.r,fig_stats.timevcamax.p);
   fprintf(fid,'Unit time v dF/F peak SD partial: r=%g p=%e\n',fig_stats.timevcamax_partial.r,fig_stats.timevcamax_partial.p);
   fclose(fid);

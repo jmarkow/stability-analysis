@@ -253,7 +253,7 @@ set(fig.nminus1_regress,'position',[300 700 230 210]);
 [fig_stats.timevca.r,fig_stats.timevca.p]=corr(all_time,all_ca,'type','spearman');
 
 if filewrite
-  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_unittimevca.txt'),'w+');
+  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,['fig6_unittimevca-' ext '.txt']),'w+');
   fprintf(fid,'Unit time v n-1 ave corr: r=%g p=%e',fig_stats.timevca.r,fig_stats.timevca.p);
   fclose(fid);
 end

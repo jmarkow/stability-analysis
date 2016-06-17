@@ -72,16 +72,16 @@ variability=[];
 change=[];
 
 for i=1:length(stats)
-  
+
   x=find(cellfun(@length,stats(i).rmat_mu.lag.day)>0);
-  
+
   idx=find(triu(ones(size(stats(i).vmat{1}(:,:,1))),1));
   varstore=zeros(1,size(stats(i).vmat{1},3));
   for j=1:size(stats(i).vmat{1},3)
       tmp=stats(i).vmat{1}(:,:,j);
       varstore(j)=mean(tmp(idx));
   end
-  
+
   variability=[variability varstore];
 
   if size(stats(i).rmat_mu.lag.day{x(end)},1)>0
@@ -89,9 +89,9 @@ for i=1:length(stats)
   else
     comparison=stats(i).rmat_mu.lag.day{x(end)};
   end
-  
+
   change=[change mean(stats(i).rmat_mu.lag.day{x(1)})-comparison];
-  
+
 end
 
 % figs.var_v_change=figure();
@@ -173,7 +173,7 @@ xlim([-.5 4.5])
 set(gca,'TickLength',[0 0],'YTick',[0:.5:1],'XTick',[0:4],'FontSize',7)
 
 if filewrite
-    fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,['fig5_catimecourse-' EXT '.txt']),'w+');
+    fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,['fig6_catimecourse-' EXT '.txt']),'w+');
     fprintf(fid,'Multi-unit stability vs calcium: p=%e z=%g\n',figs_stats.mu_v_ca.all.pval,figs_stats.mu_v_ca.all.zval);
     %fprintf(fid,'Within day v between day variability: p=%e r=%g\n',figs_stats.drift.var_v_change.p,figs_stats.drift.var_v_change.r);
     fprintf(fid,'N(multi-unit): %i\n',length(plotpoints{1}));

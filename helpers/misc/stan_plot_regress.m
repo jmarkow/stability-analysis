@@ -18,7 +18,8 @@ ci_inv=.01;
 shaded_conf=1;
 linewidth=.5;
 markersize=30;
-
+clip=[];
+plot_mode='scatter';
 nparams=length(varargin);
 
 if mod(nparams,2)>0
@@ -39,6 +40,11 @@ for i=1:2:nparams
 			shaded_conf=varargin{i+1};
 		case 'markersize'
 			markersize=varargin{i+1};
+        case 'clip'
+            clip=varargin{i+1};
+        case 'plot_mode'
+            plot_mode=varargin{i+1};
+            
 	end
 end
 
@@ -73,8 +79,26 @@ conf=t_stat*sqrt(((1/(npoints-2))*sse)*...
 
 ngrps=length(unique(C));
 
-scatter(X,Y,markersize,C,'markerfacecolor','flat');
+if ~isempty(clip)
+    tmp=find(Y>clip);
+    Y_clip=Y(tmp);
+    Y_clip=ones(size(Y_clip))*(clip+.1*clip);
+    X_clip=X(tmp)+.015*range(X)*randn(size(tmp));
+    X(tmp)=[];
+    Y(tmp)=[];
+    C_clip=C(tmp);
+    C(tmp)=[];
+end
+
+h=scatter(X,Y,markersize,C,'markerfacecolor','flat');
 hold on;
+
+if ~isempty(clip)
+    C(tmp)
+    X_clip
+    Y_clip
+    h2=scatter(X_clip,Y_clip,markersize*.5,C_clip,'markerfacecolor','none');
+end
 
 colormap(parula(ngrps));
 

@@ -1,12 +1,18 @@
-function [figs figs_stats]=stan_plot_ca_nightdat(CASTATS)
+function [figs figs_stats]=stan_plot_ca_nightdat(EXT)
 %
 %
 %
 
 % stitch everything together appropriately, alternating first/last
 
+if nargin<1
+  EXT='con';
+end
+
 [options,dirs]=stan_preflight;
-%nlags=length(CASTATS(1).rmat_mu.lag.day)-1; % first point is lag 0
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new-' EXT '.mat']),'stats');
+
+%nlags=length(stats(1).rmat_mu.lag.day)-1; % first point is lag 0
 %npoints=nlags*2; % nlags morning/evening
 nlags=4;
 npoints=nlags*2;
@@ -22,21 +28,21 @@ for i=1:nlags
   tmp=[];
   tmp2=[];
 
-  for j=1:length(CASTATS)
-    if length(CASTATS(j).rmat_mu.lag.all)>=i+1
-      if ~isempty(CASTATS(j).rmat_mu.lag.all{i+1})
-        for k=1:size(CASTATS(j).rmat_mu.lag.day{i+1},1)
-            tmp=[tmp CASTATS(j).rmat_mu.lag.day{i+1}(k,:)-mean(CASTATS(j).rmat_mu.bootstrap.lag.day{1}{1})];
+  for j=1:length(stats)
+    if length(stats(j).rmat_mu.lag.all)>=i+1
+      if ~isempty(stats(j).rmat_mu.lag.all{i+1})
+        for k=1:size(stats(j).rmat_mu.lag.day{i+1},1)
+            tmp=[tmp stats(j).rmat_mu.lag.day{i+1}(k,:)-mean(stats(j).rmat_mu.bootstrap.lag.day{1}{1})];
         end
 
-        %tmp=[tmp;CASTATS(j).rmat_mu.lag.day{i+1}(:)];
+        %tmp=[tmp;stats(j).rmat_mu.lag.day{i+1}(:)];
 
-        for k=1:size(CASTATS(j).rmat_mu.lag.night{i+1},1)
-            tmp2=[tmp2 CASTATS(j).rmat_mu.lag.night{i+1}(k,:)-mean(CASTATS(j).rmat_mu.bootstrap.lag.day{1}{1})];
+        for k=1:size(stats(j).rmat_mu.lag.night{i+1},1)
+            tmp2=[tmp2 stats(j).rmat_mu.lag.night{i+1}(k,:)-mean(stats(j).rmat_mu.bootstrap.lag.day{1}{1})];
         end
 
 
-        %tmp2=[tmp2;CASTATS(j).rmat_mu.lag.night{i+1}(:)];
+        %tmp2=[tmp2;stats(j).rmat_mu.lag.night{i+1}(:)];
       end
     end
   end
@@ -145,7 +151,7 @@ pool2=[];
 
 dprime=[];
 %
-% for i=1:length(CASTATS)
+% for i=1:length(stats)
 %
 %   poolz1=[];
 %   poolz2=[];
@@ -153,18 +159,18 @@ dprime=[];
 %   pool1=[];
 %   pool2=[];
 %
-%   bootmu=mean(cat(3,CASTATS(i).rmat_mu.bootstrap.lag.day{1}{:}),3);
+%   bootmu=mean(cat(3,stats(i).rmat_mu.bootstrap.lag.day{1}{:}),3);
 %   bootmu_mu=mean(bootmu);
 %   bootmu_var=std(bootmu);
 %
-%   for j=1:size(CASTATS(i).rmat_mu.lag.day{1},1)
-%     tmp1=CASTATS(i).rmat_mu.lag.day{1}(j,:);
+%   for j=1:size(stats(i).rmat_mu.lag.day{1},1)
+%     tmp1=stats(i).rmat_mu.lag.day{1}(j,:);
 %     pool1=[pool1;tmp1];
 %     poolz1=[poolz1;(tmp1-bootmu_mu)./bootmu_var];
 %   end
 %
-%   for j=1:size(CASTATS(i).rmat_mu.lag.day{2},1)
-%     tmp2=CASTATS(i).rmat_mu.lag.day{2}(j,:);
+%   for j=1:size(stats(i).rmat_mu.lag.day{2},1)
+%     tmp2=stats(i).rmat_mu.lag.day{2}(j,:);
 %     pool2=[pool2;tmp2];
 %     poolz2=[poolz2;(tmp2-bootmu_mu)./bootmu_var];
 %   end
@@ -174,27 +180,27 @@ dprime=[];
 %
 % end
 
-for i=1:length(CASTATS)
+for i=1:length(stats)
 
-  if size(CASTATS(i).rmat_mu.lag.day{2},1)>1
-    mu2=mean(CASTATS(i).rmat_mu.lag.day{2});
+  if size(stats(i).rmat_mu.lag.day{2},1)>1
+    mu2=mean(stats(i).rmat_mu.lag.day{2});
   else
-    mu2=CASTATS(i).rmat_mu.lag.day{2};
+    mu2=stats(i).rmat_mu.lag.day{2};
   end
 
-  if size(CASTATS(i).rmat_mu.lag.day{1},1)>1
-    mu1=mean(CASTATS(i).rmat_mu.lag.day{1});
+  if size(stats(i).rmat_mu.lag.day{1},1)>1
+    mu1=mean(stats(i).rmat_mu.lag.day{1});
   else
-    mu1=CASTATS(i).rmat_mu.lag.day{1};
+    mu1=stats(i).rmat_mu.lag.day{1};
   end
 
-  tmp1=CASTATS(i).rmat_mu.lag.day{1};
-  tmp2=CASTATS(i).rmat_mu.lag.day{2};
+  tmp1=stats(i).rmat_mu.lag.day{1};
+  tmp2=stats(i).rmat_mu.lag.day{2};
 
   pool1=[pool1 mu1];
   pool2=[pool2 mu2];
 
-  bootmu=mean(cat(3,CASTATS(i).rmat_mu.bootstrap.lag.day{1}{:}),3);
+  bootmu=mean(cat(3,stats(i).rmat_mu.bootstrap.lag.day{1}{:}),3);
 
   pval1_right=mean(repmat(mu1,[size(bootmu,1) 1])>bootmu)+(1/size(bootmu,1));
   pval1_left=mean(repmat(mu1,[size(bootmu,1) 1])<bootmu)+(1/size(bootmu,1));
@@ -279,7 +285,7 @@ set(L,'FontSize',5,'Location','Northwest')
 % xlim([-1 1]);
 
 if filewrite
-  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig5_caovernight.txt'),'w+');
+  fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,['fig6_caovernight-' EXT '.txt']),'w+');
   fprintf(fid,'Within day v overnight corr: p=%e z=%g',figs_stats.overnight.all_pval2,figs_stats.overnight.all_zval2);
   fclose(fid);
 end
