@@ -1,12 +1,12 @@
 function dist=stan_cadata_stability_v_space()
 %% load in the stability analysis
 
+ext='lib';
 [options,dirs]=stan_preflight;
-load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats.mat'),'stats');
-peakstats=load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_peaktime.mat'),'stats');
-peakstats=peakstats.stats;
 
-load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_maps'),'roi_map');
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,['mu_ca_timecourse-' ext '.mat']))
+%roi_dir=dir(fullfile(dirs.agg_dir,dirs.ca_dir,['roi_' ext],'*.mat'));
+roi_files=robofinch_dir_recurse(fullfile(dirs.agg_dir,dirs.ca_dir,['roi_' ext]),'*.mat');
 
 %% load in the ROI spatial data
 
@@ -22,20 +22,22 @@ vars={'stable','unstable','between'};
 
 % set i to 1:3 once we get the rest of the data
 
-for i=1:3
+for i=1:4
 
   % get centroid pairwise Euclidean distance
 
   for j=1:nboots
-    dist(i).bootstrap{j}=[];
+    dist(i).bootstrap_stable{j}=[];
+    dist(i).bootstrap_unstable{j}=[];
+    dist(i).bootstrap_between{j}=[];
   end
 
-
-  centroids=cat(1,roi_map(i).stats.Centroid);
-
+  load(roi_files(i).name);
+  tmp=cellfun(@mean,roi_stats(1).coords,'uniformoutput',false);
+  centroids=cat(1,tmp{:});
   % compare within stable, within unstable and between two groups...
 
-  unstable=peakstats(i).peak_stable(1,:)==1&any(peakstats(i).peak_stable(1:5,:)==0);
+  unstable=fig_stats.drift.unstable{i}(1,:)==0&any(fig_stats.drift.unstable{i}(1:end,:)==1);
   stable=~unstable;
 
   unstable=find(unstable);
@@ -60,9 +62,19 @@ for i=1:3
 
     % pairwise
 
-    tmp=pdist2(centroids(pool1,:),centroids(pool2,:));
+    tmp=pdist2(centroids(pool1,:),centroids(pool2,:),'Euclidean');
     mat=triu(ones(size(tmp)),1);
-    dist(i).bootstrap{j}=tmp(mat==1);
+    dist(i).bootstrap_between{j}=tmp(mat==1);
+
+    tmp=squareform(pdist(centroids(pool1,:),'Euclidean'));
+    mat=triu(ones(size(tmp)),1);
+
+    dist(i).bootstrap_unstable{j}=tmp(mat==1);
+
+    tmp=squareform(pdist(centroids(pool2,:),'Euclidean'));
+    mat=triu(ones(size(tmp)),1);
+
+    dist(i).bootstrap_stable{j}=tmp(mat==1);
 
   end
 
@@ -70,7 +82,11 @@ for i=1:3
 
   %pairs.between=nchoosek([unstable(:);stable(:)],2);
 
+  dist(i).pval.between=1-mean(median(dist(i).between)<=cellfun(@median,dist(i).bootstrap_between));
+  dist(i).pval.stable=1-mean(median(dist(i).stable)<=cellfun(@median,dist(i).bootstrap_stable));
+  dist(i).pval.unstable=1-mean(median(dist(i).unstable)<=cellfun(@median,dist(i).bootstrap_unstable));
+
 end
 
 
-save(fullfile(dirs.agg_dir,dirs.datastore_dir,'stability_v_space_peaktime.mat'),'dist');
+save(fullfile(dirs.agg_dir,dirs.datastore_dir,['stability_v_space_peaktime-' ext '.mat' ]),'dist');
