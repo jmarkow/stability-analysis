@@ -11,7 +11,6 @@ if nargin<1
   ext='con';
 end
 
-listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,ext,'*.mat'));
 maxlag=.1;
 compare_day=1;
 corrmat=[];
@@ -20,20 +19,16 @@ trialmat=[];
 filewrite=true;
 
 % TODO make sure we account for actual lag!!!
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new-' ext '.mat']),'stats');
 
 for i=1:3
 
   % use only the selected motif
-  disp([listing(i).name]);
-  cur=[];
-  cur=load(fullfile(dirs.agg_dir,dirs.ca_dir,ext,listing(i).name),...
-    'roi_data','roi_motifs','roi_params','roi_dates');
 
+  cur=stats(i).use_data;
   lag_idx=zeros(1,length(cur.roi_data));
-  len=cellfun(@length,cur.roi_data);
-  to_del=len==0;
 
-  if length(strfind(listing(i).name,'lw76'))>0
+  if i==4
     tmp_motif_select=1;
     lag_corr=0;
   else
@@ -41,38 +36,13 @@ for i=1:3
     lag_corr=1;
   end
 
-  % pretty much all of the pads are incorrect, fun...
-
-  if length(strfind(listing(i).name,'lny13'))>0
-    cur.roi_params(1).padding=[.7 .677];
-    %to_del(5)=true; % something strange happened on day 5
-  end
-
-  if length(strfind(listing(i).name,'lny18'))>0
-    cur.roi_params(1).padding=[.5 .95];
-  end
-
-  if length(strfind(listing(i).name,'lny54rb'))>0
-    cur.roi_params(1).padding=[.3 .85];
-  end
-
   for j=1:length(cur.roi_data)
       cur.trial_idx{j}=1:size(cur.roi_data{j},3);
   end
 
   for j=1:length(cur.roi_data)
-    cur.roi_data{j}=cur.roi_data{j}(:,:,cur.roi_motifs{j}==tmp_motif_select);
-    cur.roi_dates{j}=cur.roi_dates{j}(cur.roi_motifs{j}==tmp_motif_select);
-    cur.trial_idx{j}=cur.trial_idx{j}(cur.roi_motifs{j}==tmp_motif_select);
     lag_idx(j)=round(min(cur.roi_dates{j})-min(cur.roi_dates{1}));
   end
-
-  cur.roi_data(to_del)=[];
-  cur.roi_motifs(to_del)=[];
-  cur.roi_params(to_del)=[];
-  cur.roi_dates(to_del)=[];
-  cur.trial_idx(to_del)=[];
-  lag_idx(to_del)=[];
 
   for j=1:length(cur.roi_data)
 
@@ -88,7 +58,6 @@ for i=1:3
   % easy to assign lag indices, round off day difference between two datenumbers
 
   % insert global shift if we need to
-
 
   pad_smps=round(cur.roi_params(1).padding*cur.roi_params(1).fs);
   template=zscore(mean(cur.roi_data{compare_day}(pad_smps(1):end-pad_smps(2),:,:),3));
@@ -173,6 +142,7 @@ for i=1:3
         ca_data=ca_data-mean(ca_data);
 
         lag_idx=round(min(cur.roi_dates{j-1})-min(cur.roi_dates{j}));
+
         if abs(lag_idx)>1
           continue;
         end

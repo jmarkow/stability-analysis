@@ -94,9 +94,6 @@ h=scatter(X,Y,markersize,C,'markerfacecolor','flat');
 hold on;
 
 if ~isempty(clip)
-    C(tmp)
-    X_clip
-    Y_clip
     h2=scatter(X_clip,Y_clip,markersize*.5,C_clip,'markerfacecolor','none');
 end
 

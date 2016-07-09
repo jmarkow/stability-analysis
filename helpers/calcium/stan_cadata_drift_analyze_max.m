@@ -21,59 +21,25 @@ all_hrs=[];
 all_id=[];
 all_trials=[];
 smoothing_tau=.1;
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new-' ext '.mat']),'stats');
 
 for i=1:3
 
   % use only the selected motif
-  disp([listing(i).name]);
-  cur=[];
-  cur=load(fullfile(dirs.agg_dir,dirs.ca_dir,ext,listing(i).name),...
-    'roi_data','roi_motifs','roi_params','roi_dates');
+
+  cur=stats(i).use_data;
 
   lag_idx=zeros(1,length(cur.roi_data));
   len=cellfun(@length,cur.roi_data);
   to_del=len==0;
 
-  if length(strfind(listing(i).name,'lw76'))>0
-    tmp_motif_select=1;
-    lag_corr=0;
-  else
-    tmp_motif_select=motif_select;
-    lag_corr=1;
-  end
+  tmp_motif_select=motif_select;
+  lag_corr=1;
 
-  % pretty much all of the pads are incorrect, fun...
-
-  if length(strfind(listing(i).name,'lny13'))>0
-    cur.roi_params(1).padding=[.7 .677];
-    %to_del(5)=true; % something strange happened on day 5
-  end
-
-  if length(strfind(listing(i).name,'lny18'))>0
-    cur.roi_params(1).padding=[.5 .95];
-  end
-
-  if length(strfind(listing(i).name,'lny54rb'))>0
-    cur.roi_params(1).padding=[.3 .85];
-  end
 
   for j=1:length(cur.roi_data)
-      cur.trial_idx{j}=1:size(cur.roi_data{j},3);
-  end
-
-  for j=1:length(cur.roi_data)
-    cur.roi_data{j}=cur.roi_data{j}(:,:,cur.roi_motifs{j}==tmp_motif_select);
-    cur.roi_dates{j}=cur.roi_dates{j}(cur.roi_motifs{j}==tmp_motif_select);
-
     lag_idx(j)=round(min(cur.roi_dates{j})-min(cur.roi_dates{1}));
   end
-
-  cur.roi_data(to_del)=[];
-  cur.roi_motifs(to_del)=[];
-  cur.roi_params(to_del)=[];
-  cur.roi_dates(to_del)=[];
-  cur.trial_idx(to_del)=[];
-  lag_idx(to_del)=[];
 
   for j=1:length(cur.roi_data)
 
@@ -82,12 +48,11 @@ for i=1:3
     [~,idx]=sort(cur.roi_dates{j},'ascend');
     cur.roi_data{j}=cur.roi_data{j}(:,:,idx);
     cur.roi_dates{j}=cur.roi_dates{j}(idx);
-    cur.trial_idx{j}=cur.trial_idx{j}(idx);
+    %cur.trial_idx{j}=cur.trial_idx{j}(idx);
 
   end
 
   % easy to assign lag indices, round off day difference between two datenumbers
-
   % insert global shift if we need to
 
 
@@ -170,7 +135,7 @@ all_ca=1./all_ca;
 %     mu(i)=mean(all_ca(all_hrs==uniq_hrs(i)));
 %     ci(:,i)=bootci(10e3,{@mean,all_ca(all_hrs==uniq_hrs(i))},'type','cper');
 % end
-% 
+%
 % fig.shaded_plot=figure();
 % x=uniq_hrs;
 % markolab_shadeplot(x,ci,[1 0 0],'none');

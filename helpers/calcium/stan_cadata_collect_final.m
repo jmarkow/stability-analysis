@@ -67,6 +67,7 @@ for i=1:length(listing)-1
   save(fullfile(datapath,[datafile '-badremoved.mat']),'ROI_data_cleansed','-v7.3');
   save(fullfile(dirs.agg_dir,dirs.ca_dir,[lower(tokens{end-1}) '-' ext '.mat']),'roi_data',...
     'roi_dates','roi_times','roi_motifs','roi_filenames','roi_params','roi_audio','roi_trials');
+
 end
 
 % now collect lw76

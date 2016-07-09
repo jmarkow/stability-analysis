@@ -63,28 +63,28 @@ end
 
 x=[1:length(agg)];
 
-figs.daynightcompare=figure();
-
-counter=1;
-for i=1:nlags
-  markolab_shadeplot([x(counter)-.5 x(counter)+.5],[0 0;1 1],'c','none');
-  hold on;
-  markolab_shadeplot([x(counter+1)-.5 x(counter+1)+.5],[0 0;1 1],'b','none');
-  hold on;
-  plot([x(counter+1)+.5 x(counter+1)+.5],[0 1],'k-');
-  counter=counter+2;
-end
-
-hold on;
-plot(x,mu,'k-');
-hold on;
-stan_plot_dot_error(x,mu,mu_ci,repmat([1 2],[1 4]),'colors',[0 0 0;0 0 0]);
-hold on;
-xlim([x(1)-.5 x(end)+.5]);
-ylim([.45 .85]);
-ylabel('Correlation (R)');
-set(gca,'XTick',x(1)+.5:2:x(end),'XTickLabel',[1:4],'Ytick',get(gca,'ylim'));
-set(gca,'layer','top','FontSize',7);
+% figs.daynightcompare=figure();
+% 
+% counter=1;
+% for i=1:nlags
+%   markolab_shadeplot([x(counter)-.5 x(counter)+.5],[0 0;1 1],'c','none');
+%   hold on;
+%   markolab_shadeplot([x(counter+1)-.5 x(counter+1)+.5],[0 0;1 1],'b','none');
+%   hold on;
+%   plot([x(counter+1)+.5 x(counter+1)+.5],[0 1],'k-');
+%   counter=counter+2;
+% end
+% 
+% hold on;
+% plot(x,mu,'k-');
+% hold on;
+% stan_plot_dot_error(x,mu,mu_ci,repmat([1 2],[1 4]),'colors',[0 0 0;0 0 0]);
+% hold on;
+% xlim([x(1)-.5 x(end)+.5]);
+% ylim([.45 .85]);
+% ylabel('Correlation (R)');
+% set(gca,'XTick',x(1)+.5:2:x(end),'XTickLabel',[1:4],'Ytick',get(gca,'ylim'));
+% set(gca,'layer','top','FontSize',7);
 
 % group together night and day (histogram of day-night????)
 
@@ -120,22 +120,22 @@ end
 
 cmap=winter(4);
 offset=.05;
-figs.testing=figure();
-counter=1;
-x=[];
-for i=1:2:length(days)*2
-  x=[x 1+offset*counter 2+offset*counter];
-  h(counter)=plot([1+offset*counter 2+offset*counter],plot_mu([i i+1]),'k-','color',cmap(counter,:));
-  hold on;
-  counter=counter+1;
-end
-
-stan_plot_dot_error(x,plot_mu,plot_mu_ci,[1 1 2 2 3 3 4 4],'colors',cmap);
-L=legend(h,{'1 day','2 days','3 days','4 days'})
-legend boxoff;
-set(L,'location','northwest','FontSize',6)
-xlim([.5 2.5])
-set(gca,'XTick',[1 2],'XTickLabel',{'First','Last'},'FontSize',7)
+% figs.testing=figure();
+% counter=1;
+% x=[];
+% for i=1:2:length(days)*2
+%   x=[x 1+offset*counter 2+offset*counter];
+%   h(counter)=plot([1+offset*counter 2+offset*counter],plot_mu([i i+1]),'k-','color',cmap(counter,:));
+%   hold on;
+%   counter=counter+1;
+% end
+% 
+% stan_plot_dot_error(x,plot_mu,plot_mu_ci,[1 1 2 2 3 3 4 4],'colors',cmap);
+% L=legend(h,{'1 day','2 days','3 days','4 days'})
+% legend boxoff;
+% set(L,'location','northwest','FontSize',6)
+% xlim([.5 2.5])
+% set(gca,'XTick',[1 2],'XTickLabel',{'First','Last'},'FontSize',7)
 
 % for each animal, check shift within each ROI (between relative to within)
 

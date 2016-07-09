@@ -1,12 +1,13 @@
 function dist=stan_cadata_stability_v_space()
 %% load in the stability analysis
 
-ext='lib';
+ext='con';
 [options,dirs]=stan_preflight;
 
 load(fullfile(dirs.agg_dir,dirs.datastore_dir,['mu_ca_timecourse-' ext '.mat']))
 %roi_dir=dir(fullfile(dirs.agg_dir,dirs.ca_dir,['roi_' ext],'*.mat'));
-roi_files=robofinch_dir_recurse(fullfile(dirs.agg_dir,dirs.ca_dir,['roi_' ext]),'*.mat');
+%roi_files=robofinch_dir_recurse(fullfile(dirs.agg_dir,dirs.ca_dir,['roi_' ext]),'*.mat');
+load(fullfile(dirs.agg_dir,dirs.datastore_dir,['cadata_stats_new-' ext '.mat']),'stats');
 
 %% load in the ROI spatial data
 
@@ -31,9 +32,10 @@ for i=1:4
     dist(i).bootstrap_unstable{j}=[];
     dist(i).bootstrap_between{j}=[];
   end
+  %load(roi_files(i).name);
 
-  load(roi_files(i).name);
-  tmp=cellfun(@mean,roi_stats(1).coords,'uniformoutput',false);
+  roi_include=stats(i).use_data.roi_include;
+  tmp=cellfun(@mean,stats(i).use_roi.roi_stats(1).coords(roi_include),'uniformoutput',false);
   centroids=cat(1,tmp{:});
   % compare within stable, within unstable and between two groups...
 

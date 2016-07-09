@@ -2,8 +2,9 @@ function stan_fig_cadata_nightdayanalysis()
 %
 [options,dirs]=stan_preflight;
 
-load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_new-lib.mat'),'stats');
-[fig,overnight_stats]=stan_plot_ca_nightday(stats);
+%load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_new-lib.mat'),'stats');
+ext='con';
+[fig,overnight_stats]=stan_plot_ca_nightday(ext);
 names=fieldnames(fig);
 
 for i=1:length(names)
@@ -17,8 +18,9 @@ for i=1:length(names)
 	end
 
 	set(fig.(names{i}),'units','centimeters','position',[10 10 width 4],'paperpositionmode','auto');
-  set(fig.(names{i}),'paperpositionmode','auto');
+    set(fig.(names{i}),'paperpositionmode','auto');
 
-	markolab_multi_fig_save(fig.(names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),[ 'cadata_analysis_revision' names{i} ],'eps,png,fig',...
+	markolab_multi_fig_save(fig.(names{i}),fullfile(dirs.agg_dir,dirs.fig_dir),[ 'cadata_analysis_revision-' ext '_' names{i} ],'eps,png,fig',...
 		'renderer','painters');
+
 end

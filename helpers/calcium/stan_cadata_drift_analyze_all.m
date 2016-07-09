@@ -42,31 +42,38 @@ function stan_cadata_drift_analyze_all(ext)
 motif_select=2;
 
 if nargin<1
-    ext='con';
+    ext='lib';
 end
 
 listing=dir(fullfile(dirs.agg_dir,dirs.ca_dir,ext,'*.mat'));
 maxlag=.1;
+move_thresh=20;
 
 parfor i=1:length(listing)
 
   % use only the selected motif
   disp([listing(i).name]);
+  
   cur=load(fullfile(dirs.agg_dir,dirs.ca_dir,ext,listing(i).name),...
     'roi_data','roi_motifs','roi_params','roi_dates');
-
+  birdid=regexprep(listing(i).name,'\-\w+\.mat','');
+  
+  cur_roi=load(fullfile(dirs.agg_dir,dirs.ca_dir,['roi_' ext],[ birdid '_roi_stats-' ext '.mat']));
+  
+  % strip out ROIs that move too much, save indices of the ROIs we keep
+  
   lag_idx=zeros(1,length(cur.roi_data));
-
   len=cellfun(@length,cur.roi_data);
-
   to_del=len==0;
 
   if length(strfind(listing(i).name,'lw76'))>0
     tmp_motif_select=1;
     lag_corr=0;
+    pxtomicron=.6250;
   else
     tmp_motif_select=motif_select;
     lag_corr=1;
+    pxtomicron=1.1;
   end
 
   % pretty much all of the pads are incorrect, fun...
@@ -105,7 +112,23 @@ parfor i=1:length(listing)
     cur.roi_dates{j}=cur.roi_dates{j}(idx);
 
   end
-
+  
+  nrois=size(cur.roi_data{j},2);
+  ndays=length(cur_roi.roi_stats);
+  roi_movement=zeros(ndays-1,nrois);
+  tmp=cellfun(@range,cur_roi.roi_stats(1).coords,'uniformoutput',false);
+  thresholds=(min(cat(1,tmp{:}),[],2))'*pxtomicron;
+  
+  for j=1:ndays-1
+    roi_movement(j,:)=max(abs(cur_roi.roi_stats(j).weighted_com-cur_roi.roi_stats(j+1).weighted_com)')*pxtomicron;
+  end
+  
+  cur.roi_include=~any(roi_movement>repmat(thresholds,[ndays-1 1]));
+  
+  for j=1:length(cur.roi_data)
+      cur.roi_data{j}=cur.roi_data{j}(:,cur.roi_include,:);
+  end
+  
   % easy to assign lag indices, round off day difference between two datenumbers
 
   [stats(i).rmat_mu stats(i).pmat stats(i).vmat]=stan_cadata_drift_analyze(...
@@ -114,6 +137,9 @@ parfor i=1:length(listing)
     'realign',0,'smoothing',0,'smooth_kernel','b','maxlag',maxlag,'nboots',1e4);
 
   stats(i).trial_dates=cur.roi_dates;
+  stats(i).use_data=cur;
+  stats(i).use_roi=cur_roi;
+  stats(i).use_roi.pxtomicron=pxtomicron;
 
 end
 
