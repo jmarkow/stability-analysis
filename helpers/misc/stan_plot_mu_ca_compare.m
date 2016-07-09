@@ -55,6 +55,20 @@ set(gca,'Xtick',pos([1 3]),'XTickLabel',{'Multi-unit','PNs'},'TickLength',[0 0],
 yh=ylabel('Correlation (R)')
 set(yh,'position',get(yh,'position')+[.16 0 0]);
 
+FIG_HIST=figure();
+bins=[0:.05:1];
+n=ksdensity(plotpoints{1},bins);
+n2=ksdensity(cat(1,plotpoints{2:end}),bins);
+
+plot(bins,cumsum(n)./sum(n));
+hold on;
+plot(bins,cumsum(n2)./sum(n2));
+
+figure();
+markolab_stairplot(n2./sum(n2),bins,'facecolor','r','method','a');
+hold on;
+markolab_stairplot(n./sum(n),bins,'facecolor','b','method','a');
+
 %
 % figs.box=figure();
 % markolab_boxplot(plotpoints,[],'box_color',swarm_colors,'feature_idx',[4:-1:1],'med_color',repmat([0 0 0],[4 1]));
