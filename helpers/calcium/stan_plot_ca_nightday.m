@@ -233,7 +233,7 @@ figs_stats.overnight.all_zval2=tmpstats.zval;
 figs_stats.overnight.all_pval2_raw=signrank(pool2,pool1,'tail','left');
 
 
-bins=[-15:1:15];
+bins=[-25:1:15];
 est1=histc(poolz1,bins);
 est2=histc(poolz1(pool_pval1_right<.05),bins);
 est3=histc(poolz1(pool_pval1_left<.05),bins);

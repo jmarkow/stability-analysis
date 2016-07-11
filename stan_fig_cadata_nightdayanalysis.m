@@ -13,7 +13,8 @@ for i=1:length(names)
 		width=4.5;
 	elseif strfind(names{i},'overnight')
 		width=2.8;
-	else
+    else
+        ylim([0 50]);
 		width=4.5;
 	end
 
