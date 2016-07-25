@@ -148,7 +148,6 @@ for i=1:3
         end
 
         corrmat{i,j-1}(k,l)=max(xcorr(template(:),ca_data(:),max_smps,'coeff'));
-        %corrmat{i,j-1}(k,l)=max(xcorr(template(:),ca_data(:),max_smps,'coeff'));
 
         %[r,lags]=xcorr(template(:),ca_data(:),max_smps,'coeff');
         %[~,loc]=max(r);
