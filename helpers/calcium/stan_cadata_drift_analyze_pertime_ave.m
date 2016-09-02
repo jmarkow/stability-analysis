@@ -224,7 +224,7 @@ set(fig.nminus1_regress,'position',[300 700 230 210]);
 
 if filewrite
   fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,['fig6_unittimevca-' ext '.txt']),'w+');
-  fprintf(fid,'Unit time v n-1 ave corr: r=%g p=%e',fig_stats.timevca.r,fig_stats.timevca.p);
+  fprintf(fid,'Unit time v n-1 ave corr: r=%g p=%e, n=%i',fig_stats.timevca.r,fig_stats.timevca.p,length(all_time));
   fclose(fid);
 end
 

@@ -65,6 +65,7 @@ v_offset=.27;
 new_axis(1)=axes('position',[ pos(1)+pos(3)-h_offset pos(2)+pos(4)-v_offset width new_width ]);
 %set(ax(1),'position',[ pos(1) pos(2) pos(3)-new_width pos(4)-v_offset-.05])
 stan_plot_regress(plot_data.days_since(:),plot_data.spikes(:),plot_data.birdid(:),'markersize',markersize);
+
 ylim([0 1]);
 set(gca,'XTick',[],'YTick',[],'TickDir','out','TickLength',[ 0 0 ],'fontsize',fontsize);
 
@@ -82,7 +83,7 @@ new_axis(2)=axes('position',[ pos(1)+pos(3)-h_offset pos(2)+pos(4)-v_offset widt
 stan_plot_regress(plot_data.days_since(:),plot_data.rms(:),plot_data.birdid(:),'markersize',markersize);
 ylim([0 1]);
 set(gca,'XTick',[],'YTick',[],'TickDir','out','TickLength',[ 0 0 ],'fontsize',fontsize);
-
+[r,p]=corrcoef(plot_data.days_since(:),plot_data.rms(:))
 linkaxes(ax,'xy');
 linkaxes(new_axis,'xy');
 linkaxes([ax(:);new_axis(:)],'y');
@@ -97,7 +98,6 @@ set(xh,'position',get(xh,'position')+[0 .01 0]);
 linkaxes(new_axis,'x');
 set(new_axis(1),'xlim',[0 120]);
 set(new_axis(end),'xtick',get(new_axis(end),'xlim'));
-
 fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig1_regression.txt'),'w+');
-fprintf(fid,'FR R=%g\nRMS R=%g\nN(points)=%g\nN(birds)=%g',b(1,1),b(2,1),length(plot_data.days_since(:)),length(unique(plot_data.birdid(:))));
+fprintf(fid,'FR R=%g\nRMS R=%g\nN(points)=%g\nN(birds)=%g',b(1,2),b(2,2),length(plot_data.days_since(:)),length(unique(plot_data.birdid(:))));
 fclose(fid);

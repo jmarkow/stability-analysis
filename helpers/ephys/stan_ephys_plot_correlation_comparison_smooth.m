@@ -67,7 +67,7 @@ win_step=win-overlap;
 %[~,bins_nervecut]=histc(NERVECUT.days_since,win_steps);
 condition={'spikes','rms'};
 
-steps=0:win_step:25;
+steps=0:win_step:50;
 
 % collect p-value for each point
 
@@ -123,8 +123,8 @@ for ii=1:2
 
 		bin_mu=median(cur_bindata);
 
-		bin_conf(i,1)=prctile(cur_bootdata,.5); % bootstrap minimum?
-		bin_conf(i,2)=prctile(cur_bootdata,100-.5);
+		bin_conf(i,1)=prctile(cur_bootdata,ci_inv/2); % bootstrap minimum?
+		bin_conf(i,2)=prctile(cur_bootdata,100-(ci_inv/2));
 		bin_conf(i,3)=prctile(cur_bootdata,50);
 
 		p.bin_conf.(condition{ii})=bin_conf;
@@ -251,7 +251,7 @@ for i=1:length(pvals)-1
     fprintf(fid,'%g,',pvals(i));
 end
 
-fprintf(fid,'%g',pvals(end));
+fprintf(fid,'%g\n n(points) %i n(birds) %i',pvals(end),sum(NERVECUT.days_since<25),length(unique(NERVECUT.birdid)));
 fclose(fid);
 
 

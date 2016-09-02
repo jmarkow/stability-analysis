@@ -156,7 +156,7 @@ set(fig.camax_v_time,'position',[300 700 230 210]);
 
 if filewrite
   fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,['fig6_camaxvtime-' ext '.txt']),'w+');
-  fprintf(fid,'Unit time v dF/F peak SD: r=%g p=%e\n',fig_stats.timevcamax.r,fig_stats.timevcamax.p);
-  fprintf(fid,'Unit time v dF/F peak SD partial: r=%g p=%e\n',fig_stats.timevcamax_partial.r,fig_stats.timevcamax_partial.p);
+  fprintf(fid,'Unit time v dF/F peak SD: r=%g p=%e, n=%i\n',fig_stats.timevcamax.r,fig_stats.timevcamax.p,length(all_hrs));
+  fprintf(fid,'Unit time v dF/F peak SD partial: r=%g p=%e, n=%i\n',fig_stats.timevcamax_partial.r,fig_stats.timevcamax_partial.p,length(all_hrs));
   fclose(fid);
 end

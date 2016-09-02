@@ -5,7 +5,7 @@ function stan_fig_cadata_driftanalysis_all()
 %
 
 [options,dirs]=stan_preflight;
-ext='lib';
+ext='con';
 [fig,fig_stats]=stan_cadata_drift_analyze_pertime_ave(ext);
 
 %%

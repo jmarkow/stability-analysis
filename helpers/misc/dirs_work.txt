@@ -4,7 +4,7 @@
 convert_dir=/Volumes/industrial_age/workspace/staging_barecarbon/unprocessed
 #agg_dir=/Volumes/industrial_age/workspace/figures/stan/mu_agg
 ca_dir_final=~/Desktop/Dropbox/shared/Will2Jeff (1)/Song Alignment
-agg_dir=~/Desktop/Dropbox/Backup/stability_analysis_data/stan
+agg_dir=/Volumes/Untitled/stability_analysis_data/stan
 data_dir=/Volumes/industrial_age/workspace/ephys_barecarbon
 legacy_dir=/Volumes/bronze_age/figures/hvc_fields/data/spikefield_stats
 legacy_int=/int2

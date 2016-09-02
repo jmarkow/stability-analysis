@@ -106,7 +106,7 @@ set(fig.song_variability,'position',[300 700 230 210]);
 
 if filewrite
   fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,'fig6_songvar.txt'),'w+');
-  fprintf(fid,'Song variability v time: r=%g p=%e',fig_stats.songvar.r,fig_stats.songvar.p);
+  fprintf(fid,'Song variability v time: r=%g p=%e n=%i',fig_stats.songvar.r,fig_stats.songvar.p,length(all_score));
   fclose(fid);
 end
 

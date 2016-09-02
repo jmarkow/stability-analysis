@@ -1,7 +1,8 @@
 function FIG=stan_plot_corr_timecourse(STATS,COLORS,NBOOTS)
 %
 %
-%
+% defaults to 95%
+
 interp_factor=8;
 FIG=figure();
 
@@ -17,7 +18,7 @@ for i=1:length(STATS)
   % day one from bootstrap
 
   for j=1:length(x)
-    mu_ci(:,j)=bootci(NBOOTS,{@mean,cur_data{x(j)}(:)},'type','cper');
+    mu_ci(:,j)=bootci(NBOOTS,{@mean,cur_data{x(j)}(:)},'type','cper','alpha',.01);
     mu(:,j)=mean(cur_data{x(j)}(:));
   end
 

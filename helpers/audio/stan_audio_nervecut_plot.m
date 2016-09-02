@@ -77,7 +77,7 @@ for i=1:nfeatures
 	end
 end
 
-swarm_colors=repmat(paruly(nbirds),[nfeatures 1])
+swarm_colors=repmat(parula(nbirds),[nfeatures 1])
 offset=2;
 pos=ones(1,length(swarm_plot_mu));
 pos(1:nbirds:end)=pos(1:nbirds:end)+offset;

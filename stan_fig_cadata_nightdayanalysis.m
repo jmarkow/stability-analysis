@@ -3,7 +3,7 @@ function stan_fig_cadata_nightdayanalysis()
 [options,dirs]=stan_preflight;
 
 %load(fullfile(dirs.agg_dir,dirs.datastore_dir,'cadata_stats_new-lib.mat'),'stats');
-ext='con';
+ext='lib';
 [fig,overnight_stats]=stan_plot_ca_nightday(ext);
 names=fieldnames(fig);
 

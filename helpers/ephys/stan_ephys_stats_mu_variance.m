@@ -65,4 +65,7 @@ for i=1:length(EPHYS_DATA.dates)
 
 end
 
+% to get values used in paper, take mean across trials (dim 2), then mean of
+% resulting values (and bootstrap)
+
 save(fullfile(dirs.agg_dir,dirs.datastore_dir,['mu_variance.mat']),'dist_mat');

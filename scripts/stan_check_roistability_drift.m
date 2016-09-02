@@ -1,7 +1,7 @@
 %%%
 
 % assumes roi_stats, stats, and fig stats are loaded in
-ext='con';
+ext='lib';
 filewrite=true;
 
 
@@ -44,6 +44,6 @@ end
 
 if filewrite
   fid=fopen(fullfile(dirs.agg_dir,dirs.stats_dir,['castability_v_roistability-' ext '.txt']),'w+');
-  fprintf(fid,'CA stability v ROI stability: p=%e z=%g\n',p,stats.zval);
+  fprintf(fid,'CA stability v ROI stability: p=%e z=%g, n(stable) %i, n(unstable) %i\n',p,stats.zval,length(unstable_drift),length(stable_drift));
   fclose(fid);
 end

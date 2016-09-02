@@ -52,7 +52,7 @@ end
 
 % remove points where x=0 (by definition == 1, artifacts appear to have r<.4)
 
-b=regress(Y,[ones(size(X)) X]);
+[b]=regress(Y,[ones(size(X)) X]);
 npoints=length(X);
 
 pred_x=[min(X):x_int:max(X)];
@@ -64,14 +64,16 @@ b
 estimate=b(1)+X*b(2);
 res=Y-estimate;
 sse=sum(res.^2);
-
-t_stat=tinv((1-ci_inv/2),npoints-2);
+mse=sse/(npoints-2);
+t_stat=tinv((1-ci_inv/2),npoints-2)
 pred_x_mu=mean(pred_x);
 
 % get the confidence interval
 
-conf=t_stat*sqrt(((1/(npoints-2))*sse)*...
-	((1/npoints)+((pred_x-pred_x_mu).^2)/sum((X-pred_x_mu).^2)));
+%conf=t_stat*sqrt(((1/(npoints-2))*sse)*...
+%	((1/npoints)+((pred_x-pred_x_mu).^2)/sum((X-pred_x_mu).^2)));
+conf=t_stat*sqrt((mse*((1/npoints)+((pred_x-pred_x_mu).^2)/(sum((X-pred_x_mu).^2)))));
+%conf_low = b(1)+bint(2,1)*pred_x;
 
 % interval is predicted values +/- confidence 
 
@@ -100,13 +102,16 @@ end
 colormap(parula(ngrps));
 
 if shaded_conf
-	markolab_shadeplot(pred_x(:)',[pred_y(:)'+conf;pred_y(:)'-conf],[.85 .85 .85],'none');
+    markolab_shadeplot(pred_x(:)',[pred_y(:)'+conf;pred_y(:)'-conf],[.85 .85 .85],'none');
+    %markolab_shadeplot(pred_x(:)',[conf_hi;conf_low],[.85 .85 .85],'none');
 	hold on;
 end
 
 if ~shaded_conf
-	plot(pred_x,pred_y+conf,'r--','linewidth',linewidth);
-	plot(pred_x,pred_y-conf,'r--','linewidth',linewidth);
+ 	plot(pred_x,pred_y+conf,'r--','linewidth',linewidth);
+ 	plot(pred_x,pred_y-conf,'r--','linewidth',linewidth);
+    %plot(pred_x,conf_hi,'r--','linewidth',linewidth);
+   	%plot(pred_x,conf_low,'r--','linewidth',linewidth);
 end
 
 plot(pred_x,pred_y,'r-','linewidth',linewidth);
