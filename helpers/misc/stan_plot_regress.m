@@ -23,7 +23,7 @@ plot_mode='scatter';
 nparams=length(varargin);
 
 if mod(nparams,2)>0
-	error('ephysPipeline:argChk','Parameters must be specified as parameter/value pairs!');
+	error('argChk','Parameters must be specified as parameter/value pairs!');
 end
 
 for i=1:2:nparams
@@ -44,7 +44,7 @@ for i=1:2:nparams
             clip=varargin{i+1};
         case 'plot_mode'
             plot_mode=varargin{i+1};
-            
+
 	end
 end
 
@@ -52,7 +52,7 @@ end
 
 % remove points where x=0 (by definition == 1, artifacts appear to have r<.4)
 
-[b]=regress(Y,[ones(size(X)) X]);
+b=regress(Y,[ones(size(X)) X]);
 npoints=length(X);
 
 pred_x=[min(X):x_int:max(X)];
@@ -60,7 +60,6 @@ pred_y=b(1)+pred_x*b(2);
 
 % first get the residuals
 
-b
 estimate=b(1)+X*b(2);
 res=Y-estimate;
 sse=sum(res.^2);
@@ -70,14 +69,9 @@ pred_x_mu=mean(pred_x);
 
 % get the confidence interval
 
-%conf=t_stat*sqrt(((1/(npoints-2))*sse)*...
-%	((1/npoints)+((pred_x-pred_x_mu).^2)/sum((X-pred_x_mu).^2)));
 conf=t_stat*sqrt((mse*((1/npoints)+((pred_x-pred_x_mu).^2)/(sum((X-pred_x_mu).^2)))));
-%conf_low = b(1)+bint(2,1)*pred_x;
 
-% interval is predicted values +/- confidence 
-
-%fig=figure();
+% interval is predicted values +/- confidence
 
 ngrps=length(unique(C));
 
@@ -102,16 +96,13 @@ end
 colormap(parula(ngrps));
 
 if shaded_conf
-    markolab_shadeplot(pred_x(:)',[pred_y(:)'+conf;pred_y(:)'-conf],[.85 .85 .85],'none');
-    %markolab_shadeplot(pred_x(:)',[conf_hi;conf_low],[.85 .85 .85],'none');
+  markolab_shadeplot(pred_x(:)',[pred_y(:)'+conf;pred_y(:)'-conf],[.85 .85 .85],'none');
 	hold on;
 end
 
 if ~shaded_conf
  	plot(pred_x,pred_y+conf,'r--','linewidth',linewidth);
  	plot(pred_x,pred_y-conf,'r--','linewidth',linewidth);
-    %plot(pred_x,conf_hi,'r--','linewidth',linewidth);
-   	%plot(pred_x,conf_low,'r--','linewidth',linewidth);
 end
 
 plot(pred_x,pred_y,'r-','linewidth',linewidth);
@@ -121,12 +112,3 @@ ylimits=round(ylimits/ylimit_rounding)*ylimit_rounding;
 ylim(ylimits);
 set(gca,'layer','top');
 title([num2str(b)])
-%set(gca,'TickDir','out','TickLength',[0 0],'ytick',[ylimits(1):.1:ylimits(2)]);
-%xlim([min(pred_x)-5 max(pred_x)+5]);
-%set(gca,'xtick',[0:20:max(pred_x)]);
-%ylabel(y_label);
-%xlabel(x_label);
-
-%set(fig,'position',[200 200 220 190],'paperpositionmode','auto');
-%markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),save_name,'eps,png,fig');
-

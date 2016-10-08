@@ -1,16 +1,14 @@
-function stan_fig_barecarbon_examplerasters()
-%
-%
-%
+function stan_fig2h(SPIKEDATA)
+% Generates Fig 2h, multi-unit spike raster
 %
 
-[options,dirs]=stan_preflight;
-load custom_colormaps;
-figs=stan_ephys_raster_control(fee_map);
+bird_id=fieldnames(SPIKEDATA);
+for i=1:length(bird_id)
+	figs.(bird_id{i})=figure();
+	stan_ephys_plot_raster(SPIKEDATA.(bird_id{i}).spect,SPIKEDATA.(bird_id{i}).spikes);
+end
+
 scaling_fun=@(x) (x/1.69)*3.6;
-
-%tightfig(figs.y273);
-%tightfig(figs.lpur72);
 
 % scale in a manner that keeps time consistent
 
@@ -38,7 +36,6 @@ for i=1:length(ax)
 	width_change=new_width-pos(3);
 
 	set(ax(i),'position',[pos(1)-width_change/2 pos(2) new_width pos(4)]);
-	%set(ax(i),'xcolor',get(gcf,'color'),'ycolor',get(gcf,'color'))
 end
 
 
@@ -55,8 +52,4 @@ for i=1:length(ax)
 	width_change=new_width-pos(3);
 
 	set(ax(i),'position',[pos(1)-width_change/2 pos(2) new_width pos(4)]);
-	%set(ax(i),'xcolor',get(gcf,'color'),'ycolor',get(gcf,'color'))
 end
-
-markolab_multi_fig_save(figs.y273,fullfile(dirs.agg_dir,dirs.fig_dir),['figure_2a_y273'],'eps,png,fig,pdf');
-markolab_multi_fig_save(figs.lpur72,fullfile(dirs.agg_dir,dirs.fig_dir),['figure_2a_lpur72'],'eps,png,fig,pdf');

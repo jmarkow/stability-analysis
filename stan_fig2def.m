@@ -1,33 +1,21 @@
-function fig=stan_ephys_plot_phasehist(PHASEHIST)
+function stan_fig2b(PHASEHIST)
+% Generates Fig 2b, phase histograms
 %
-%
-%
-%
-%
-%
+% to generate the "stairplot" histogram, markolab_stairplot is
+% used from https://github.com/jmarkow/markolab/blob/master/markolab_stairplot.m
 
-[options,dirs]=stan_preflight;
+fig=figure();
 
 cell_types={'pn','int','mu'};
 labels={'HVC_X','Interneurons','Multi-unit'};
-
-%counter=2;
-
-%subplot(7,1,1);
-%xpoints=-pi:pi/32:3*pi;
-%plot(cos(xpoints),'k','linewidth',1.5);
-%axis tight;
-%axis off;
 
 for i=1:length(cell_types)
 
 	PHASEHIST.(cell_types{i}).mag=repmat(PHASEHIST.(cell_types{i}).mag,[1 2]);
 	PHASEHIST.(cell_types{i}).bins=[PHASEHIST.(cell_types{i}).bins PHASEHIST.(cell_types{i}).bins+2*pi];
 
-	%ax(1)=subplot(7,1,counter:counter+1);
-	
 	ax(i)=subplot(length(cell_types),1,i);
-	
+
 	switch lower(cell_types{i}(1))
 		case 'p'
 			facecolor='r';
@@ -60,8 +48,8 @@ for i=1:length(cell_types)
 	end
 
 	set(gca,'layer','top')
-	%counter=counter+2;
 
 end
 
 linkaxes(ax,'xy');
+set(fig,'units','centimeters','position',[4 4 3 7],'paperpositionmode','auto');

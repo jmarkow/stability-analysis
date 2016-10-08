@@ -193,6 +193,10 @@ for i=1:length(ctrl)
 	plot_spect=[plot_spect;repmat(spect,[length(ctrl(i).postcut_days) 1])];
 	plot_trials=[plot_trials;repmat(ctrl(i).postcut_trials,[length(ctrl(i).postcut_days) 1])];
 
+	nervecut_raster.(precut_store(precut_idx).bird_id).spikes=plot_spikes;
+	nervecut_raster.(precut_store(precut_idx).bird_id).spect=plot_spect;
+	nervecut_raster.(precut_store(precut_idx).bird_id).trials=plot_trials;
+
 	fig.(precut_store(precut_idx).bird_id)=figure();
 	ax=stan_ephys_plot_raster_horizontal(plot_spect,plot_spikes,'plot_trials',plot_trials,'colors',COLORS,'spike_width',.01,'spike_height',.5);
 
@@ -203,7 +207,9 @@ for i=1:length(ctrl)
 	xlimits=xlim();;
 	xlim([xlimits(1)+.25 xlimits(end)-.25]);
 
-	% rms, raster
-	%markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),['nervecut_raster_' precut_store(precut_idx).bird_id ],'eps,png,fig,pdf','renderer','painters');
+	rms, raster
+	markolab_multi_fig_save(fig,fullfile(dirs.agg_dir,dirs.fig_dir),['nervecut_raster_' precut_store(precut_idx).bird_id ],'eps,png,fig,pdf','renderer','painters');
 
 end
+
+save(fullfile(dirs.agg_dir,dirs.datastore_dir,'nervecut_raster_data.mat'),'nervecut_raster');

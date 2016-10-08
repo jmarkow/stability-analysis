@@ -24,6 +24,7 @@ for	i=1:length(tmp)
 	end
 end
 
+
 for i=1:length(unit_dirs)
 
 	listing=dir(fullfile(unit_dirs{i},'*.mat'));
@@ -65,6 +66,10 @@ for i=1:length(unit_dirs)
 
 	[spect.s,spect.f,spect.t]=zftftb_pretty_sonogram(template.data,...
 		template.fs,'filtering',300,'clipping',[-3 2],'len',70,'overlap',69.5,'zeropad',0);
+
+	singleunit_raster.(bird_id).spikes=plot_spikes;
+	singleunit_raster.(bird_id).spect=spect;
+	singleunit_raster.(bird_id).date_num=date_num;
 
 	% put raster in leftmost column, expand
 
@@ -124,3 +129,5 @@ for i=1:length(unit_dirs)
 
 
 end
+
+save(fullfile(dirs.agg_dir,dirs.datastore_dir,'singleunit_raster_data.mat'),'singleunit_raster');

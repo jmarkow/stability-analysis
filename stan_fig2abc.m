@@ -1,30 +1,22 @@
-function fig=stan_ephys_plot_btlfp(BTLFP)
-%
-%
-%
-%
-%
-%
+function stan_fig2a(BTLFP,LFP_FS)
+% Generates Fig. 2a, burst-triggered LFPs for HVC projection neurons, interneurons, and multi-unit
 
-[options,dirs]=axcorr_preflight;
-nbootstraps=100;
+if nargin<2 | isempty(LFP_FS)
+	LFP_FS=1e3;
+end
 
-% function for converting to Rayleigh Z
-% convert to Rayleigh Z or some unbiased estimator
+fig=figure();
 
-% convert hil windows to PLI, then convert to unbiased PLI estimator w/ CIs
-
-% first get cell ids, grab same number of cell ids
-
-nsamples=size(BTLFP.int.hil_win,1);
+nsamples=size(BTLFP.int.lfp_win,1);
 xwin=floor(nsamples/2);
-win_t=[-xwin:xwin]/options.lfp_fs;
+win_t=[-xwin:xwin]/LFP_FS;
 win_t=win_t*1e3;
 
+% find neurons with >1 burst per song (putative X projector)
+
 peakmask=BTLFP.pn.peakcount>1; % pn
-win=BTLFP.pn.hil_win(:,peakmask);
 win_id=BTLFP.pn.cell_id(peakmask);
-inc_trials=axcorr_retain_trials(win_id);
+inc_trials=stan_retain_trials(win_id);
 
 ax(1)=subplot(3,1,1);
 peak_idx=find(peakmask);
@@ -43,9 +35,10 @@ yh=ylabel('Amp. (Z)');
 set(yh,'position',get(yh,'position')+[-.2 0 0]);
 %title('HVC_X');
 
-win=BTLFP.int.hil_win;
+% now get the interneurons
+
 win_id=BTLFP.int.cell_id;
-inc_trials=axcorr_retain_trials(win_id);
+inc_trials=stan_retain_trials(win_id);
 
 % window center
 
@@ -66,7 +59,9 @@ plot([0 0],[ylimits],'k-');
 set(gca,'YTick',ylimits,'xtick',[],'FontSize',7);
 %title('Interneurons');
 
-inc_trials=axcorr_retain_trials(BTLFP.mu.peak_id);
+inc_trials=stan_retain_trials(BTLFP.mu.peak_id);
+
+% finally multi-unit
 
 ax(3)=subplot(3,1,3);
 mu=mean(BTLFP.mu.lfp_win(:,inc_trials),2);
@@ -84,3 +79,5 @@ set(gca,'YTick',ylimits,'xtick',[-100 0 100],'FontSize',7);
 
 xlabel('Time (ms)');
 linkaxes(ax,'x');
+
+set(fig,'units','centimeters','position',[4 4 3 7],'paperpositionmode','auto');
