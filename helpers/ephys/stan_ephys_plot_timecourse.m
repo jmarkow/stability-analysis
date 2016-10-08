@@ -91,7 +91,7 @@ end
 
 birdid=tmp;
 birds=unique(tmp);
-cmap=paruly(length(birds));
+cmap=parula(length(birds));
 
 breaks=[];
 
